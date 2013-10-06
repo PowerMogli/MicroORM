@@ -46,9 +46,11 @@ namespace MicroORM.Base.Storage
                 {
                     _connection = DatabaseTransaction.Transaction.Connection;
                 }
-                return;
             }
-            CreateNewConnection();
+            else
+            {
+                CreateNewConnection();
+            }
         }
 
         public abstract void ExecuteCommand(IQuery query);
