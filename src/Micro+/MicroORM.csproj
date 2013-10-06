@@ -70,7 +70,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\IEscapeIdentifier.cs" />
-    <Compile Include="Storage\IProvider.cs" />
+    <Compile Include="Storage\IDbProvider.cs" />
     <Compile Include="Storage\Provider.cs" />
     <Compile Include="Storage\ProviderFactory.cs" />
     <Compile Include="Storage\SqlProvider.cs" />
