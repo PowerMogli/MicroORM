@@ -32,7 +32,7 @@ namespace Micro.Program
         }
     }
 
-    public class ImportPrepareProcedureObject : SqlProcedureObject<SqlParameter>
+    public class ImportPrepareProcedureObject : SqlProcedureObject
     {
         public ImportPrepareProcedureObject()
             : base("spExecuteSomething") { }
@@ -40,7 +40,7 @@ namespace Micro.Program
         public string TicketID
         {
             get { return base.GetParameterValue<string>("@pTicketID"); }
-            set { base.AddParameter("@pTicketID", value, SqlDbType.VarChar, 255); }
+            set { base.AddParameter("@pTicketID", value, DbType.AnsiString, 255); }
         }
     }
 
