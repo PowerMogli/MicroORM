@@ -8,6 +8,7 @@ namespace MicroORM.Query
     public abstract class ProcedureObject : IEnumerable
     {
         private string _storedProcedureName = string.Empty;
+        private Dictionary<string, IDataParameter> _parameters = new Dictionary<string, IDataParameter>();
 
         internal ProcedureObject(string storedProcedureName)
         {
@@ -15,7 +16,6 @@ namespace MicroORM.Query
         }
 
         internal string StoredProcedureName { get { return _storedProcedureName; } }
-        private Dictionary<string, IDataParameter> _parameters = new Dictionary<string, IDataParameter>();
 
         protected Dictionary<string, IDataParameter> Parameters { get { return _parameters; } }
 
