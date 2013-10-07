@@ -16,7 +16,7 @@ namespace MicroORM.Base
         public Session(string connectionString, DbEngine dbEngine)
         {
             _dbEngine = dbEngine;
-            _provider = ProviderFactory.GetProvider(dbEngine, connectionString);
+            _provider = DbProviderFactory.GetProvider(dbEngine, connectionString);
         }
 
         public Session(string connectionString)
@@ -29,7 +29,7 @@ namespace MicroORM.Base
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
         {
-            ITransactionalProvider transactionalProvider = _provider as ITransactionalProvider;
+            ITransactionalDbProvider transactionalProvider = _provider as ITransactionalDbProvider;
             if (transactionalProvider == null)
                 throw new NotSupportedException(string.Format("This type of DbEngine ('{0}') does not support transactional behavior", _dbEngine));
 

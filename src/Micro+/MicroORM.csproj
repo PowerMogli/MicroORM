@@ -74,10 +74,10 @@
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\IEscapeIdentifier.cs" />
     <Compile Include="Storage\IDbProvider.cs" />
-    <Compile Include="Storage\ITransactionalStorage.cs" />
-    <Compile Include="Storage\Provider.cs" />
-    <Compile Include="Storage\ProviderFactory.cs" />
-    <Compile Include="Storage\SqlProvider.cs" />
+    <Compile Include="Storage\ITransactionalDbProvider.cs" />
+    <Compile Include="Storage\DbProvider.cs" />
+    <Compile Include="Storage\DbProviderFactory.cs" />
+    <Compile Include="Storage\SqlDbProvider.cs" />
     <Compile Include="Utils\Utils.cs" />
   </ItemGroup>
   <ItemGroup>

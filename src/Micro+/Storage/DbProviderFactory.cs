@@ -2,7 +2,7 @@
 
 namespace MicroORM.Storage
 {
-    internal class ProviderFactory
+    internal class DbProviderFactory
     {
         public static IDbProvider GetProvider(DbEngine engine, string connectionString)
         {

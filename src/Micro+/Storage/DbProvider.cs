@@ -10,7 +10,7 @@ namespace MicroORM.Storage
     internal abstract class DbProvider : IDbProvider
     {
         private string _connectionString;
-        private readonly DbProviderFactory _factory;
+        private readonly System.Data.Common.DbProviderFactory _factory;
         protected IDbConnection _connection;
         protected IDbTransaction _transaction;
 

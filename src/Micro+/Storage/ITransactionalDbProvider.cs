@@ -2,7 +2,7 @@
 
 namespace MicroORM.Storage
 {
-    interface ITransactionalProvider : IDbProvider
+    interface ITransactionalDbProvider : IDbProvider
     {
         IDbTransaction BeginTransaction(IsolationLevel isolationLevel);
         IDbTransaction BeginTransaction();

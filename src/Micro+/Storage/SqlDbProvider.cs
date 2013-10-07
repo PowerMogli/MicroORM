@@ -6,7 +6,7 @@ using MicroORM.Query;
 
 namespace MicroORM.Storage
 {
-    internal class SqlDbProvider : DbProvider, ITransactionalProvider, IDbProvider
+    internal class SqlDbProvider : DbProvider, ITransactionalDbProvider, IDbProvider
     {
         private const string _providerName = "System.Data.SqlClient";
 
