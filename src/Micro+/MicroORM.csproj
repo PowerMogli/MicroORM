@@ -44,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\FieldAttribute.cs" />
-    <Compile Include="DatabaseTransaction.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="Mapping\IMemberInfo.cs" />
     <Compile Include="Mapping\MemberInfoCollection.cs" />
@@ -57,11 +56,14 @@
     <Compile Include="Mapping\TypeMapping.cs" />
     <Compile Include="ObjectReader.cs" />
     <Compile Include="ObjectSet.cs" />
+    <Compile Include="Query\ProcedureObject.cs" />
     <Compile Include="Query\ExpressionQuery.cs" />
+    <Compile Include="Query\Generic\SqlProcedureObject.cs" />
     <Compile Include="Query\Generic\SqlQuery.cs" />
     <Compile Include="Query\IQuery.cs" />
     <Compile Include="Query\SqlQueryInterpreter.cs" />
     <Compile Include="Query\SqlQuery.cs" />
+    <Compile Include="Query\StoredProcedureQuery.cs" />
     <Compile Include="Reflection\ParameterTypeDescriptor.cs" />
     <Compile Include="Session.cs" />
     <Compile Include="EntityObject.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\IEscapeIdentifier.cs" />
     <Compile Include="Storage\IDbProvider.cs" />
+    <Compile Include="Storage\ITransactionalStorage.cs" />
     <Compile Include="Storage\Provider.cs" />
     <Compile Include="Storage\ProviderFactory.cs" />
     <Compile Include="Storage\SqlProvider.cs" />

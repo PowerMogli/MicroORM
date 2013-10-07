@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Data;
-using MicroORM.Base.Query;
+using MicroORM.Query;
 
-namespace MicroORM.Base.Storage
+namespace MicroORM.Storage
 {
     interface IDbProvider : IDisposable, IEscapeDbIdentifier
     {

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections;
+using System.Collections.Generic;
 
-namespace MicroORM.Base.Mapping
+namespace MicroORM.Mapping
 {
     internal sealed class MemberInfoCollection : IEnumerable<IMemberInfo>
     {

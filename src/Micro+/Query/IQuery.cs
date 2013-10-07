@@ -1,7 +1,7 @@
-﻿using MicroORM.Base.Storage;
+﻿using MicroORM.Storage;
 using System.Data;
 
-namespace MicroORM.Base.Query
+namespace MicroORM.Query
 {
     interface IQuery
     {

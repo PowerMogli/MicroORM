@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroORM.Base.Mapping
+namespace MicroORM.Mapping
 {
     [Serializable]
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]

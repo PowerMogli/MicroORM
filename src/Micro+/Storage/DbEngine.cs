@@ -1,4 +1,4 @@
-﻿namespace MicroORM.Base.Storage
+﻿namespace MicroORM.Storage
 {
     public enum DbEngine
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroORM.Base
+namespace MicroORM.Storage
 {
     public class ObjectReader<T> : IDisposable
     {

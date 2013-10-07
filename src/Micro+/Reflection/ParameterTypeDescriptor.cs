@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace MicroORM.Base.Reflection
+namespace MicroORM.Reflection
 {
     internal class ParameterTypeDescriptor
     {

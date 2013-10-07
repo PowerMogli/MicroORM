@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Data;
 using System.Linq.Expressions;
-using MicroORM.Base.Mapping;
-using MicroORM.Base.Query;
-using MicroORM.Base.Query.Generic;
-using MicroORM.Base.Storage;
+using MicroORM.Mapping;
+using MicroORM.Query;
+using MicroORM.Query.Generic;
 
-namespace MicroORM.Base
+namespace MicroORM.Storage
 {
     public class Session : IDisposable
     {
         private string _connectionString = string.Empty;
         private IDbProvider _provider = null;
+        private DbEngine _dbEngine;
 
         public Session(string connectionString, DbEngine dbEngine)
         {
+            _dbEngine = dbEngine;
             _connectionString = connectionString;
             _provider = ProviderFactory.GetProvider(dbEngine, connectionString);
         }
@@ -21,9 +23,35 @@ namespace MicroORM.Base
         public Session(string connectionString)
             : this(connectionString, DbEngine.SqlServer) { }
 
+        ~Session()
+        {
+            Dispose();
+        }
+
+        public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
+        {
+            ITransactionalProvider transactionalProvider = _provider as ITransactionalProvider;
+            if (transactionalProvider == null)
+                throw new NotSupportedException(string.Format("This type of DbEngine ('{0}') does not support transactional behavior", _dbEngine));
+
+            return isolationLevel.HasValue
+                ? transactionalProvider.BeginTransaction(isolationLevel.Value)
+                : transactionalProvider.BeginTransaction();
+        }
+
         public void ExecuteCommand(string sql, params object[] args)
         {
             _provider.ExecuteCommand(new SqlQuery(sql, args));
+        }
+
+        public void ExecuteStoredProcedure(ProcedureObject parameterCollection)
+        {
+            _provider.ExecuteCommand(new StoredProcedureQuery(parameterCollection));
+        }
+
+        public void ExecuteStoredProcedure<T>(ProcedureObject parameterCollection)
+        {
+
         }
 
         public T GetObject<T>(Expression<Func<T, bool>> criteria)
@@ -41,7 +69,7 @@ namespace MicroORM.Base
             }
         }
 
-        public V GetColumn<T, V>(Expression<Func<T, V>> selector, Expression<Func<T, bool>> criteria)
+        public V GetColumnValue<T, V>(Expression<Func<T, V>> selector, Expression<Func<T, bool>> criteria)
         {
             return default(V);
         }
@@ -53,6 +81,11 @@ namespace MicroORM.Base
 
         public ObjectSet<T> GetObjectSet<T>(string sql, params object[] args)
         {
+            using (ObjectReader<T> ObjectReader = _provider.ExecuteReader<T>(new SqlQuery<T>(sql, args)))
+            {
+
+            }
+
             return default(ObjectSet<T>);
         }
 
@@ -66,6 +99,21 @@ namespace MicroORM.Base
             var typeMapping = TypeMapping.GetTypeMapping(typeof(T));
             var sql = string.Format("select * from {0}", (_provider.EscapeName(typeMapping.PersistentAttribute.EntityName)));
             return GetObjectSet<T>(sql);
+        }
+
+        public void Update<T>(Expression<Func<T, bool>> criteria, params object[] setArguments)
+        {
+
+        }
+
+        public void Update<T>(T data)
+        {
+
+        }
+
+        public bool PersistChanges()
+        {
+            return true;
         }
 
         private void Dispose()

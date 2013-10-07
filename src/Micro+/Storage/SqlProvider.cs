@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Data;
-using MicroORM.Base.Query;
+using MicroORM.Query;
 
-namespace MicroORM.Base.Storage
+namespace MicroORM.Storage
 {
-    internal class SqlDbProvider : DbProvider
+    internal class SqlDbProvider : DbProvider, ITransactionalProvider, IDbProvider
     {
         private const string _providerName = "System.Data.SqlClient";
 
@@ -15,11 +15,29 @@ namespace MicroORM.Base.Storage
         internal SqlDbProvider(string connectionString)
             : base(connectionString) { }
 
+        public IDbTransaction BeginTransaction(IsolationLevel isolationLevel)
+        {
+            if (base._transaction != null) return base._transaction;
+            if (base._connection != null) return base._transaction = base._connection.BeginTransaction(isolationLevel);
+
+            base.CreateConnection();
+            return base._transaction = base._connection.BeginTransaction(isolationLevel);
+        }
+
+        public IDbTransaction BeginTransaction()
+        {
+            if (base._transaction != null) return base._transaction;
+            if (base._connection != null) return base._transaction = base._connection.BeginTransaction();
+
+            base.CreateConnection();
+            return base._transaction = base._connection.BeginTransaction();
+        }
+
         public override void ExecuteCommand(IQuery query)
         {
             base.CreateConnection();
             IDbCommand command = query.Compile(this);
-            command.Transaction = DatabaseTransaction.Transaction;
+            command.Transaction = base._transaction;
 
             command.ExecuteNonQuery();
         }
@@ -27,9 +45,8 @@ namespace MicroORM.Base.Storage
         public override ObjectReader<T> ExecuteReader<T>(IQuery query)
         {
             base.CreateConnection();
-
             IDbCommand command = query.Compile(this);
-            command.Transaction = DatabaseTransaction.Transaction;
+            command.Transaction = base._transaction;
 
             return null;
         }

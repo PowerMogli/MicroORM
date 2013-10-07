@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Globalization;
 
-namespace MicroORM.Base.Utils
+namespace MicroORM.Utils
 {
     public static class Utils
     {

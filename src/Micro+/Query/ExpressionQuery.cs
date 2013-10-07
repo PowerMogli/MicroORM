@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Linq.Expressions;
-using MicroORM.Base.Expression;
-using MicroORM.Base.Storage;
 using System.Data;
+using System.Linq.Expressions;
+using MicroORM.Expression;
+using MicroORM.Storage;
 
-namespace MicroORM.Base.Query
+namespace MicroORM.Query
 {
     internal class ExpressionQuery<T, V> : IQuery
     {

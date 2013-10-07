@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace MicroORM.Base.Mapping
+namespace MicroORM.Mapping
 {
     /// <summary>
     /// Class represents a meta element that is used to create the mapping between the persistent object and

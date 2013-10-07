@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Data;
-using MicroORM.Base.Reflection;
-using MicroORM.Base.Storage;
-using MicroORM.Base.Utils;
 using System.Globalization;
-using MicroORM.Base.Mapping;
+using MicroORM.Reflection;
+using MicroORM.Storage;
+using MicroORM.Utils;
 
-namespace MicroORM.Base.Query
+namespace MicroORM.Query
 {
     internal class SqlQueryInterpreter
     {

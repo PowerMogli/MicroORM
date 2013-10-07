@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace MicroORM.Base.Mapping
+namespace MicroORM.Mapping
 {
     internal static class TypeMappingContainer
     {

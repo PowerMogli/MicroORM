@@ -2,9 +2,9 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using MicroORM.Base.Storage;
+using MicroORM.Storage;
 
-namespace MicroORM.Base.Mapping
+namespace MicroORM.Mapping
 {
     internal sealed class TypeMapping
     {

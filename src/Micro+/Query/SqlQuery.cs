@@ -1,7 +1,7 @@
-﻿using MicroORM.Base.Storage;
-using System.Data;
+﻿using System.Data;
+using MicroORM.Storage;
 
-namespace MicroORM.Base.Query
+namespace MicroORM.Query
 {
     internal class SqlQuery : IQuery
     {

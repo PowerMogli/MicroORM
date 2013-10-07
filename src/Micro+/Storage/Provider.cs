@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using MicroORM.Base.Query;
+using MicroORM.Query;
 //using MicroORM.Base.Utils;
 
-namespace MicroORM.Base.Storage
+namespace MicroORM.Storage
 {
     internal abstract class DbProvider : IDbProvider
     {
         private string _connectionString;
         private readonly DbProviderFactory _factory;
-        private IDbConnection _connection = null;
+        protected IDbConnection _connection;
+        protected IDbTransaction _transaction;
 
         public abstract string ParameterPrefix { get; }
         public abstract string ProviderName { get; }
@@ -35,17 +36,9 @@ namespace MicroORM.Base.Storage
 
         protected void CreateConnection()
         {
-            if (DatabaseTransaction.IsActive)
+            if (_transaction != null)
             {
-                if (DatabaseTransaction.Transaction == null)
-                {
-                    CreateNewConnection();
-                    DatabaseTransaction.Create(_connection);
-                }
-                else
-                {
-                    _connection = DatabaseTransaction.Transaction.Connection;
-                }
+                _connection = _transaction.Connection;
             }
             else
             {
@@ -59,7 +52,7 @@ namespace MicroORM.Base.Storage
 
         public void Dispose()
         {
-            if (!DatabaseTransaction.IsActive)
+            if (_transaction == null)
                 _connection.Dispose();
         }
 

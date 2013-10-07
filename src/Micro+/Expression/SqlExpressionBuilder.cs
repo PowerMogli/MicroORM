@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Text;
-using MicroORM.Base.Mapping;
+using MicroORM.Mapping;
 
-namespace MicroORM.Base.Expression
+namespace MicroORM.Expression
 {
     internal class ExpressionSqlBuilder<T>
     {

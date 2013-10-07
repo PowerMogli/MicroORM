@@ -1,10 +1,9 @@
-﻿using MicroORM.Base.Mapping;
-using MicroORM.Base.Storage;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Text;
-using System.Collections.Generic;
+using MicroORM.Mapping;
+using MicroORM.Storage;
 
-namespace MicroORM.Base.Query.Generic
+namespace MicroORM.Query.Generic
 {
     internal sealed class SqlQuery<T> : SqlQuery
     {
@@ -18,14 +17,15 @@ namespace MicroORM.Base.Query.Generic
             _additionalPredicate = additionalPredicate;
         }
 
+        internal SqlQuery(string sqlStatement, params object[] arguments)
+            : base(sqlStatement, arguments) { }
+
         public override IDbCommand Compile(IDbProvider provider)
         {
-            IDbCommand command = provider.CreateCommand();
             PrepareSqlStatement(provider);
             PrepareArguments();
-            new SqlQueryInterpreter(this, provider).Setup(command);
 
-            return command;
+            return base.Compile(provider);
         }
 
         private void PrepareSqlStatement(IDbProvider provider)
