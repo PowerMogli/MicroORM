@@ -1,4 +1,4 @@
-﻿namespace MicroORM.Storage
+﻿namespace MicroORM.Base
 {
     public abstract class EntityObject
     {

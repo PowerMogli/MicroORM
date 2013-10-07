@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Attributes\FieldAttribute.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
+    <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\IMemberInfo.cs" />
     <Compile Include="Mapping\MemberInfoCollection.cs" />
     <Compile Include="Mapping\MetaInfo.cs" />
@@ -58,7 +59,7 @@
     <Compile Include="ObjectSet.cs" />
     <Compile Include="Query\ProcedureObject.cs" />
     <Compile Include="Query\ExpressionQuery.cs" />
-    <Compile Include="Query\Generic\SqlProcedureObject.cs" />
+    <Compile Include="Query\SqlProcedureObject.cs" />
     <Compile Include="Query\Generic\SqlQuery.cs" />
     <Compile Include="Query\IQuery.cs" />
     <Compile Include="Query\SqlQueryInterpreter.cs" />

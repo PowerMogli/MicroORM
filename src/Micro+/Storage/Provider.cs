@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using MicroORM.Base;
 using MicroORM.Query;
 //using MicroORM.Base.Utils;
 

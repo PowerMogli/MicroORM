@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace MicroORM.Storage
+namespace MicroORM.Base
 {
     public class ObjectSet<T>
     {

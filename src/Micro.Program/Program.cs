@@ -1,9 +1,8 @@
 ﻿using System;
-using MicroORM.Mapping;
-using MicroORM.Storage;
 using System.Data;
-using System.Data.SqlClient;
-using MicroORM.Query.Generic;
+using MicroORM.Base;
+using MicroORM.Mapping;
+using MicroORM.Query;
 
 namespace Micro.Program
 {

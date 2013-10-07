@@ -4,19 +4,18 @@ using System.Linq.Expressions;
 using MicroORM.Mapping;
 using MicroORM.Query;
 using MicroORM.Query.Generic;
+using MicroORM.Storage;
 
-namespace MicroORM.Storage
+namespace MicroORM.Base
 {
-    public class Session : IDisposable
+    public class Session : IDisposable, IDbSession
     {
-        private string _connectionString = string.Empty;
         private IDbProvider _provider = null;
         private DbEngine _dbEngine;
 
         public Session(string connectionString, DbEngine dbEngine)
         {
             _dbEngine = dbEngine;
-            _connectionString = connectionString;
             _provider = ProviderFactory.GetProvider(dbEngine, connectionString);
         }
 
@@ -44,12 +43,12 @@ namespace MicroORM.Storage
             _provider.ExecuteCommand(new SqlQuery(sql, args));
         }
 
-        public void ExecuteStoredProcedure(ProcedureObject parameterCollection)
+        public void ExecuteStoredProcedure(ProcedureObject procedureObject)
         {
-            _provider.ExecuteCommand(new StoredProcedureQuery(parameterCollection));
+            _provider.ExecuteCommand(new StoredProcedureQuery(procedureObject));
         }
 
-        public void ExecuteStoredProcedure<T>(ProcedureObject parameterCollection)
+        public void ExecuteStoredProcedure<T>(ProcedureObject procedureObject)
         {
 
         }

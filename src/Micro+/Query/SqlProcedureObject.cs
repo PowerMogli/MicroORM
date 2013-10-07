@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 
-namespace MicroORM.Query.Generic
+namespace MicroORM.Query
 {
     public class SqlProcedureObject : ProcedureObject
     {
