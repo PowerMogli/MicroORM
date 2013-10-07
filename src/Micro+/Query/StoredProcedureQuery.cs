@@ -17,6 +17,7 @@ namespace MicroORM.Query
         {
             IDbCommand command = provider.CreateCommand();
             command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = _procedureWorkObject.StoredProcedureName;
             SetArguments(command);
 
             return command;
