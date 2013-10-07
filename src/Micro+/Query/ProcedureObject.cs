@@ -16,9 +16,9 @@ namespace MicroORM.Query
         internal string StoredProcedureName { get { return _storedProcedureName; } }
         private Dictionary<string, IDataParameter> _parameters = new Dictionary<string, IDataParameter>();
 
-        public Dictionary<string, IDataParameter> Parameters { get { return _parameters; } }
+        protected Dictionary<string, IDataParameter> Parameters { get { return _parameters; } }
 
-        protected abstract bool AddParameter<T>(string parameterName, T value, SqlDbType dbType, int length);
+        protected abstract bool AddParameter<T>(string parameterName, T value, DbType dbType, int length);
         protected abstract T GetParameterValue<T>(string parameterName);
 
         public IEnumerator GetEnumerator()
