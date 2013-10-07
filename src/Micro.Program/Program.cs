@@ -14,7 +14,7 @@ namespace Micro.Program
             {
                 //IDbTransaction transaction = session.BeginTransaction();
 
-                session.ExecuteCommand("select * from Posts where Title=@0 and Id=@1", "Mark", 3);
+                //session.ExecuteCommand("select * from Posts where Title=@0 and Id=@1", "Mark", 3);
                 //var objectSet = session.GetObjectSet<Post>(); // holt alle Posts
                 //objectSet = session.GetObjectSet<Post>("select * from Posts where Title=@title OR Id=@id", new { title = "Mark", id = 5 });
                 //// das gleich nur ohne anonyme Argumente
@@ -24,7 +24,11 @@ namespace Micro.Program
                 //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                 //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                 // Stored Procedures werde ich auch noch einbauen
-                session.ExecuteStoredProcedure(new ImportPrepareProcedureObject());
+
+                ImportPrepareProcedureObject procedureObject = new ImportPrepareProcedureObject();
+                procedureObject.TicketID = "blah";
+
+                session.ExecuteStoredProcedure(procedureObject);
 
                 //transaction.Commit();
             }
