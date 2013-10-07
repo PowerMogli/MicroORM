@@ -6,12 +6,11 @@ namespace MicroORM.Query
 {
     internal class StoredProcedureQuery : IQuery
     {
-        private string _storedProcedureName;
-        private ProcedureObject _parameterCollection;
+        private ProcedureObject _procedureWorkObject;
 
-        internal StoredProcedureQuery(ProcedureObject parameterCollection)
+        internal StoredProcedureQuery(ProcedureObject procedureWorkObject)
         {
-
+            _procedureWorkObject = procedureWorkObject;
         }
 
         public IDbCommand Compile(IDbProvider provider)
@@ -25,7 +24,7 @@ namespace MicroORM.Query
 
         private void SetArguments(IDbCommand command)
         {
-            foreach (var parameter in _parameterCollection)
+            foreach (var parameter in _procedureWorkObject)
             {
                 command.Parameters.Add(parameter);
             }
