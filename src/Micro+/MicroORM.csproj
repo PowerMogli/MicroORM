@@ -58,7 +58,7 @@
     <Compile Include="ObjectReader.cs" />
     <Compile Include="ObjectSet.cs" />
     <Compile Include="Query\ProcedureObject.cs" />
-    <Compile Include="Query\ExpressionQuery.cs" />
+    <Compile Include="Query\Generic\ExpressionQuery.cs" />
     <Compile Include="Query\SqlProcedureObject.cs" />
     <Compile Include="Query\Generic\SqlQuery.cs" />
     <Compile Include="Query\IQuery.cs" />
