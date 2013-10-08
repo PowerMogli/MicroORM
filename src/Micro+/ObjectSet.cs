@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using MicroORM.Query;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using MicroORM.Query;
 
 namespace MicroORM.Base
 {
-    public class ObjectSet<T>
+    public class ObjectSet<T> : IEnumerable<T>
     {
         private List<T> _list = new List<T>();
 
@@ -22,6 +23,16 @@ namespace MicroORM.Base
         internal T SingleOrDefault()
         {
             return _list.SingleOrDefault();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return _list.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
