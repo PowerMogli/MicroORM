@@ -25,6 +25,15 @@ namespace Micro.Program
                         //session.GetObject<Post>(6); // holt genau einen Post mit PrimaryKey
                         //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                         //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
+                        var posts = dbSession.GetObjectSet<Post>();
+
+                        foreach (Post post in posts)
+                        {
+                            Console.WriteLine(post.Title);
+                        }
+
+                        // oder 
+                        dbSession.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                         transaction.Commit();
                     }
                 }
