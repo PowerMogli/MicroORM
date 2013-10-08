@@ -3,21 +3,21 @@ using System.Collections.Concurrent;
 
 namespace MicroORM.Mapping
 {
-    internal static class TypeMappingContainer
+    internal static class TableInfoContainer
     {
-        private static ConcurrentDictionary<Type, TypeMapping> _mappings = new ConcurrentDictionary<Type, TypeMapping>();
+        private static ConcurrentDictionary<Type, TableInfo> _mappings = new ConcurrentDictionary<Type, TableInfo>();
         private static ConcurrentDictionary<Type, Type> _interfacePersistents = new ConcurrentDictionary<Type, Type>();
-        private static TypeMapping _lastMapping;
+        private static TableInfo _lastMapping;
 
         /// <summary>
         /// Returns the mapping for a given object. If the mapping does not exist it is created by this routine.
         /// </summary>
         /// <param name="obj">The object the mapping is returned.</param>
-        public static TypeMapping GetTypeMapping(object obj)
+        public static TableInfo GetTableInfo(object obj)
         {
             if (obj == null) throw new ArgumentNullException("obj");
 
-            return GetTypeMapping(obj.GetType());
+            return GetTableInfo(obj.GetType());
         }
 
         /// <summary>
@@ -25,24 +25,24 @@ namespace MicroORM.Mapping
         /// created by this routine.
         /// </summary>
         /// <param name="type">Type of object the mapping is returned.</param>
-        public static TypeMapping GetTypeMapping(Type type)
+        public static TableInfo GetTableInfo(Type type)
         {
             if (type == null) throw new ArgumentNullException("type");
 
             // Get the real persistent type.
             type = GetPersistentType(type);
 
-            TypeMapping typeMapping = null;
+            TableInfo tableInfo = null;
 
             if (_lastMapping != null && _lastMapping.PersistentType == type) return _lastMapping;
 
-            if (!_mappings.TryGetValue(type, out typeMapping))
+            if (!_mappings.TryGetValue(type, out tableInfo))
             {
-                typeMapping = TypeMappingBuilder.CreateTypeMapping(type);
-                _mappings.TryAdd(type, typeMapping);
+                tableInfo = TableInfoBuilder.CreateTypeMapping(type);
+                _mappings.TryAdd(type, tableInfo);
             }
 
-            return _lastMapping = typeMapping;
+            return _lastMapping = tableInfo;
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace MicroORM.Mapping
                 return t;
 
             // Throw an exception if the interface is not registered with a persistent.
-            throw new TypeMappingException(string.Format("There is no persistent type registered for the interface type: {0}.", type.FullName));
+            throw new TableInfoException(string.Format("There is no persistent type registered for the interface type: {0}.", type.FullName));
         }
     }
 }

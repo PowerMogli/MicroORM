@@ -3,26 +3,26 @@ using System.Reflection;
 
 namespace MicroORM.Mapping
 {
-    internal static class TypeMappingBuilder
+    internal static class TableInfoBuilder
     {
-        internal static TypeMapping CreateTypeMapping(Type type)
+        internal static TableInfo CreateTypeMapping(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException("type");
 
             if (type.IsInterface)
             {
-                throw new TypeMappingException(
+                throw new TableInfoException(
                     string.Format("Cannot create mapping for interface '{0}'! Please use TypeMapping.RegisterPersistentInterface to register the interface with persistent type.", type.FullName));
             }
             TableAttribute attribute = GetPersistentAttribute(type);
             if (attribute == null)
-                throw new TypeMappingException(string.Format("Cannot create mapping for type '{0}' without persistent attribute.", type.FullName));
+                throw new TableInfoException(string.Format("Cannot create mapping for type '{0}' without persistent attribute.", type.FullName));
 
             MemberInfoCollection members = new MemberInfoCollection();
             CreateMemberMappings(type, members);
 
-            return new TypeMapping(type, attribute, members);
+            return new TableInfo(type, attribute, members);
         }
 
         private static TableAttribute GetPersistentAttribute(Type type)
@@ -66,7 +66,7 @@ namespace MicroORM.Mapping
                         info = new PropertyMetaInfo((PropertyInfo)member, memberType, fieldAttribute);
                         break;
                     default:
-                        throw new TypeMappingException("Member type is not supported for mapping.");
+                        throw new TableInfoException("Member type is not supported for mapping.");
                 }
 
                 list.Add(info);
@@ -88,7 +88,7 @@ namespace MicroORM.Mapping
                     memberType = ((PropertyInfo)member).PropertyType;
                     break;
                 default:
-                    throw new TypeMappingException("Member type is not supported for mapping.");
+                    throw new TableInfoException("Member type is not supported for mapping.");
             }
 
             if (memberType.IsInterface)
@@ -107,7 +107,7 @@ namespace MicroORM.Mapping
                         value = ((PropertyInfo)member).GetValue(instance, null);
                         break;
                     default:
-                        throw new TypeMappingException("Member type is not supported for mapping.");
+                        throw new TableInfoException("Member type is not supported for mapping.");
                 }
 
                 if (value != null)

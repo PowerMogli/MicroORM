@@ -12,42 +12,42 @@ namespace MicroORM.Mapping
     /// <see cref="PersistentAttribute">PersistentAttribute</see> is missing on the class.
     /// </remarks>
     [Serializable]
-    public sealed class TypeMappingException : Exception
+    public sealed class TableInfoException : Exception
     {
         /// <summary>
         /// Creates a new instance of the
-        /// <see cref="TypeMappingException">MappingException Class</see>.
+        /// <see cref="TableInfoException">MappingException Class</see>.
         /// </summary>
-        private TypeMappingException(SerializationInfo info, StreamingContext context)
+        private TableInfoException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
 
         /// <summary>
         /// Creates a new instance of the
-        /// <see cref="TypeMappingException">MappingException Class</see>.
+        /// <see cref="TableInfoException">MappingException Class</see>.
         /// </summary>
-        public TypeMappingException()
+        public TableInfoException()
         {
         }
 
         /// <summary>
         /// Creates a new instance of the
-        /// <see cref="TypeMappingException">MappingException Class</see>.
+        /// <see cref="TableInfoException">MappingException Class</see>.
         /// </summary>
         /// <param name="message">A message that describes the current exception.</param>
-        public TypeMappingException(string message)
+        public TableInfoException(string message)
             : base(message)
         {
         }
 
         /// <summary>
         /// Creates a new instance of the
-        /// <see cref="TypeMappingException">MappingException Class</see>.
+        /// <see cref="TableInfoException">MappingException Class</see>.
         /// </summary>
         /// <param name="message">A message that describes the current exception.</param>
         /// <param name="inner">The exception that caused the current exception.</param>
-        public TypeMappingException(string message, Exception inner)
+        public TableInfoException(string message, Exception inner)
             : base(message, inner)
         {
         }

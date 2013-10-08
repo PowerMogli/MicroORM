@@ -3,7 +3,7 @@ using MicroORM.Storage;
 
 namespace MicroORM.Query
 {
-    internal class SqlQuery : IQuery
+    internal class SqlQuery : IQuery, IArgumentQuery
     {
         protected string _sql;
         protected object[] _arguments;
@@ -13,7 +13,7 @@ namespace MicroORM.Query
 
         internal SqlQuery() { }
 
-        internal SqlQuery(string sql, object[] arguments)
+        internal SqlQuery(string sql, params object[] arguments)
         {
             _sql = sql;
             _arguments = arguments;
@@ -22,7 +22,9 @@ namespace MicroORM.Query
         public virtual IDbCommand Compile(IDbProvider provider)
         {
             IDbCommand command = provider.CreateCommand();
-            new SqlQueryInterpreter(this, provider).Setup(command);
+            command.CommandType = CommandType.Text;
+            QueryInterpreter queryInterpreter = new QueryInterpreter(this, provider);
+            queryInterpreter.Setup(command);
 
             return command;
         }

@@ -29,7 +29,7 @@ namespace MicroORM.Mapping
 
             if ((!propertyInfo.CanWrite || !propertyInfo.CanRead))
             {
-                throw new TypeMappingException(
+                throw new TableInfoException(
                     string.Format("Cannot create mapping for {0}.{1} because it's not possible to write and read.",
                     propertyInfo.ReflectedType.FullName, propertyInfo.Name));
             }

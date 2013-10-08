@@ -13,5 +13,6 @@ namespace MicroORM.Storage
         void SetupParameter(IDbDataParameter parameter, string name, object value);
         void ExecuteCommand(IQuery query);
         ObjectReader<T> ExecuteReader<T>(IQuery query);
+        T ExecuteScalar<T>(IQuery query);
     }
 }

@@ -6,7 +6,7 @@ using MicroORM.Storage;
 
 namespace MicroORM.Mapping
 {
-    internal sealed class TypeMapping
+    internal sealed class TableInfo
     {
         private static TypeAttributes _nonPublic = TypeAttributes.NotPublic;
         private Type _type;
@@ -41,12 +41,12 @@ namespace MicroORM.Mapping
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="TypeMapping">TypeMapping Class</see>.
+        /// Creates a new instance of the <see cref="TableInfo">TypeMapping Class</see>.
         /// </summary>
         /// <param name="type">Type of object managed by this class.</param>
         /// <param name="persistentAttribute">Persistent attribute that decorates the class.</param>
         /// <param name="members">The list of the mapped members.</param>
-        internal TypeMapping(Type type, TableAttribute persistentAttribute, MemberInfoCollection members)
+        internal TableInfo(Type type, TableAttribute persistentAttribute, MemberInfoCollection members)
         {
             if (persistentAttribute == null)
                 throw new ArgumentNullException("persistentAttribute", "Can't create persistent mapping without persistent attribute.");
@@ -99,7 +99,7 @@ namespace MicroORM.Mapping
         }
 
         /// <summary>
-        /// Returns the collection of members associated with the <see cref="TypeMapping">TypeMapping</see>.
+        /// Returns the collection of members associated with the <see cref="TableInfo">TypeMapping</see>.
         /// </summary>
         internal MemberInfoCollection Members
         {
@@ -110,18 +110,18 @@ namespace MicroORM.Mapping
         /// Returns the mapping for a given object.
         /// </summary>
         /// <param name="obj">The object the mapping is returned for.</param>
-        public static TypeMapping GetTypeMapping(object obj)
+        public static TableInfo GetTableInfo(object obj)
         {
-            return TypeMappingContainer.GetTypeMapping(obj);
+            return TableInfoContainer.GetTableInfo(obj);
         }
 
         /// <summary>
         /// Returns the mapping for the given persistent type.
         /// </summary>
         /// <param name="type">Type of object the mapping is returned for.</param>
-        public static TypeMapping GetTypeMapping(Type type)
+        public static TableInfo GetTableInfo(Type type)
         {
-            return TypeMappingContainer.GetTypeMapping(type);
+            return TableInfoContainer.GetTableInfo(type);
         }
     }
 }

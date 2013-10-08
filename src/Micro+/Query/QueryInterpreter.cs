@@ -7,12 +7,12 @@ using MicroORM.Utils;
 
 namespace MicroORM.Query
 {
-    internal class SqlQueryInterpreter
+    internal class QueryInterpreter
     {
-        private SqlQuery _query;
+        private IArgumentQuery _query;
         private IDbProvider _provider;
 
-        internal SqlQueryInterpreter(SqlQuery query, IDbProvider provider)
+        internal QueryInterpreter(IArgumentQuery query, IDbProvider provider)
         {
             _query = query;
             _provider = provider;
@@ -22,7 +22,6 @@ namespace MicroORM.Query
         {
             SetupParameter(command);
             command.CommandText = _query.SqlStatement;
-            command.CommandType = CommandType.Text;
         }
 
         private void SetupParameter(IDbCommand command)
@@ -39,15 +38,15 @@ namespace MicroORM.Query
         }
 
         private static CultureInfo culture = CultureInfo.InvariantCulture;
-        private static KeyValuePair<string, object>[] CreateParamsDictionary(object[] args)
+        private static KeyValuePair<string, object>[] CreateParamsDictionary(object[] arguments)
         {
-            var keyValuePairs=new KeyValuePair<string, object>[args.Length];
-            if (args == null) return keyValuePairs;
+            var keyValuePairs=new KeyValuePair<string, object>[arguments.Length];
+            if (arguments == null) return keyValuePairs;
 
-            keyValuePairs = CreateParameterFromAnonymous(args);
+            keyValuePairs = CreateParameterFromAnonymous(arguments);
             if (keyValuePairs.Length != 0) return keyValuePairs;
 
-            return CreateParameterFromRegular(args);
+            return CreateParameterFromRegular(arguments);
         }
 
         private static KeyValuePair<string, object>[] CreateParameterFromRegular(object[] args)

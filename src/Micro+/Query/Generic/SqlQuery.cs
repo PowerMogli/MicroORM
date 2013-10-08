@@ -30,7 +30,7 @@ namespace MicroORM.Query.Generic
 
         private void PrepareSqlStatement(IDbProvider provider)
         {
-            TypeMapping typeMapping = TypeMapping.GetTypeMapping(typeof(T));
+            TableInfo typeMapping = TableInfo.GetTableInfo(typeof(T));
             base._sql = typeMapping.CreateSelectStatement(provider);
             if (string.IsNullOrEmpty(_additionalPredicate)) return;
 

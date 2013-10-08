@@ -18,38 +18,20 @@ namespace MicroORM.Storage
 
         public IDbTransaction BeginTransaction(IsolationLevel isolationLevel)
         {
-            if (base._transaction != null) return base._transaction;
-            if (base._connection != null) return base._transaction = base._connection.BeginTransaction(isolationLevel);
+            if (base._dbTransaction != null) return base._dbTransaction;
+            if (base._dbConnection != null) return base._dbTransaction = base._dbConnection.BeginTransaction(isolationLevel);
 
             base.CreateConnection();
-            return base._transaction = base._connection.BeginTransaction(isolationLevel);
+            return base._dbTransaction = base._dbConnection.BeginTransaction(isolationLevel);
         }
 
         public IDbTransaction BeginTransaction()
         {
-            if (base._transaction != null) return base._transaction;
-            if (base._connection != null) return base._transaction = base._connection.BeginTransaction();
+            if (base._dbTransaction != null) return base._dbTransaction;
+            if (base._dbConnection != null) return base._dbTransaction = base._dbConnection.BeginTransaction();
 
             base.CreateConnection();
-            return base._transaction = base._connection.BeginTransaction();
-        }
-
-        public override void ExecuteCommand(IQuery query)
-        {
-            base.CreateConnection();
-            IDbCommand command = query.Compile(this);
-            command.Transaction = base._transaction;
-
-            command.ExecuteNonQuery();
-        }
-
-        public override ObjectReader<T> ExecuteReader<T>(IQuery query)
-        {
-            base.CreateConnection();
-            IDbCommand command = query.Compile(this);
-            command.Transaction = base._transaction;
-
-            return null;
+            return base._dbTransaction = base._dbConnection.BeginTransaction();
         }
 
         public override string EscapeName(string value)
