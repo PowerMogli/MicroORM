@@ -48,8 +48,8 @@ namespace MicroORM.Mapping
         /// <param name="members">The list of the mapped members.</param>
         internal TableInfo(Type type, TableAttribute persistentAttribute, MemberInfoCollection members)
         {
-            if (persistentAttribute == null)
-                throw new ArgumentNullException("persistentAttribute", "Can't create persistent mapping without persistent attribute.");
+            //if (persistentAttribute == null)
+            //    throw new ArgumentNullException("persistentAttribute", "Can't create persistent mapping without persistent attribute.");
 
             _type = type;
             _persistentAttribute = persistentAttribute;

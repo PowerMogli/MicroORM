@@ -16,8 +16,8 @@ namespace MicroORM.Mapping
                     string.Format("Cannot create mapping for interface '{0}'! Please use TypeMapping.RegisterPersistentInterface to register the interface with persistent type.", type.FullName));
             }
             TableAttribute attribute = GetPersistentAttribute(type);
-            if (attribute == null)
-                throw new TableInfoException(string.Format("Cannot create mapping for type '{0}' without persistent attribute.", type.FullName));
+            if (attribute == null) return new TableInfo(type, null, null);
+            //throw new TableInfoException(string.Format("Cannot create mapping for type '{0}' without persistent attribute.", type.FullName));
 
             MemberInfoCollection members = new MemberInfoCollection();
             CreateMemberMappings(type, members);

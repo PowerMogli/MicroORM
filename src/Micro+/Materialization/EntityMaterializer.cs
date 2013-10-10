@@ -1,10 +1,7 @@
-﻿using System.Data;
-using MicroORM.Base;
-using MicroORM.Mapping;
-using System.Collections.Generic;
-using MicroORM.Reflection;
-using System;
+﻿using System;
+using System.Data;
 using LinFu.DynamicProxy;
+using MicroORM.Mapping;
 using MicroORM.Storage;
 
 namespace MicroORM.Materialization
@@ -21,7 +18,7 @@ namespace MicroORM.Materialization
 
         internal T Materialize<T>(DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
         {
-            T entity = Activator.CreateInstance<T>();
+            T entity = (T)Activator.CreateInstance(typeof(T), null);
             TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
 
             for (int index = 0; index < tableInfo.Members.Count; index++)
@@ -41,7 +38,7 @@ namespace MicroORM.Materialization
             if (!memberInfo.CanWrite) return;
 
             if (Convert.IsDBNull(value))
-                value = memberInfo.IsNullable ? null : _dbProvider.ResolveStorageNullValue(value, memberInfo.MemberType);
+                value = memberInfo.IsNullable ? null : _dbProvider.ResolveNullValue(value, memberInfo.MemberType);
 
             memberInfo.SetValue(entity, value);
         }

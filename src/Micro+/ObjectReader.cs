@@ -2,6 +2,7 @@
 using System.Data;
 using MicroORM.Materialization;
 using MicroORM.Storage;
+using MicroORM.Mapping;
 using System.Collections.Generic;
 
 namespace MicroORM.Base
@@ -12,9 +13,11 @@ namespace MicroORM.Base
         private EntityMaterializer _materlizer;
         private DataReaderSchema _dataReaderSchema;
         private IDbProvider _dbProvider;
+        private TableInfo _tableInfo;
 
         internal ObjectReader(IDataReader dataReader, IDbProvider dbProvider)
         {
+            _tableInfo = TableInfo.GetTableInfo(typeof(T));
             _dbProvider = dbProvider;
             _dataReader = dataReader;
             _materlizer = new EntityMaterializer(dbProvider);
@@ -38,7 +41,16 @@ namespace MicroORM.Base
                 if (_dataReader.Read() == false) return false;
             }
 
-            return ReadInternal();
+            if (_tableInfo.PersistentAttribute != null)
+                return ReadInternal();
+
+            return GetListOfValues();
+        }
+
+        private bool GetListOfValues()
+        {
+            this.Current = (T)_dataReader.GetValue(0);
+            return true;
         }
 
         private bool ReadInternal()
