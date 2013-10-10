@@ -87,7 +87,7 @@ namespace MicroORM.Storage
             return "\"" + value + "\"";
         }
 
-        public virtual object ResolveStorageNullValue(object value, Type type)
+        public virtual object ResolveNullValue(object value, Type type)
         {
             if (value == null
                 || (value is DBNull
