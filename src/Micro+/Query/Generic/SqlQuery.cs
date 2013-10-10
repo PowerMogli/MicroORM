@@ -22,7 +22,8 @@ namespace MicroORM.Query.Generic
 
         public override IDbCommand Compile(IDbProvider provider)
         {
-            PrepareSqlStatement(provider);
+            if (_primaryKey != null)
+                PrepareSqlStatement(provider);
             PrepareArguments();
 
             return base.Compile(provider);
@@ -40,7 +41,8 @@ namespace MicroORM.Query.Generic
         private void PrepareArguments()
         {
             List<object> arguments = new List<object>(base.Arguments);
-            arguments.Add(_primaryKey);
+            if (_primaryKey != null)
+                arguments.Add(_primaryKey);
             base._arguments = arguments.ToArray();
         }
     }
