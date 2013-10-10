@@ -3,6 +3,9 @@ using System.Data;
 using MicroORM.Base;
 using MicroORM.Mapping;
 using MicroORM.Query;
+using MicroORM.Reflection;
+using System.Reflection;
+using MicroORM.Storage;
 
 namespace Micro.Program
 {
@@ -14,28 +17,17 @@ namespace Micro.Program
             {
                 using (DbSession dbSession = new DbSession(@"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True"))
                 {
-                    using (IDbTransaction transaction = dbSession.BeginTransaction())
-                    {
-                        //session.ExecuteCommand("select * from Posts where Title=@0 and Id=@1", "Mark", 3);
-                        //var objectSet = session.GetObjectSet<Post>(); // holt alle Posts
-                        //objectSet = session.GetObjectSet<Post>("select * from Posts where Title=@title OR Id=@id", new { title = "Mark", id = 5 });
-                        //// das gleich nur ohne anonyme Argumente
-                        //objectSet = session.GetObjectSet<Post>("select * from Posts where Title=@0 OR Id=@1", "Mark", 5);
-                        //objectSet = session.GetObjectSet<Post>(post => post.Id == 4 || post.IsActive);
-                        //session.GetObject<Post>(6); // holt genau einen Post mit PrimaryKey
-                        //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
-                        //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
-                        var posts = dbSession.GetObjectSet<Post>();
+                    //session.ExecuteCommand("select * from Posts where Title=@0 and Id=@1", "Mark", 3);
+                    //var objectSet = session.GetObjectSet<Post>(); // holt alle Posts
+                    //objectSet = session.GetObjectSet<Post>("select * from Posts where Title=@title OR Id=@id", new { title = "Mark", id = 5 });
+                    //// das gleich nur ohne anonyme Argumente
+                    //objectSet = session.GetObjectSet<Post>("select * from Posts where Title=@0 OR Id=@1", "Mark", 5);
+                    //objectSet = session.GetObjectSet<Post>(post => post.Id == 4 || post.IsActive);
+                    //session.GetObject<Post>(6); // holt genau einen Post mit PrimaryKey
+                    //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
+                    //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
 
-                        foreach (Post post in posts)
-                        {
-                            Console.WriteLine(post.Title);
-                        }
-
-                        // oder 
-                        dbSession.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
-                        transaction.Commit();
-                    }
+                    var post = dbSession.GetObjectSet<Post>("select * from Posts where Title=@title", new { title = "Test" });
                 }
             }
             catch (Exception ex)
@@ -44,6 +36,21 @@ namespace Micro.Program
                 Console.ReadLine();
             }
         }
+    }
+
+    class Person
+    {
+        public string Name { get; set; }
+        public Users User { get; set; }
+    }
+
+    [Table("Users")]
+    class Users
+    {
+        [Field(Identifier = true)]
+        public int Id { get; set; }
+        [Field]
+        public string Name { get; set; }
     }
 
     public class ImportPrepareProcedureObject : SqlProcedureObject
