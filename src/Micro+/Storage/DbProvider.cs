@@ -2,7 +2,6 @@
 using System.Data;
 using System.Data.Common;
 using MicroORM.Base;
-using MicroORM.Materialization;
 using MicroORM.Query;
 //using MicroORM.Base.Utils;
 
@@ -67,18 +66,11 @@ namespace MicroORM.Storage
 
         public virtual ObjectReader<T> ExecuteReader<T>(IQuery query)
         {
-            try
-            {
-                CreateConnection();
-                _dbCommand = query.Compile(this);
-                _dbCommand.Transaction = _dbTransaction;
+            CreateConnection();
+            _dbCommand = query.Compile(this);
+            _dbCommand.Transaction = _dbTransaction;
 
-                return new ObjectReader<T>(_dbCommand.ExecuteReader());
-            }
-            finally
-            {
-                Dispose();
-            }
+            return new ObjectReader<T>(_dbCommand.ExecuteReader(), this);
         }
 
         public virtual T ExecuteScalar<T>(IQuery query)
@@ -93,6 +85,29 @@ namespace MicroORM.Storage
         public virtual string EscapeName(string value)
         {
             return "\"" + value + "\"";
+        }
+
+        public virtual object ResolveStorageNullValue(object value, Type type)
+        {
+            if (value == null
+                || (value is DBNull
+                && !type.IsSubclassOf(typeof(ValueType)))) return null;
+
+            Type originalType = type.UnderlyingSystemType;
+
+            if (originalType == typeof(short)) return (short)0;
+            else if (originalType == typeof(int)) return (int)0;
+            else if (originalType == typeof(long)) return (long)0;
+            else if (originalType == typeof(byte)) return (byte)0;
+            else if (originalType == typeof(Single)) return (Single)0;
+            else if (originalType == typeof(decimal)) return (decimal)0;
+            else if (originalType == typeof(double)) return (double)0;
+            else if (originalType == typeof(string)) return string.Empty;
+            else if (originalType == typeof(bool)) return false;
+            else if (originalType == typeof(DateTime)) return new DateTime();
+            else if (originalType == typeof(byte[]) || originalType == typeof(object)) return new byte[] { };
+
+            throw new InvalidTypeException("Unsupported type encountered while converting from DBNull.");
         }
 
         public virtual void SetupParameter(IDbDataParameter parameter, string name, object value)
