@@ -11,10 +11,12 @@ namespace MicroORM.Base
 
         internal ObjectSet<T> Load(IDbSession dbSession, IQuery query)
         {
-            ObjectReader<T> reader = dbSession.GetObjectReader<T>(query);
-            while (reader.Read())
+            using (ObjectReader<T> reader = dbSession.GetObjectReader<T>(query))
             {
-                _list.Add(reader.Current);
+                while (reader.Read())
+                {
+                    _list.Add(reader.Current);
+                }
             }
 
             return this;
