@@ -34,6 +34,9 @@
     <Reference Include="CavemanTools, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CavemanTools.2.0.0\lib\Net40\CavemanTools.dll</HintPath>
     </Reference>
+    <Reference Include="LinFu.DynamicProxy">
+      <HintPath>..\packages\LinFu.DynamicProxy.OfficialRelease.1.0.5\lib\net\LinFu.DynamicProxy.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,6 +49,7 @@
     <Compile Include="Attributes\FieldAttribute.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
+    <Compile Include="InvalidTypeException.cs" />
     <Compile Include="Mapping\IMemberInfo.cs" />
     <Compile Include="Mapping\MemberInfoCollection.cs" />
     <Compile Include="Mapping\MetaInfo.cs" />
@@ -55,8 +59,8 @@
     <Compile Include="Mapping\TableInfoContainer.cs" />
     <Compile Include="Mapping\TableInfoException.cs" />
     <Compile Include="Mapping\TableInfo.cs" />
-    <Compile Include="Materialization\DataSchema.cs" />
-    <Compile Include="Materialization\Materializer.cs" />
+    <Compile Include="Materialization\DataReaderSchema.cs" />
+    <Compile Include="Materialization\EntityMaterializer.cs" />
     <Compile Include="ObjectReader.cs" />
     <Compile Include="ObjectSet.cs" />
     <Compile Include="Query\CommandExecute.cs" />
