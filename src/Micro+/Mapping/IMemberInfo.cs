@@ -30,6 +30,8 @@ namespace MicroORM.Mapping
         /// </summary>
         bool IsNullable { get; }
 
+        bool CanWrite { get; }
+
         /// <summary>
         /// Returns the type of the element of the persistent object.
         /// </summary>

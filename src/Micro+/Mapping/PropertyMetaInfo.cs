@@ -45,6 +45,14 @@ namespace MicroORM.Mapping
         }
 
         /// <summary>
+        /// Returns true if the MemberInfo is write-able.
+        /// </summary>
+        public override bool CanWrite
+        {
+            get { return _propertyInfo.CanWrite; }
+        }
+
+        /// <summary>
         /// Returns the value of the element of the persistent object type that is mapped to a field in the storage.
         /// </summary>
         /// <param name="obj">The persistent object that's value is returned.</param>

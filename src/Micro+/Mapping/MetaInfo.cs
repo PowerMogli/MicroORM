@@ -97,6 +97,8 @@ namespace MicroORM.Mapping
         /// </summary>
         public abstract string Name { get; }
 
+        public abstract bool CanWrite { get; }
+
         /// <summary>
         /// Sets new value for the element of the persistent object type that is mapped to the storage.
         /// </summary>
