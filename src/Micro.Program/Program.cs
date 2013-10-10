@@ -27,7 +27,7 @@ namespace Micro.Program
                     //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
 
-                    var post = dbSession.GetObjectSet<Post>("select * from Posts where Title=@title", new { title = "Test" });
+                    var post = dbSession.GetObjectSet<string>("select Title from Posts");
                 }
             }
             catch (Exception ex)
