@@ -74,6 +74,16 @@ namespace MicroORM.Mapping
                    && (type.Attributes & _nonPublic) == _nonPublic;
         }
 
+        internal object GetPrimaryKey<TEntity>(TEntity entity)
+        {
+            string tablePrimaryKey = this.PersistentAttribute.PrimaryKey;
+            IMemberInfo memberInfo = this.Members.FirstOrDefault(member => member.FieldAttribute.FieldName == tablePrimaryKey);
+
+            object primaryKey = null;
+            if (memberInfo == null || (primaryKey = memberInfo.GetValue(entity)) == null) throw new InvalidPrimaryKeyException("Es wurde kein gültiger PrimaryKey gesetzt!");
+
+            return primaryKey;
+        }
         /// <summary>
         /// Returns the persistent attribute associated with the object.
         /// </summary>
