@@ -15,6 +15,7 @@ namespace MicroORM.Base
         V GetColumnValue<T, V>(Expression<Func<T, V>> selector, Expression<Func<T, bool>> criteria);
         T GetObject<T>(Expression<Func<T, bool>> criteria);
         T GetObject<T>(object primaryKey, string additionalPredicate = null, params object[] args);
+        void Load<TEntity>(TEntity entity) where TEntity : Entity;
         TEntity Load<TEntity>(TEntity entity);
         ObjectSet<T> GetObjectSet<T>();
         ObjectSet<T> GetObjectSet<T>(Expression<Func<T, bool>> condition);
