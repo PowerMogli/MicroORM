@@ -8,8 +8,7 @@ namespace MicroORM.Base
         {
             using (IDbSession dbSession = entity.DbSession)
             {
-                entity = dbSession.Load(entity);
-                entity.DbSession = dbSession;
+                dbSession.Load(entity);
                 entity.EntityState = EntityState.Loaded;
             }
         }
@@ -22,6 +21,7 @@ namespace MicroORM.Base
                 {
                     dbSession.Update(entity);
                     transaction.Commit();
+                    entity.EntityState = EntityState.Updated;
                 }
             }
         }
@@ -34,6 +34,7 @@ namespace MicroORM.Base
                 {
                     dbSession.Insert(entity);
                     transaction.Commit();
+                    entity.EntityState = EntityState.Inserted;
                 }
             }
         }
