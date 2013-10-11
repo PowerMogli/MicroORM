@@ -7,24 +7,23 @@ namespace MicroORM.Base
 {
     public abstract class Entity
     {
-        private IDbSession _dbSession;
         internal EntityState EntityState { get; set; }
         internal IDbSession DbSession
         {
-            get { return _dbSession; }
-            set { _dbSession = value; }
+            get;
+            set;
         }
 
         public Entity()
         {
             string connectionString = ConnectionStringRegistrar.GetFor("");
             DbEngine dbEngine = DbEngineRegistrar.GetFor("");
-            _dbSession = new DbSession(connectionString, dbEngine);
+            this.DbSession = new DbSession(connectionString, dbEngine);
         }
 
         public Entity(IDbSession dbSession)
         {
-            _dbSession = dbSession;
+            this.DbSession = dbSession;
             this.EntityState = EntityState.None;
         }
     }
