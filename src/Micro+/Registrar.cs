@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MicroORM.Base
 {
@@ -16,13 +13,21 @@ namespace MicroORM.Base
             return _container.TryAdd(entityType, value);
         }
 
-        public static T GetFor(string entityType)
+        public static T GetFor(Type entityType)
         {
             T value = default(T);
 
-            if (_container.TryGetValue(entityType, out value)) return value;
+            string nameSpace = entityType.ToString();
 
-            return default(T);
+            while (true)
+            {
+                nameSpace = string.Concat(nameSpace, ".*");
+
+                if (_container.TryGetValue(nameSpace, out value) || nameSpace == "*") break;
+
+                nameSpace = nameSpace.Substring(0, nameSpace.LastIndexOf('.', nameSpace.Length - 3));
+            }
+            return value != null ? value : default(T);
         }
     }
 }
