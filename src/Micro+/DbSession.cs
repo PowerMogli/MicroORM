@@ -107,6 +107,14 @@ namespace MicroORM.Base
         {
 
         }
+        
+        public TEntity Load<TEntity>(TEntity entity)
+        {
+            TableInfo tableInfo = TableInfo.GetTableInfo(entity.GetType());
+            object primaryKey = tableInfo.GetPrimaryKey(entity);
+
+            return GetObject<TEntity>(primaryKey);
+        }
 
         public bool PersistChanges()
         {
