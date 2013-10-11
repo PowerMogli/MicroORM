@@ -20,6 +20,13 @@ namespace MicroORM.Base
             _provider = DbProviderFactory.GetProvider(dbEngine, connectionString);
         }
 
+        public DbSession(Type assemblyType)
+        {
+            string connectionString = ConnectionStringRegistrar.GetFor(assemblyType);
+            _dbEngine = DbEngineRegistrar.GetFor(assemblyType);
+            _provider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
+        }
+        
         public DbSession(string connectionString)
             : this(connectionString, DbEngine.SqlServer) { }
 
