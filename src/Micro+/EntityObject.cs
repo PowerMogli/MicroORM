@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using MicroORM.Mapping;
 using MicroORM.Storage;
@@ -14,10 +15,12 @@ namespace MicroORM.Base
             set { _dbSession = value; }
         }
 
-        public Entity() { }
-
-        public Entity(string connectionString, DbEngine dbEngine)
-            : this(new DbSession(connectionString, dbEngine)) { }
+        public Entity()
+        {
+            string connectionString = ConnectionStringRegistrar.GetFor("");
+            DbEngine dbEngine = DbEngineRegistrar.GetFor("");
+            _dbSession = new DbSession(connectionString, dbEngine);
+        }
 
         public Entity(IDbSession dbSession)
         {
