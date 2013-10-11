@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using MicroORM.Materialization;
 using MicroORM.Storage;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace MicroORM.Base
 {
-    internal class ObjectReader<T> : IDisposable
+    public class ObjectReader<T> : IDisposable
     {
         private IDataReader _dataReader;
         private EntityMaterializer _materlizer;
@@ -56,6 +56,14 @@ namespace MicroORM.Base
         private bool ReadInternal()
         {
             this.Current = _materlizer.Materialize<T>(_dataReaderSchema, _dataReader);
+            return true;
+        }
+
+        internal bool Load(T entity)
+        {
+            if (dataReader.Read() == false) return false;
+            
+            this.Current = _materlizer.Materialize<T>(entity, _dataReaderSchema, _dataReader);
             return true;
         }
 
