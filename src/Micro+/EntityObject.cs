@@ -1,12 +1,28 @@
-﻿namespace MicroORM.Base
+using System.Linq;
+using MicroORM.Mapping;
+using MicroORM.Storage;
+
+namespace MicroORM.Base
 {
-    public abstract class EntityObject
+    public abstract class Entity
     {
-        public EntityObject()
+        private IDbSession _dbSession;
+        internal EntityState EntityState { get; set; }
+        internal IDbSession DbSession
         {
-            this.EntityState = EntityState.None;
+            get { return _dbSession; }
+            set { _dbSession = value; }
         }
 
-        protected EntityState EntityState { get; set; }
+        public Entity() { }
+
+        public Entity(string connectionString, DbEngine dbEngine)
+            : this(new DbSession(connectionString, dbEngine)) { }
+
+        public Entity(IDbSession dbSession)
+        {
+            _dbSession = dbSession;
+            this.EntityState = EntityState.None;
+        }
     }
 }
