@@ -23,9 +23,12 @@ namespace MicroORM.Base
             {
                 nameSpace = string.Concat(nameSpace, ".*");
 
-                if (_container.TryGetValue(nameSpace, out value) || nameSpace == "*") break;
+                if (_container.TryGetValue(nameSpace, out value) || nameSpace == ".*") break;
 
-                nameSpace = nameSpace.Substring(0, nameSpace.LastIndexOf('.', nameSpace.Length - 3));
+                int lastIndexOf = nameSpace.LastIndexOf('.', nameSpace.Length - 3);
+                if (lastIndexOf < 0) nameSpace = ".*";
+                else
+                    nameSpace = nameSpace.Substring(0, lastIndexOf);
             }
             return value != null ? value : default(T);
         }
