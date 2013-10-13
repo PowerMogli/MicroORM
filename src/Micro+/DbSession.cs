@@ -70,9 +70,17 @@ namespace MicroORM.Base
             return objectSet.SingleOrDefault();
         }
 
-        public TEntity GetObject<TEntity>(object primaryKey, string additionalPredicate = null, params object[] arguments)
+        public TEntity GetObject<TEntity>(object primaryKey, string additionalPredicate = null)
         {
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(primaryKey, additionalPredicate, arguments));
+            return this.GetObject<TEntity>(new object[] { primaryKey }, additionalPredicate);
+        }
+
+        public TEntity GetObject<TEntity>(object[] primaryKeys, string additionalPredicate = null)
+        {
+            if (primaryKeys == null || primaryKeys.Length == 0)
+                throw new PrimaryKeyException("No primary Keys provided!");
+
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(primaryKeys, additionalPredicate));
             return objectSet.SingleOrDefault();
         }
 

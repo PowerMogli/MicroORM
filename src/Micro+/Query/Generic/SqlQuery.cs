@@ -2,6 +2,7 @@
 using System.Data;
 using MicroORM.Mapping;
 using MicroORM.Storage;
+using MicroORM.Base;
 
 namespace MicroORM.Query.Generic
 {
@@ -9,14 +10,12 @@ namespace MicroORM.Query.Generic
     {
         private object[] _primaryKeys = null;
         private string _additionalPredicate = null;
-
-        internal SqlQuery(object primaryKey, string additionalPredicate = null, params object[] arguments)
-            : this(new object[] { primaryKey }, additionalPredicate, arguments)
-        { }
+        private TableInfo _tableInfo = null;
 
         internal SqlQuery(object[] primaryKeys, string additionalPredicate = null, params object[] arguments)
             : base(string.Empty, arguments)
         {
+            _tableInfo = TableInfo.GetTableInfo(typeof(T));
             _primaryKeys = primaryKeys;
             _additionalPredicate = additionalPredicate;
         }
@@ -35,8 +34,7 @@ namespace MicroORM.Query.Generic
 
         private void PrepareSqlStatement(IDbProvider provider)
         {
-            TableInfo typeMapping = TableInfo.GetTableInfo(typeof(T));
-            base._sql = typeMapping.CreateSelectStatement(provider);
+            base._sql = _tableInfo.CreateSelectStatement(provider);
             if (string.IsNullOrEmpty(_additionalPredicate)) return;
 
             base._sql = string.Format("{0} and {1}", base._sql, _additionalPredicate);
@@ -46,7 +44,12 @@ namespace MicroORM.Query.Generic
         {
             List<object> arguments = new List<object>(base.Arguments);
             if (_primaryKeys != null && _primaryKeys.Length > 0)
+            {
+                if (_primaryKeys.Length != _tableInfo.NumberOfPrimaryKeys)
+                    throw new PrimaryKeyException("The number of provided primaryKeys does not match the requested number of primaryKeys!");
+
                 arguments.AddRange(_primaryKeys);
+            }
             base._arguments = arguments.ToArray();
         }
     }

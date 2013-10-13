@@ -23,6 +23,16 @@ namespace MicroORM.Mapping
             set { _selectStatement = value; }
         }
 
+        internal int NumberOfPrimaryKeys
+        {
+            get
+            {
+                string[] primaryKeys = GetPrimaryKeys();
+                if (primaryKeys == null) return 0;
+                return primaryKeys.Length;
+            }
+        }
+
         internal string CreateSelectStatement(IDbProvider provider)
         {
             if (string.IsNullOrEmpty(this.SelectStatement) == false) return this.SelectStatement;
@@ -37,7 +47,7 @@ namespace MicroORM.Mapping
                 selectStatement.AppendFormat("{0}{1}", provider.EscapeName(_members[index].FieldAttribute.FieldName), seperator);
             }
             selectStatement.AppendFormat(" from {0}", provider.EscapeName(PersistentAttribute.EntityName));
-            string[] primaryKeys = GetPrimaryKeys(this.PersistentAttribute.PrimaryKeys);
+            string[] primaryKeys = GetPrimaryKeys();
 
             StringBuilder whereClause = new StringBuilder(" where ");
             int i = 0;
@@ -88,7 +98,7 @@ namespace MicroORM.Mapping
         internal object[] GetPrimaryKeys<TEntity>(TEntity entity)
         {
             object[] primaryKeys = null;
-            string[] tablePrimaryKeys = GetPrimaryKeys(this.PersistentAttribute.PrimaryKeys);
+            string[] tablePrimaryKeys = GetPrimaryKeys();
             if (tablePrimaryKeys.Length <= 0) throw new PrimaryKeyException("It was no valid primaryKey available!");
 
             primaryKeys = new object[tablePrimaryKeys.Length];
@@ -106,9 +116,9 @@ namespace MicroORM.Mapping
             return primaryKeys;
         }
 
-        private string[] GetPrimaryKeys(string primaryKeys)
+        private string[] GetPrimaryKeys()
         {
-            string[] tablePrimaryKeys = primaryKeys.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] tablePrimaryKeys = this.PersistentAttribute.PrimaryKeys.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < tablePrimaryKeys.Length; i++)
             {
                 tablePrimaryKeys[i] = tablePrimaryKeys[i].Trim();

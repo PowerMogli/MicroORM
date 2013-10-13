@@ -14,7 +14,8 @@ namespace MicroORM.Base
         T ExecuteStoredProcedure<T>(string storedProcedureName, params object[] arguments);
         V GetColumnValue<T, V>(Expression<Func<T, V>> selector, Expression<Func<T, bool>> criteria);
         T GetObject<T>(Expression<Func<T, bool>> criteria);
-        T GetObject<T>(object primaryKey, string additionalPredicate = null, params object[] args);
+        T GetObject<T>(object primaryKey, string additionalPredicate = null);
+        T GetObject<T>(object[] primaryKey, string additionalPredicate = null);
         ObjectSet<T> GetObjectSet<T>();
         ObjectSet<T> GetObjectSet<T>(Expression<Func<T, bool>> condition);
         ObjectSet<T> GetObjectSet<T>(string sql, params object[] args);
