@@ -6,16 +6,23 @@ using MicroORM.Storage;
 
 namespace MicroORM.Query
 {
+<<<<<<< HEAD
     internal class EntityQuery<T> : IQuery where T : Entity
     {
         internal T Entity { get; set; }
 
-         internal EntityQuery(T entity)
-            
+        internal EntityQuery(T entity)
+=======
+    internal class EntityQuery<T> : SqlQuery<T>, IQuery where T : Entity
+    {
+        internal EntityQuery(T entity)
+            : base(null)
+>>>>>>> c9782a9f941361a051d948d4f036043a5ac464e8
         {
             this.Entity = entity;
         }
 
+<<<<<<< HEAD
         public IDbCommand Compile(IDbProvider provider)
         {
             TableInfo tableInfo = TableInfo.GetTableInfo(this.Entity.GetType());
@@ -23,6 +30,16 @@ namespace MicroORM.Query
 
             SqlQuery<T> sqlQuery = new SqlQuery<T>(primaryKey);
             return sqlQuery.Compile(provider);
+=======
+        internal T Entity { get; set; }
+
+        public new IDbCommand Compile(IDbProvider provider)
+        {
+            TableInfo tableInfo = TableInfo.GetTableInfo(this.Entity.GetType());
+            base._primaryKey = tableInfo.GetPrimaryKey(this.Entity);
+
+            return base.Compile(provider);
+>>>>>>> c9782a9f941361a051d948d4f036043a5ac464e8
         }
     }
 }

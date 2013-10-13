@@ -85,6 +85,7 @@ namespace MicroORM.Mapping
                    && (type.Attributes & _nonPublic) == _nonPublic;
         }
 
+<<<<<<< HEAD
         internal object[] GetPrimaryKeys<TEntity>(TEntity entity)
         {
             object[] primaryKeys = null;
@@ -117,6 +118,7 @@ namespace MicroORM.Mapping
             return tablePrimaryKeys;
         }
 
+=======
         internal object GetPrimaryKey<TEntity>(TEntity entity)
         {
             string tablePrimaryKey = this.PersistentAttribute.PrimaryKey;
@@ -127,6 +129,7 @@ namespace MicroORM.Mapping
 
             return primaryKey;
         }
+>>>>>>> c9782a9f941361a051d948d4f036043a5ac464e8
         /// <summary>
         /// Returns the persistent attribute associated with the object.
         /// </summary>
