@@ -5,7 +5,6 @@ using MicroORM.Mapping;
 using MicroORM.Query;
 using MicroORM.Query.Generic;
 using MicroORM.Storage;
-using System.Linq;
 
 namespace MicroORM.Base
 {

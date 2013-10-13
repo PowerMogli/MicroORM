@@ -119,11 +119,11 @@ namespace MicroORM.Mapping
 
         internal object GetPrimaryKey<TEntity>(TEntity entity)
         {
-            string tablePrimaryKey = this.PersistentAttribute.PrimaryKey;
+            string tablePrimaryKey = this.PersistentAttribute.PrimaryKeys;
             IMemberInfo memberInfo = this.Members.FirstOrDefault(member => member.FieldAttribute.FieldName == tablePrimaryKey);
 
             object primaryKey = null;
-            if (memberInfo == null || (primaryKey = memberInfo.GetValue(entity)) == null) throw new InvalidPrimaryKeyException("Es wurde kein gültiger PrimaryKey gesetzt!");
+            if (memberInfo == null || (primaryKey = memberInfo.GetValue(entity)) == null) throw new PrimaryKeyException("Es wurde kein gültiger PrimaryKey gesetzt!");
 
             return primaryKey;
         }

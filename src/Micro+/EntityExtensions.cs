@@ -1,6 +1,5 @@
 using System.Data;
 
-using System.Data;
 namespace MicroORM.Base
 {
     public static class EntityExtensions

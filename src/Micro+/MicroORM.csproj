@@ -56,7 +56,7 @@
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="IEntitySession.cs" />
-    <Compile Include="InvalidPrimaryKeyException.cs" />
+    <Compile Include="PrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
     <Compile Include="ITransactionalSession.cs" />
     <Compile Include="Mapping\IMemberInfo.cs" />
