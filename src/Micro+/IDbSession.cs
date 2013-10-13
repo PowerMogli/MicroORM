@@ -5,9 +5,8 @@ using MicroORM.Query;
 
 namespace MicroORM.Base
 {
-    interface IDbSession
+    public interface IDbSession : ITransactionalSession, IDisposable
     {
-        IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null);
         void ExecuteCommand(string sql, params object[] args);
         void ExecuteStoredProcedure(ProcedureObject procedureObject);
         void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments);
@@ -19,10 +18,11 @@ namespace MicroORM.Base
         ObjectSet<T> GetObjectSet<T>(Expression<Func<T, bool>> condition);
         ObjectSet<T> GetObjectSet<T>(string sql, params object[] args);
         ObjectSet<T> GetObjectSet<T>(IQuery query);
-        T GetValue<T>(string sql, params object[] args);
+        T GetScalarValue<T>(string sql, params object[] args);
         bool PersistChanges();
         void Update<T>(Expression<Func<T, bool>> criteria, params object[] setArguments);
         void Update<T>(T data);
+        void Insert<T>(T data);
         ObjectReader<T> GetObjectReader<T>(IQuery query);
     }
 }

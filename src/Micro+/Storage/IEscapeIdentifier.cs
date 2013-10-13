@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MicroORM.Storage
 {
-    internal interface IEscapeDbIdentifier
+    public interface IEscapeDbIdentifier
     {
         string EscapeName(string s);
     }

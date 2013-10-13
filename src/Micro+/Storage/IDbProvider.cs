@@ -5,7 +5,7 @@ using MicroORM.Query;
 
 namespace MicroORM.Storage
 {
-    interface IDbProvider : IDisposable, IEscapeDbIdentifier
+    public interface IDbProvider : IDisposable, IEscapeDbIdentifier
     {
         string ParameterPrefix { get; }
         string ProviderName { get; }

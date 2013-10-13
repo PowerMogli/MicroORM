@@ -7,13 +7,17 @@ namespace MicroORM.Query.Generic
 {
     internal sealed class SqlQuery<T> : SqlQuery
     {
-        private object _primaryKey = null;
+        private object[] _primaryKeys = null;
         private string _additionalPredicate = null;
 
         internal SqlQuery(object primaryKey, string additionalPredicate = null, params object[] arguments)
+            : this(new object[] { primaryKey }, additionalPredicate, arguments)
+        { }
+
+        internal SqlQuery(object[] primaryKeys, string additionalPredicate = null, params object[] arguments)
             : base(string.Empty, arguments)
         {
-            _primaryKey = primaryKey;
+            _primaryKeys = primaryKeys;
             _additionalPredicate = additionalPredicate;
         }
 
@@ -22,7 +26,7 @@ namespace MicroORM.Query.Generic
 
         public override IDbCommand Compile(IDbProvider provider)
         {
-            if (_primaryKey != null)
+            if (_primaryKeys != null)
                 PrepareSqlStatement(provider);
             PrepareArguments();
 
@@ -41,8 +45,8 @@ namespace MicroORM.Query.Generic
         private void PrepareArguments()
         {
             List<object> arguments = new List<object>(base.Arguments);
-            if (_primaryKey != null)
-                arguments.Add(_primaryKey);
+            if (_primaryKeys != null && _primaryKeys.Length > 0)
+                arguments.AddRange(_primaryKeys);
             base._arguments = arguments.ToArray();
         }
     }

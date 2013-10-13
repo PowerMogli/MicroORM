@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using LinFu.DynamicProxy;
 using MicroORM.Mapping;
@@ -16,9 +16,8 @@ namespace MicroORM.Materialization
             _dbProvider = provider;
         }
 
-        internal T Materialize<T>(DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
+        internal T Materialize<T>(T entity, DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
         {
-            T entity = (T)Activator.CreateInstance(typeof(T), null);
             TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
 
             for (int index = 0; index < tableInfo.Members.Count; index++)
@@ -31,6 +30,12 @@ namespace MicroORM.Materialization
             }
 
             return entity;
+        }
+
+        internal T Materialize<T>(DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
+        {
+            T entity = Activator.CreateInstance<T>();
+            return Materialize<T>(entity, dataReaderSchema, dataRecord);
         }
 
         private void MaterializeEntity(object entity, IMemberInfo memberInfo, object value)

@@ -8,7 +8,7 @@
     <ProjectGuid>{4510EF0A-1632-4F90-8E58-9626FAA9E352}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MicroORM</RootNamespace>
+    <RootNamespace>MicroORM.Base</RootNamespace>
     <AssemblyName>MicroORM</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -47,9 +47,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\FieldAttribute.cs" />
+    <Compile Include="ConnectionStringRegistrar.cs" />
+    <Compile Include="DbEngineRegistrar.cs" />
+    <Compile Include="Entity.cs" />
+    <Compile Include="EntityExtensions.cs" />
+    <Compile Include="EntitySession.cs" />
+    <Compile Include="EntityValue.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
+    <Compile Include="IEntitySession.cs" />
+    <Compile Include="InvalidPrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
+    <Compile Include="ITransactionalSession.cs" />
     <Compile Include="Mapping\IMemberInfo.cs" />
     <Compile Include="Mapping\MemberInfoCollection.cs" />
     <Compile Include="Mapping\MetaInfo.cs" />
@@ -63,7 +72,7 @@
     <Compile Include="Materialization\EntityMaterializer.cs" />
     <Compile Include="ObjectReader.cs" />
     <Compile Include="ObjectSet.cs" />
-    <Compile Include="Query\CommandExecute.cs" />
+    <Compile Include="Query\EntityQuery.cs" />
     <Compile Include="Query\Generic\SimpleExpressionQuery.cs" />
     <Compile Include="Query\IArgumentQuery.cs" />
     <Compile Include="Query\ProcedureObject.cs" />
@@ -76,10 +85,10 @@
     <Compile Include="Query\StoredProcedureQuery.cs" />
     <Compile Include="Reflection\ParameterTypeDescriptor.cs" />
     <Compile Include="DbSession.cs" />
-    <Compile Include="EntityObject.cs" />
     <Compile Include="EntityState.cs" />
     <Compile Include="ObjectInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Registrar.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\IEscapeIdentifier.cs" />
     <Compile Include="Storage\IDbProvider.cs" />

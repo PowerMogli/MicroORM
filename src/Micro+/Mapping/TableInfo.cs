@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using MicroORM.Base;
 using MicroORM.Storage;
 
 namespace MicroORM.Mapping
@@ -35,8 +37,17 @@ namespace MicroORM.Mapping
                 selectStatement.AppendFormat("{0}{1}", provider.EscapeName(_members[index].FieldAttribute.FieldName), seperator);
             }
             selectStatement.AppendFormat(" from {0}", provider.EscapeName(PersistentAttribute.EntityName));
-            selectStatement.AppendFormat(" where {0}=@0", provider.EscapeName(PersistentAttribute.PrimaryKey));
+            string[] primaryKeys = GetPrimaryKeys(this.PersistentAttribute.PrimaryKeys);
 
+            StringBuilder whereClause = new StringBuilder(" where ");
+            int i = 0;
+            seperator = " and ";
+            foreach (string pirmaryKey in primaryKeys)
+            {
+                if (i >= primaryKeys.Length - 1) seperator = "";
+                whereClause.AppendFormat("{0}=@{1}{2}", provider.EscapeName(pirmaryKey), i++, seperator);
+            }
+            selectStatement.Append(whereClause.ToString());
             return this.SelectStatement = selectStatement.ToString();
         }
 
@@ -72,6 +83,38 @@ namespace MicroORM.Mapping
                    && type.IsGenericType && type.Name.Contains("AnonymousType")
                    && (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$"))
                    && (type.Attributes & _nonPublic) == _nonPublic;
+        }
+
+        internal object[] GetPrimaryKeys<TEntity>(TEntity entity)
+        {
+            object[] primaryKeys = null;
+            string[] tablePrimaryKeys = GetPrimaryKeys(this.PersistentAttribute.PrimaryKeys);
+            if (tablePrimaryKeys.Length <= 0) throw new PrimaryKeyException("It was no valid primaryKey available!");
+
+            primaryKeys = new object[tablePrimaryKeys.Length];
+            int index = 0;
+            foreach (string tablePrimaryKey in tablePrimaryKeys)
+            {
+                object primaryKey = null;
+                IMemberInfo memberInfo = this.Members.FirstOrDefault(member => member.FieldAttribute.FieldName == tablePrimaryKey);
+
+                if (memberInfo == null || (primaryKey = memberInfo.GetValue(entity)) == null)
+                    throw new PrimaryKeyException(string.Format("The requested pirmaryKey '{0}' was not found! Please set those Property to a valid value!", tablePrimaryKey));
+
+                primaryKeys[index++] = primaryKey;
+            }
+            return primaryKeys;
+        }
+
+        private string[] GetPrimaryKeys(string primaryKeys)
+        {
+            string[] tablePrimaryKeys = primaryKeys.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < tablePrimaryKeys.Length; i++)
+            {
+                tablePrimaryKeys[i] = tablePrimaryKeys[i].Trim();
+            }
+
+            return tablePrimaryKeys;
         }
 
         /// <summary>

@@ -3,7 +3,7 @@ using System.Data;
 
 namespace MicroORM.Query
 {
-    interface IQuery
+    public interface IQuery
     {
         IDbCommand Compile(IDbProvider provider);
     }

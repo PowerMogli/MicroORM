@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using MicroORM.Reflection;
@@ -38,7 +38,7 @@ namespace MicroORM.Query
         }
 
         private static CultureInfo culture = CultureInfo.InvariantCulture;
-        private static KeyValuePair<string, object>[] CreateParamsDictionary(object[] arguments)
+        private KeyValuePair<string, object>[] CreateParamsDictionary(object[] arguments)
         {
             var keyValuePairs=new KeyValuePair<string, object>[arguments.Length];
             if (arguments == null) return keyValuePairs;
@@ -49,7 +49,7 @@ namespace MicroORM.Query
             return CreateParameterFromRegular(arguments);
         }
 
-        private static KeyValuePair<string, object>[] CreateParameterFromRegular(object[] args)
+        private KeyValuePair<string, object>[] CreateParameterFromRegular(object[] args)
         {
             var keyValuePairs=new KeyValuePair<string, object>[args.Length];
             for (int i = 0; i < args.Length; i++)
@@ -59,7 +59,7 @@ namespace MicroORM.Query
             return keyValuePairs;
         }
 
-        private static KeyValuePair<string, object>[] CreateParameterFromAnonymous(object[] args)
+        private KeyValuePair<string, object>[] CreateParameterFromAnonymous(object[] args)
         {
             if (args.Length == 1)
             {

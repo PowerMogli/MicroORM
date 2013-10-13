@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Linq.Expressions;
 using MicroORM.Mapping;
@@ -17,6 +17,13 @@ namespace MicroORM.Base
         {
             _dbEngine = dbEngine;
             _provider = DbProviderFactory.GetProvider(dbEngine, connectionString);
+        }
+
+        public DbSession(Type assemblyType)
+        {
+            string connectionString = ConnectionStringRegistrar.GetFor(assemblyType);
+            _dbEngine = DbEngineRegistrar.GetFor(assemblyType);
+            _provider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
         }
 
         public DbSession(string connectionString)
@@ -42,68 +49,73 @@ namespace MicroORM.Base
             _provider.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, arguments));
         }
 
-        public T ExecuteStoredProcedure<T>(ProcedureObject procedureObject)
+        public TEntity ExecuteStoredProcedure<TEntity>(ProcedureObject procedureObject)
         {
-            ObjectSet<T> objectSet = ((IDbSession)this).GetObjectSet<T>(new StoredProcedureQuery(procedureObject));
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(procedureObject));
             return objectSet.SingleOrDefault();
         }
 
-        public T GetObject<T>(Expression<Func<T, bool>> condition)
+        public TEntity GetObject<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            ObjectSet<T> objectSet = ((IDbSession)this).GetObjectSet<T>(new SimpleExpressionQuery<T>(condition));
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
             return objectSet.SingleOrDefault();
         }
 
-        public T GetObject<T>(object primaryKey, string additionalPredicate = null, params object[] arguments)
+        public TEntity GetObject<TEntity>(object primaryKey, string additionalPredicate = null, params object[] arguments)
         {
-            ObjectSet<T> objectSet = ((IDbSession)this).GetObjectSet<T>(new SqlQuery<T>(primaryKey, additionalPredicate, arguments));
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(primaryKey, additionalPredicate, arguments));
             return objectSet.SingleOrDefault();
         }
 
-        public V GetColumnValue<T, V>(Expression<Func<T, V>> selector, Expression<Func<T, bool>> criteria)
+        public V GetColumnValue<TEntity, V>(Expression<Func<TEntity, V>> selector, Expression<Func<TEntity, bool>> criteria)
         {
             return default(V);
         }
 
-        public T GetValue<T>(string sql, params object[] arguments)
+        public TEntity GetScalarValue<TEntity>(string sql, params object[] arguments)
         {
-            return _provider.ExecuteScalar<T>(new SqlQuery(sql, arguments));
+            return _provider.ExecuteScalar<TEntity>(new SqlQuery(sql, arguments));
         }
 
-        public ObjectSet<T> GetObjectSet<T>(string sql, params object[] arguments)
+        public ObjectSet<TEntity> GetObjectSet<TEntity>(string sql, params object[] arguments)
         {
-            return ((IDbSession)this).GetObjectSet<T>(new SqlQuery<T>(sql, arguments));
+            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(sql, arguments));
         }
 
-        ObjectSet<T> IDbSession.GetObjectSet<T>(IQuery query)
+        ObjectSet<TEntity> IDbSession.GetObjectSet<TEntity>(IQuery query)
         {
-            ObjectSet<T> objectSet = new ObjectSet<T>();
+            ObjectSet<TEntity> objectSet = new ObjectSet<TEntity>();
             return objectSet.Load(this, query);
         }
 
-        ObjectReader<T> IDbSession.GetObjectReader<T>(IQuery query)
+        ObjectReader<TEntity> IDbSession.GetObjectReader<TEntity>(IQuery query)
         {
-            return _provider.ExecuteReader<T>(query);
+            return _provider.ExecuteReader<TEntity>(query);
         }
 
-        public ObjectSet<T> GetObjectSet<T>(Expression<Func<T, bool>> condition)
+        public ObjectSet<TEntity> GetObjectSet<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            ObjectSet<T> objectSet = ((IDbSession)this).GetObjectSet<T>(new SimpleExpressionQuery<T>(condition));
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
             return objectSet;
         }
 
-        public ObjectSet<T> GetObjectSet<T>()
+        public ObjectSet<TEntity> GetObjectSet<TEntity>()
         {
-            var typeMapping = TableInfo.GetTableInfo(typeof(T));
-            return ((IDbSession)this).GetObjectSet<T>(new SqlQuery(string.Format("select * from {0}", (_provider.EscapeName(typeMapping.PersistentAttribute.EntityName)))));
+            var typeMapping = TableInfo.GetTableInfo(typeof(TEntity));
+            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("select * from {0}", (_provider.EscapeName(typeMapping.PersistentAttribute.EntityName)))));
         }
 
-        public void Update<T>(Expression<Func<T, bool>> criteria, params object[] setArguments)
+        public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
 
         }
 
-        public void Update<T>(T data)
+        public void Update<TEntity>(TEntity data)
+        {
+
+        }
+
+        public void Insert<TEntity>(TEntity data)
         {
 
         }
@@ -134,6 +146,12 @@ namespace MicroORM.Base
         void IDisposable.Dispose()
         {
             this.Dispose();
+        }
+
+        internal void Load<TEntity>(TEntity entity) where TEntity : Entity
+        {
+            ObjectReader<TEntity> objectReader = _provider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
+            if (objectReader.Load(entity) == false) throw new Exception("Das Laden war nicht erfolgreich");
         }
     }
 }
