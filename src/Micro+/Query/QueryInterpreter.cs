@@ -37,7 +37,7 @@ namespace MicroORM.Query
             }
         }
 
-        private static CultureInfo culture = CultureInfo.InvariantCulture;
+        private static CultureInfo _culture = CultureInfo.InvariantCulture;
         private KeyValuePair<string, object>[] CreateParamsDictionary(object[] arguments)
         {
             var keyValuePairs=new KeyValuePair<string, object>[arguments.Length];
@@ -49,26 +49,26 @@ namespace MicroORM.Query
             return CreateParameterFromRegular(arguments);
         }
 
-        private KeyValuePair<string, object>[] CreateParameterFromRegular(object[] args)
+        private KeyValuePair<string, object>[] CreateParameterFromRegular(object[] arguments)
         {
-            var keyValuePairs=new KeyValuePair<string, object>[args.Length];
-            for (int i = 0; i < args.Length; i++)
+            var keyValuePairs=new KeyValuePair<string, object>[arguments.Length];
+            for (int i = 0; i < arguments.Length; i++)
             {
-                keyValuePairs[i] = new KeyValuePair<string, object>(i.ToString(culture), args[i]);
+                keyValuePairs[i] = new KeyValuePair<string, object>(i.ToString(_culture), arguments[i]);
             }
             return keyValuePairs;
         }
 
-        private KeyValuePair<string, object>[] CreateParameterFromAnonymous(object[] args)
+        private KeyValuePair<string, object>[] CreateParameterFromAnonymous(object[] arguments)
         {
-            if (args.Length == 1)
+            if (arguments.Length == 1)
             {
-                var poco = args[0];
-                if (poco != null)
+                var argument = arguments[0];
+                if (argument != null)
                 {
-                    if (!poco.IsListParam() && poco.IsCustomObject())
+                    if (!argument.IsListParam() && argument.IsCustomObject())
                     {
-                        return ParameterTypeDescriptor.ToKeyValuePairs(args);
+                        return ParameterTypeDescriptor.ToKeyValuePairs(arguments);
                     }
                 }
             }

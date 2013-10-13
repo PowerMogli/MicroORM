@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using MicroORM.Query.Generic;
 using MicroORM.Storage;
 
 namespace MicroORM.Query

@@ -15,8 +15,8 @@ namespace Micro.Program
         {
             try
             {
-                //ConnectionStringRegistrar.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
-                //DbEngineRegistrar.Register("Micro.Program.*", DbEngine.SqlServer);
+                ConnectionStringRegistrar.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
+                DbEngineRegistrar.Register("Micro.Program.*", DbEngine.SqlServer);
 
                 //Post post = new Post();
                 //post.Id = 6;
@@ -36,7 +36,10 @@ namespace Micro.Program
                     //session.GetObject<Post>(6); // holt genau einen Post mit PrimaryKey
                     //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
+                    ImportPrepareProcedureObject importProcedure = new ImportPrepareProcedureObject();
+                    importProcedure.Execute();
 
+                    var posts = dbSession.ExecuteStoredProcedure<Post>("[dbo].[spGetPostsByTitle]", new { Title = "bla" });
                     var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
                 }
             }
@@ -76,7 +79,7 @@ namespace Micro.Program
     }
 
     [Table("Posts", PrimaryKeys = "Id, Title")]
-    class Post : Entity
+    class Post
     {
         public Post()
         {

@@ -11,6 +11,7 @@ namespace MicroORM.Base
         void ExecuteStoredProcedure(ProcedureObject procedureObject);
         void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments);
         T ExecuteStoredProcedure<T>(ProcedureObject procedureObject);
+        T ExecuteStoredProcedure<T>(string storedProcedureName, params object[] arguments);
         V GetColumnValue<T, V>(Expression<Func<T, V>> selector, Expression<Func<T, bool>> criteria);
         T GetObject<T>(Expression<Func<T, bool>> criteria);
         T GetObject<T>(object primaryKey, string additionalPredicate = null, params object[] args);

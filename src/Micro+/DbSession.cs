@@ -15,6 +15,9 @@ namespace MicroORM.Base
 
         public DbSession(string connectionString, DbEngine dbEngine)
         {
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentNullException("connectionString", "The connectionString cannot be null or empty!");
+
             _dbEngine = dbEngine;
             _provider = DbProviderFactory.GetProvider(dbEngine, connectionString);
         }
@@ -44,14 +47,20 @@ namespace MicroORM.Base
             _provider.ExecuteCommand(new StoredProcedureQuery(procedureObject));
         }
 
+        public TEntity ExecuteStoredProcedure<TEntity>(ProcedureObject procedureObject)
+        {
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(procedureObject));
+            return objectSet.SingleOrDefault();
+        }
+
         public void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments)
         {
             _provider.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, arguments));
         }
 
-        public TEntity ExecuteStoredProcedure<TEntity>(ProcedureObject procedureObject)
+        public TEntity ExecuteStoredProcedure<TEntity>(string storedProcedureName, params object[] arguments)
         {
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(procedureObject));
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(storedProcedureName, arguments));
             return objectSet.SingleOrDefault();
         }
 

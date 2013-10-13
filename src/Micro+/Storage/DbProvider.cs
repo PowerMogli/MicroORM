@@ -20,7 +20,7 @@ namespace MicroORM.Storage
 
         public DbProvider(string connectionString)
         {
-            _dbFactory = DbProviderFactories.GetFactory(ProviderName);
+            _dbFactory = DbProviderFactories.GetFactory(this.ProviderName);
             _connectionString = connectionString;
         }
 
@@ -119,7 +119,8 @@ namespace MicroORM.Storage
             {
                 if (value.GetType().IsEnum)
                 {
-                    parameter.Value = value.ConvertTo(Enum.GetUnderlyingType(value.GetType()));
+                    Type enumType = Enum.GetUnderlyingType(value.GetType());
+                    parameter.Value = value.ConvertTo(enumType);
                 }
                 else
                 {
