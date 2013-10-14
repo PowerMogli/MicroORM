@@ -22,6 +22,11 @@ namespace MicroORM.Base
             return this;
         }
 
+        public T this[int index]
+        {
+            get { return _list[index]; }
+        }
+
         public IEnumerator<T> GetEnumerator()
         {
             return _list.GetEnumerator();
