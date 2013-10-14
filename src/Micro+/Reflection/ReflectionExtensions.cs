@@ -10,13 +10,7 @@ namespace MicroORM.Reflection
         private delegate void Setter(object dest, object value);
 
         private static ConcurrentDictionary<int, Setter> _cache;
-        //static object setLock=new object();
-
-        /// <summary>
-        /// Fast setter. aprox 8x faster than simple Reflection
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="value"></param>
+        
         public static void SetValueFast(this PropertyInfo propertyInfo, object obj, object value)
         {
             Setter inv = null;
