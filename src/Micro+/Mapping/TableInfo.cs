@@ -51,6 +51,12 @@ namespace MicroORM.Mapping
             selectStatement.AppendFormat(" from {0}", provider.EscapeName(PersistentAttribute.EntityName));
             string[] primaryKeys = GetPrimaryKeys();
 
+            selectStatement.Append(AppendPrimaryKeys(provider, primaryKeys));
+            return this.SelectStatement = selectStatement.ToString();
+        }
+
+        private string AppendPrimaryKeys(IDbProvider provider, string[] primaryKeys)
+        {
             StringBuilder whereClause = new StringBuilder(" where ");
             int i = 0;
             string seperator = " and ";
@@ -59,8 +65,7 @@ namespace MicroORM.Mapping
                 if (i >= primaryKeys.Length - 1) seperator = "";
                 whereClause.AppendFormat("{0}=@{1}{2}", provider.EscapeName(pirmaryKey), i++, seperator);
             }
-            selectStatement.Append(whereClause.ToString());
-            return this.SelectStatement = selectStatement.ToString();
+            return whereClause.ToString());
         }
 
         internal string CreateInsertStatement(IDbProvider provider)
