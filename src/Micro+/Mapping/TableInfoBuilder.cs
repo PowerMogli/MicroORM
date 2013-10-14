@@ -16,7 +16,8 @@ namespace MicroORM.Mapping
                     string.Format("Cannot create mapping for interface '{0}'! Please use TypeMapping.RegisterPersistentInterface to register the interface with persistent type.", type.FullName));
             }
             TableAttribute attribute = GetPersistentAttribute(type);
-            if (attribute == null) return new TableInfo(type, null, null);
+            if (attribute == null)
+                attribute = new TableAttribute(type.Name);
             //throw new TableInfoException(string.Format("Cannot create mapping for type '{0}' without persistent attribute.", type.FullName));
 
             MemberInfoCollection members = new MemberInfoCollection();
@@ -51,23 +52,18 @@ namespace MicroORM.Mapping
                 | BindingFlags.Instance
                 | BindingFlags.DeclaredOnly))
             {
+                if (member.MemberType != MemberTypes.Property) continue;
+
                 FieldAttribute fieldAttribute = GetMemberFieldAttribute(type, member);
-                if (fieldAttribute == null) continue;
+                if (fieldAttribute == null)
+                    fieldAttribute = new FieldAttribute(member.Name);
 
                 if (string.IsNullOrEmpty(fieldAttribute.FieldName))
                     fieldAttribute.FieldName = member.Name;
 
                 Type memberType = GetMemberType(type, member);
 
-                IMemberInfo info = null;
-                switch (member.MemberType)
-                {
-                    case MemberTypes.Property:
-                        info = new PropertyMetaInfo((PropertyInfo)member, memberType, fieldAttribute);
-                        break;
-                    default:
-                        throw new TableInfoException("Member type is not supported for mapping.");
-                }
+                IMemberInfo info = new PropertyMetaInfo((PropertyInfo)member, memberType, fieldAttribute);
 
                 list.Add(info);
             }
