@@ -34,7 +34,7 @@ namespace MicroORM.Base
         internal bool Read(int step)
         {
             if (step < 0)
-                throw new ArgumentException("Step is lower then 1. Not allowed.", "step");
+                throw new ArgumentException("Step is lower then 1. This is not allowed!", "step");
 
             for (int i = 0; i < step; i++)
             {
@@ -62,7 +62,7 @@ namespace MicroORM.Base
         internal bool Load(T entity)
         {
             if (_dataReader.Read() == false) return false;
-            
+
             this.Current = _materlizer.Materialize<T>(entity, _dataReaderSchema, _dataReader);
             return true;
         }

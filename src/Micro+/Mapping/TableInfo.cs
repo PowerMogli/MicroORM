@@ -16,11 +16,18 @@ namespace MicroORM.Mapping
         private MemberInfoCollection _members;
         private bool _isAnonymousType;
         private string _selectStatement;
+        private string _insertStatement;
 
         private string SelectStatement
         {
             get { return _selectStatement; }
             set { _selectStatement = value; }
+        }
+
+        private string InsertStatement
+        {
+            get { return _insertStatement; }
+            set { _insertStatement = value; }
         }
 
         internal int NumberOfPrimaryKeys
@@ -40,18 +47,13 @@ namespace MicroORM.Mapping
             StringBuilder selectStatement = new StringBuilder();
             selectStatement.Append("select ");
 
-            string seperator = ", ";
-            for (int index = 0; index < _members.Count; index++)
-            {
-                if (index >= _members.Count - 1) seperator = "";
-                selectStatement.AppendFormat("{0}{1}", provider.EscapeName(_members[index].FieldAttribute.FieldName), seperator);
-            }
+            selectStatement.AppendFormat("{0}", string.Join(", ", this.Members.Select(member => provider.EscapeName(member.FieldAttribute.FieldName))));
             selectStatement.AppendFormat(" from {0}", provider.EscapeName(PersistentAttribute.EntityName));
             string[] primaryKeys = GetPrimaryKeys();
 
             StringBuilder whereClause = new StringBuilder(" where ");
             int i = 0;
-            seperator = " and ";
+            string seperator = " and ";
             foreach (string pirmaryKey in primaryKeys)
             {
                 if (i >= primaryKeys.Length - 1) seperator = "";
@@ -59,6 +61,19 @@ namespace MicroORM.Mapping
             }
             selectStatement.Append(whereClause.ToString());
             return this.SelectStatement = selectStatement.ToString();
+        }
+
+        internal string CreateInsertStatement(IDbProvider provider)
+        {
+            if (string.IsNullOrEmpty(this.InsertStatement) == false) return this.InsertStatement;
+
+            StringBuilder insertStatement = new StringBuilder();
+            insertStatement.AppendFormat("insert into {0} ", provider.EscapeName(this.PersistentAttribute.EntityName));
+
+            insertStatement.AppendFormat("({0})", string.Join(",", this.Members.Select(member => provider.EscapeName(member.FieldAttribute.FieldName))));
+            insertStatement.AppendFormat("");
+
+            return this.InsertStatement = insertStatement.ToString();
         }
 
         /// <summary>
