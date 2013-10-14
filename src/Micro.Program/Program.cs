@@ -36,8 +36,14 @@ namespace Micro.Program
                     //session.GetObject<Post>(6); // holt genau einen Post mit PrimaryKey
                     //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
-
-                    dbSession.GetObject<Post>(6);
+                    Post post = new Post();
+                    post.Title = "Die Reise ins Ich";
+                    post.CreatedOn = DateTime.Now.AddDays(1);
+                    post.AuthorId = 5;
+                    post.Type = PostType.Page;
+                    post.IsActive = true;
+                    LastInsertId lastInsertId = dbSession.Insert(post);
+                    dbSession.GetObjectSet<Post>("select * from Posts where Title = 'bla'");
                     var posts = dbSession.ExecuteStoredProcedure<Post>("[dbo].[spGetPostsByTitle]", new { Title = "bla" });
                     var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
                 }
@@ -77,7 +83,7 @@ namespace Micro.Program
         }
     }
 
-    [Table("Posts", PrimaryKeys = "Id")]
+    [Table("Posts")]
     class Post
     {
         public Post()
@@ -85,20 +91,13 @@ namespace Micro.Program
             CreatedOn = DateTime.Now;
 
         }
-        [Field("Id", Identifier = true, IsNullable = false)]
+        [Field(AutoNumber = true)]
         public int Id { get; set; }
-        [Field]
         public int AuthorId { get; set; }
-        [Field]
         public string Title { get; set; }
-        [Field]
         public DateTime CreatedOn { get; set; }
-        //[InsertAsString]
-        [Field]
         public PostType Type { get; set; }
-        [Field]
         public int? TopicId { get; set; }
-        [Field]
         public bool IsActive { get; set; }
     }
 

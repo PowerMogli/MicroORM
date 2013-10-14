@@ -75,6 +75,7 @@
     <Compile Include="Query\EntityQuery.cs" />
     <Compile Include="Query\Generic\SimpleExpressionQuery.cs" />
     <Compile Include="Query\IArgumentQuery.cs" />
+    <Compile Include="Query\LastInsertId.cs" />
     <Compile Include="Query\ProcedureExtensions.cs" />
     <Compile Include="Query\ProcedureObject.cs" />
     <Compile Include="Query\Generic\ExpressionQuery.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="EntityState.cs" />
     <Compile Include="ObjectInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\ReflectionExtensions.cs" />
     <Compile Include="Registrar.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\IEscapeIdentifier.cs" />
