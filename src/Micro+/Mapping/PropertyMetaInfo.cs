@@ -59,7 +59,7 @@ namespace MicroORM.Mapping
         /// <returns>Value of the persistent object's type element that is mapped to a field in the storage.</returns>
         public override object GetValue(object obj)
         {
-            return _propertyInfo.GetValue(obj, null);
+            return _propertyInfo.GetValueFast(obj);
         }
 
         /// <summary>
@@ -82,7 +82,8 @@ namespace MicroORM.Mapping
                     value = Activator.CreateInstance(type, Enum.ToObject(this.MemberType, value));
             }
 
-            _propertyInfo.SetValue(obj, value, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, null);
+            //_propertyInfo.SetValue(obj, value, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, null);
+            _propertyInfo.SetValueFast(obj, value);
         }
     }
 }
