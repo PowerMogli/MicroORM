@@ -22,11 +22,6 @@ namespace MicroORM.Base
             return this;
         }
 
-        internal T SingleOrDefault()
-        {
-            return _list.SingleOrDefault();
-        }
-
         public IEnumerator<T> GetEnumerator()
         {
             return _list.GetEnumerator();
