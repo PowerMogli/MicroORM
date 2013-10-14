@@ -22,6 +22,7 @@ namespace MicroORM.Query
         protected virtual bool AddParameter<T>(string parameterName, T value, DbType dbType, int length)
         {
             if (value is string && string.IsNullOrWhiteSpace(value.ToString())) throw new ArgumentNullException("value");
+            if (string.IsNullOrWhiteSpace(parameterName)) throw new ArgumentNullException("parameterName");
 
             string stringValue = value as string;
             if (!string.IsNullOrWhiteSpace(stringValue)

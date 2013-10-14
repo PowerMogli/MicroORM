@@ -37,10 +37,10 @@ namespace Micro.Program
                     //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                     Post post = new Post();
-                    post.Title = "Die Reise ins Ich";
-                    post.CreatedOn = DateTime.Now.AddDays(1);
-                    post.AuthorId = 5;
-                    post.Type = PostType.Page;
+                    post.Title = "Das Paradies";
+                    post.CreatedOn = DateTime.Now.AddDays(-100);
+                    post.AuthorId = 98;
+                    post.Type = PostType.Post;
                     post.IsActive = true;
                     LastInsertId lastInsertId = dbSession.Insert(post);
                     dbSession.GetObjectSet<Post>("select * from Posts where Title = 'bla'");

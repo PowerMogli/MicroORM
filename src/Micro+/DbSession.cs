@@ -136,9 +136,7 @@ namespace MicroORM.Base
         public LastInsertId Insert<TEntity>(TEntity data)
         {
             TableInfo tableInfo = TableInfo.GetTableInfo(typeof(TEntity));
-            string insertStatement = tableInfo.CreateInsertStatement(_provider);
-
-            return new LastInsertId(_provider.ExecuteInsert(new SqlQuery(insertStatement, Utils.Utils.GetEntityArguments(data, tableInfo))));
+            return new LastInsertId(_provider.ExecuteInsert(new SqlQuery(tableInfo.CreateInsertStatement(_provider), Utils.Utils.GetEntityArguments(data, tableInfo))));
         }
 
         public bool PersistChanges()

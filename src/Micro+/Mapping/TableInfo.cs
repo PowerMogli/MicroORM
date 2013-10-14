@@ -62,7 +62,7 @@ namespace MicroORM.Mapping
             string seperator = " and ";
             foreach (string pirmaryKey in primaryKeys)
             {
-                if (i >= primaryKeys.Length - 1) seperator = "";
+                if (i >= primaryKeys.Length - 1) seperator = string.Empty;
                 whereClause.AppendFormat("{0}=@{1}{2}", provider.EscapeName(pirmaryKey), i++, seperator);
             }
             return whereClause.ToString();
@@ -87,7 +87,8 @@ namespace MicroORM.Mapping
             int excludedValues = 0;
             string insertValues = string.Join(", ", this.Members.Select(member =>
             {
-                if (this.PersistentAttribute.PrimaryKeys.Contains(member.FieldAttribute.FieldName) && member.FieldAttribute.AutoNumber)
+                if (this.PersistentAttribute.PrimaryKeys.Contains(member.FieldAttribute.FieldName)
+                    && member.FieldAttribute.AutoNumber)
                 {
                     excludedValues++;
                     return string.Empty;

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using MicroORM.Reflection;
-using System.Collections.Generic;
 using MicroORM.Mapping;
+using MicroORM.Reflection;
 
 namespace MicroORM.Utils
 {
@@ -18,7 +18,8 @@ namespace MicroORM.Utils
             for (int i = 0; i < count; i++)
             {
                 IMemberInfo memberInfo = tableInfo.Members.Where(member => member.FieldAttribute.FieldName == properties[i].Key).First();
-                if (tableInfo.PersistentAttribute.PrimaryKeys.Contains(memberInfo.FieldAttribute.FieldName) && memberInfo.FieldAttribute.AutoNumber) continue;
+                if (tableInfo.PersistentAttribute.PrimaryKeys.Contains(memberInfo.FieldAttribute.FieldName)
+                    && memberInfo.FieldAttribute.AutoNumber) { continue; }
 
                 arguments.Add(properties[i].Value);
             }

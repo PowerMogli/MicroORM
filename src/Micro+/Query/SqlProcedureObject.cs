@@ -13,11 +13,18 @@ namespace MicroORM.Query
         {
             if (base.AddParameter(parameterName, value, dbType, length) == false) return false;
 
-            SqlParameter parameter = new SqlParameter(parameterName, value) { DbType = dbType };
+            string prefix = "@";
+            if (parameterName.StartsWith("@"))
+                prefix = string.Empty;
+
+            SqlParameter parameter = new SqlParameter(prefix + parameterName, value) { DbType = dbType };
             if (length > 0)
                 parameter.Size = length;
 
-            base.Parameters.Add(parameterName, parameter);
+            if (base.Parameters.ContainsKey(prefix + parameterName.ToLower()))
+                base.Parameters[prefix + parameterName.ToLower()].Value = value;
+            else
+                base.Parameters.Add(prefix + parameterName.ToLower(), parameter);
             return true;
         }
     }
