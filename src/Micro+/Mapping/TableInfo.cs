@@ -65,7 +65,7 @@ namespace MicroORM.Mapping
                 if (i >= primaryKeys.Length - 1) seperator = "";
                 whereClause.AppendFormat("{0}=@{1}{2}", provider.EscapeName(pirmaryKey), i++, seperator);
             }
-            return whereClause.ToString());
+            return whereClause.ToString();
         }
 
         internal string CreateInsertStatement(IDbProvider provider)
