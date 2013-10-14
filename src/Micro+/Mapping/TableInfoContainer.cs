@@ -12,36 +12,38 @@ namespace MicroORM.Mapping
         /// <summary>
         /// Returns the mapping for a given object. If the mapping does not exist it is created by this routine.
         /// </summary>
-        /// <param name="obj">The object the mapping is returned.</param>
-        public static TableInfo GetTableInfo(object obj)
+        /// <param name="entity">The object the mapping is returned.</param>
+        public static TableInfo GetTableInfo(object entity)
         {
-            if (obj == null) throw new ArgumentNullException("obj");
+            if (entity == null) throw new ArgumentNullException("entity");
 
-            return GetTableInfo(obj.GetType());
+            return GetTableInfo(entity.GetType());
         }
 
         /// <summary>
         /// Returns the mapping for the given persistent type. If the mapping does not exist it is 
         /// created by this routine.
         /// </summary>
-        /// <param name="type">Type of object the mapping is returned.</param>
-        public static TableInfo GetTableInfo(Type type)
+        /// <param name="entityType">Type of object the mapping is returned.</param>
+        public static TableInfo GetTableInfo(Type entityType)
         {
-            if (type == null) throw new ArgumentNullException("type");
+            if (entityType == null) throw new ArgumentNullException("entityType");
 
-            if (type == typeof(string) || type.IsValueType || type.IsEnum) return null;
+            if (entityType == typeof(string)
+                || entityType.IsValueType
+                || entityType.IsEnum) { return null; }
 
             // Get the real persistent type.
-            type = GetPersistentType(type);
+            entityType = GetPersistentType(entityType);
+
+            if (_lastMapping != null
+                && _lastMapping.PersistentType == entityType) { return _lastMapping; }
 
             TableInfo tableInfo = null;
-
-            if (_lastMapping != null && _lastMapping.PersistentType == type) return _lastMapping;
-
-            if (!_mappings.TryGetValue(type, out tableInfo))
+            if (!_mappings.TryGetValue(entityType, out tableInfo))
             {
-                tableInfo = TableInfoBuilder.CreateTypeMapping(type);
-                _mappings.TryAdd(type, tableInfo);
+                tableInfo = TableInfoBuilder.CreateTypeMapping(entityType);
+                _mappings.TryAdd(entityType, tableInfo);
             }
 
             return _lastMapping = tableInfo;
@@ -50,23 +52,21 @@ namespace MicroORM.Mapping
         /// <summary>
         /// Gets the persistent type from the given type.
         /// </summary>
-        /// <param name="type">The type that's persistent type is returned.</param>
-        public static Type GetPersistentType(Type type)
+        /// <param name="entityType">The type that's persistent type is returned.</param>
+        public static Type GetPersistentType(Type entityType)
         {
-            if (type == null)
-                throw new ArgumentNullException("type");
+            if (entityType == null)
+                throw new ArgumentNullException("entityType");
 
             // If not an interface return the given type.
-            if (!type.IsInterface)
-                return type;
+            if (!entityType.IsInterface) return entityType;
 
             // Get the persistent type for the interface.
-            Type t = null;
-            if (_interfacePersistents.TryGetValue(type, out t))
-                return t;
+            Type interfaceType = null;
+            if (_interfacePersistents.TryGetValue(entityType, out interfaceType)) return interfaceType;
 
             // Throw an exception if the interface is not registered with a persistent.
-            throw new TableInfoException(string.Format("There is no persistent type registered for the interface type: {0}.", type.FullName));
+            throw new TableInfoException(string.Format("There is no persistent type registered for the interface type: {0}.", entityType.FullName));
         }
     }
 }
