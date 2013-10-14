@@ -8,10 +8,9 @@ namespace MicroORM.Materialization
     {
         private int[] _columnIndexes;
 
-        internal DataReaderSchema(IDataReader dataReader, Type entityType)
+        internal DataReaderSchema(IDataReader dataReader, TableInfo tableInfo)
         {
-            TableInfo tableInfo = TableInfo.GetTableInfo(entityType);
-            if (tableInfo.PersistentAttribute == null)
+            if (tableInfo == null)
                 CreateDefaultIndexes(dataReader);
             else
                 CreateFromType(dataReader, tableInfo);

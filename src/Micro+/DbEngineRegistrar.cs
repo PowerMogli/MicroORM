@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using MicroORM.Storage;
 
 namespace MicroORM.Base
@@ -6,7 +7,7 @@ namespace MicroORM.Base
     {
         private DbEngineRegistrar()
         {
-            _container = new System.Collections.Concurrent.ConcurrentDictionary<string, DbEngine>();
+            _container = new ConcurrentDictionary<string, DbEngine>();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace MicroORM.Base
             _dbProvider = dbProvider;
             _dataReader = dataReader;
             _materlizer = new EntityMaterializer(dbProvider);
-            _dataReaderSchema = new DataReaderSchema(dataReader, typeof(T));
+            _dataReaderSchema = new DataReaderSchema(dataReader, _tableInfo);
         }
 
         internal T Current { get; private set; }
@@ -38,11 +38,10 @@ namespace MicroORM.Base
 
             for (int i = 0; i < step; i++)
             {
-                if (_dataReader.Read() == false) return false;
+                if (_dataReader.Read() == false) { return false; }
             }
 
-            if (_tableInfo.PersistentAttribute != null)
-                return ReadInternal();
+            if (_tableInfo != null) { return ReadInternal(); }
 
             return GetListOfValues();
         }

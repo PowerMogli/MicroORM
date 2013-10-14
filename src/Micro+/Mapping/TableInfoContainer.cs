@@ -29,6 +29,8 @@ namespace MicroORM.Mapping
         {
             if (type == null) throw new ArgumentNullException("type");
 
+            if (type == typeof(string) || type.IsValueType || type.IsEnum) return null;
+
             // Get the real persistent type.
             type = GetPersistentType(type);
 
