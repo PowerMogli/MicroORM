@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+﻿using System;
+=======
+>>>>>>> 66712c6aa63af9f938898d72e40496a5ec690ace
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -10,10 +14,17 @@ namespace MicroORM.Reflection
         private delegate void Setter(object dest, object value);
 
         private static ConcurrentDictionary<int, Setter> _cache;
+<<<<<<< HEAD
 
         public static void SetValueFast(this PropertyInfo propertyInfo, object obj, object value)
         {
             Setter setter = null;
+=======
+        
+        public static void SetValueFast(this PropertyInfo propertyInfo, object obj, object value)
+        {
+            Setter inv = null;
+>>>>>>> 66712c6aa63af9f938898d72e40496a5ec690ace
 
             if (_cache == null)
             {
@@ -21,7 +32,11 @@ namespace MicroORM.Reflection
             }
             var key = propertyInfo.GetHashCode();
 
+<<<<<<< HEAD
             if (!_cache.TryGetValue(key, out setter))
+=======
+            if (!_cache.TryGetValue(key, out inv))
+>>>>>>> 66712c6aa63af9f938898d72e40496a5ec690ace
             {
                 var mi = propertyInfo.GetSetMethod();
                 DynamicMethod met = new DynamicMethod("set_" + key, typeof(void), new[] { typeof(object), typeof(object) }, typeof(Entity).Module, true);
@@ -34,6 +49,7 @@ namespace MicroORM.Reflection
                 }
                 il.Emit(OpCodes.Call, mi);
                 il.Emit(OpCodes.Ret);
+<<<<<<< HEAD
                 setter = (Setter)met.CreateDelegate(typeof(Setter));
                 _cache.TryAdd(key, setter);
 
@@ -72,6 +88,14 @@ namespace MicroORM.Reflection
             }
 
             return getter(obj);
+=======
+                inv = (Setter)met.CreateDelegate(typeof(Setter));
+                _cache.TryAdd(key, inv);
+
+            }
+
+            inv(obj, value);
+>>>>>>> 66712c6aa63af9f938898d72e40496a5ec690ace
         }
     }
 }
