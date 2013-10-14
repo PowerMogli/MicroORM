@@ -10,10 +10,9 @@ namespace MicroORM.Materialization
 
         internal DataReaderSchema(IDataReader dataReader, TableInfo tableInfo)
         {
-            if (tableInfo == null)
-                CreateDefaultIndexes(dataReader);
-            else
-                CreateFromType(dataReader, tableInfo);
+            if (tableInfo == null) return;
+
+            CreateFromType(dataReader, tableInfo);
         }
 
         private void CreateFromType(IDataReader dataReader, TableInfo tableInfo)
@@ -34,15 +33,6 @@ namespace MicroORM.Materialization
                     _columnIndexes[j] = i + 1;
                     break;
                 }
-            }
-        }
-
-        private void CreateDefaultIndexes(IDataReader dataReader)
-        {
-            _columnIndexes = new int[dataReader.FieldCount];
-            for (int index = 0; index < dataReader.FieldCount; index++)
-            {
-                _columnIndexes[index] = index++;
             }
         }
 
