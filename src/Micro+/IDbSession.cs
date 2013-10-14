@@ -24,7 +24,7 @@ namespace MicroORM.Base
         bool PersistChanges();
         void Update<T>(Expression<Func<T, bool>> criteria, params object[] setArguments);
         void Update<T>(T data);
-        void Insert<T>(T data);
+        LastInsertId Insert<T>(T data);
         ObjectReader<T> GetObjectReader<T>(IQuery query);
     }
 }

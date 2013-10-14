@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using MicroORM.Query;
 
 namespace MicroORM.Storage
 {
@@ -34,6 +35,12 @@ namespace MicroORM.Storage
         public override string EscapeName(string value)
         {
             return "[" + value + "]";
+        }
+
+        public override object ExecuteInsert(IQuery query)
+        {
+            ((SqlQuery)query).SqlStatement += ";Select SCOPE_IDENTITY() as id";
+            return base.ExecuteScalar<decimal>(query);
         }
 
         public override void SetupParameter(IDbDataParameter parameter, string name, object value)

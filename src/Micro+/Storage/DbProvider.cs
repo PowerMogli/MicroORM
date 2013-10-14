@@ -64,6 +64,8 @@ namespace MicroORM.Storage
             }
         }
 
+        public abstract object ExecuteInsert(IQuery query);
+
         public virtual ObjectReader<T> ExecuteReader<T>(IQuery query)
         {
             CreateConnection();
@@ -75,11 +77,18 @@ namespace MicroORM.Storage
 
         public virtual T ExecuteScalar<T>(IQuery query)
         {
-            CreateConnection();
-            _dbCommand = query.Compile(this);
-            _dbCommand.Transaction = _dbTransaction;
+            try
+            {
+                CreateConnection();
+                _dbCommand = query.Compile(this);
+                _dbCommand.Transaction = _dbTransaction;
 
-            return (T)_dbCommand.ExecuteScalar();
+                return (T)_dbCommand.ExecuteScalar();
+            }
+            finally
+            {
+                Dispose();
+            }
         }
 
         public virtual string EscapeName(string value)

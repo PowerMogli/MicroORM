@@ -75,10 +75,30 @@ namespace MicroORM.Mapping
             StringBuilder insertStatement = new StringBuilder();
             insertStatement.AppendFormat("insert into {0} ", provider.EscapeName(this.PersistentAttribute.EntityName));
 
-            insertStatement.AppendFormat("({0})", string.Join(",", this.Members.Select(member => provider.EscapeName(member.FieldAttribute.FieldName))));
-            insertStatement.AppendFormat("");
+            var tuple = CreateInsertIntoValues(provider);
+            insertStatement.AppendFormat("({0})", tuple.Item1);
+            insertStatement.AppendFormat(" values(@{0})", string.Join(",@", Enumerable.Range(0, this.Members.Count - tuple.Item2)));
 
             return this.InsertStatement = insertStatement.ToString();
+        }
+
+        private Tuple<string, int> CreateInsertIntoValues(IDbProvider provider)
+        {
+            int excludedValues = 0;
+            string insertValues = string.Join(", ", this.Members.Select(member =>
+            {
+                if (this.PersistentAttribute.PrimaryKeys.Contains(member.FieldAttribute.FieldName) && member.FieldAttribute.AutoNumber)
+                {
+                    excludedValues++;
+                    return string.Empty;
+                }
+                return provider.EscapeName(member.FieldAttribute.FieldName);
+            }));
+
+            if (insertValues.StartsWith(","))
+                insertValues = insertValues.Substring(2, insertValues.Length - 2);
+
+            return new Tuple<string, int>(insertValues, excludedValues);
         }
 
         /// <summary>

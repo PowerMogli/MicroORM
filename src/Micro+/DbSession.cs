@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Linq;
 using System.Linq.Expressions;
 using MicroORM.Mapping;
 using MicroORM.Query;
@@ -132,9 +133,12 @@ namespace MicroORM.Base
 
         }
 
-        public void Insert<TEntity>(TEntity data)
+        public LastInsertId Insert<TEntity>(TEntity data)
         {
+            TableInfo tableInfo = TableInfo.GetTableInfo(typeof(TEntity));
+            string insertStatement = tableInfo.CreateInsertStatement(_provider);
 
+            return new LastInsertId(_provider.ExecuteInsert(new SqlQuery(insertStatement, Utils.Utils.GetEntityArguments(data, tableInfo))));
         }
 
         public bool PersistChanges()

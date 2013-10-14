@@ -1,23 +1,42 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
+using System.Linq;
+using MicroORM.Reflection;
+using System.Collections.Generic;
+using MicroORM.Mapping;
 
 namespace MicroORM.Utils
 {
-    public static class Utils
+    internal static class Utils
     {
-        public static bool IsCustomObject<T>(this T t)
+        internal static object[] GetEntityArguments<TEntity>(TEntity entity, TableInfo tableInfo)
+        {
+            KeyValuePair<string, object>[] properties = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
+            int count = properties.Count();
+            List<object> arguments = new List<object>();
+            for (int i = 0; i < count; i++)
+            {
+                IMemberInfo memberInfo = tableInfo.Members.Where(member => member.FieldAttribute.FieldName == properties[i].Key).First();
+                if (tableInfo.PersistentAttribute.PrimaryKeys.Contains(memberInfo.FieldAttribute.FieldName) && memberInfo.FieldAttribute.AutoNumber) continue;
+
+                arguments.Add(properties[i].Value);
+            }
+            return arguments.ToArray();
+        }
+
+        internal static bool IsCustomObject<T>(this T t)
         {
             return !(t is ValueType) && (Type.GetTypeCode(t.GetType()) == TypeCode.Object);
         }
 
-        public static bool IsListParam(this object data)
+        internal static bool IsListParam(this object data)
         {
             if (data == null) return false;
             return data is IEnumerable && !(data is string) && !(data is byte[]);
         }
 
-        public static object ConvertTo(this object data, Type type)
+        internal static object ConvertTo(this object data, Type type)
         {
             if (data == null)
             {
