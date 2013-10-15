@@ -37,7 +37,7 @@ namespace MicroORM.Mapping
             entityType = GetPersistentType(entityType);
 
             if (_lastMapping != null
-                && _lastMapping.PersistentType == entityType) { return _lastMapping; }
+                && _lastMapping.EntityType == entityType) { return _lastMapping; }
 
             TableInfo tableInfo = null;
             if (!_mappings.TryGetValue(entityType, out tableInfo))

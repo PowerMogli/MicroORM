@@ -126,10 +126,15 @@ namespace MicroORM.Storage
             parameter.ParameterName = string.Concat(this.ParameterPrefix, name);
             if (value != null)
             {
-                if (value.GetType().IsEnum)
+                Type valueType = value.GetType();
+                if (valueType.IsEnum)
                 {
-                    Type enumType = Enum.GetUnderlyingType(value.GetType());
-                    parameter.Value = value.ConvertTo(enumType);
+                    Type enumType = Enum.GetUnderlyingType(valueType);
+                    if (value is string)
+                    {
+                        parameter.Value = Enum.Parse(enumType, value.ToString());
+                    }
+                    parameter.Value = Enum.ToObject(enumType, value);
                 }
                 else
                 {

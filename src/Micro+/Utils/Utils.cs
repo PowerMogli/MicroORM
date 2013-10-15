@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using MicroORM.Attributes;
 using MicroORM.Mapping;
 using MicroORM.Reflection;
 
@@ -17,9 +18,9 @@ namespace MicroORM.Utils
             List<object> arguments = new List<object>();
             for (int i = 0; i < count; i++)
             {
-                IMemberInfo memberInfo = tableInfo.Members.Where(member => member.FieldAttribute.FieldName == properties[i].Key).First();
-                if (tableInfo.PersistentAttribute.PrimaryKeys.Contains(memberInfo.FieldAttribute.FieldName)
-                    && memberInfo.FieldAttribute.AutoNumber) { continue; }
+                IPropertyInfo memberInfo = tableInfo.Columns.Where(member => member.ColumnAttribute.ColumnName == properties[i].Key).First();
+                if (tableInfo.PrimaryKeys.Contains(memberInfo.ColumnAttribute.ColumnName)
+                    && ((ColumnAttribute)memberInfo.ColumnAttribute).AutoNumber) { continue; }
 
                 arguments.Add(properties[i].Value);
             }
@@ -41,7 +42,7 @@ namespace MicroORM.Utils
         {
             if (data == null)
             {
-                if (type.IsValueType && !type.IsNullable())
+                if (type.IsValueType && !(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>)))
                 {
                     throw new InvalidCastException("Cant convert null to a value type");
                 }
@@ -71,7 +72,7 @@ namespace MicroORM.Utils
                 {
                     if (data is DateTimeOffset)
                     {
-                        return data.Cast<DateTimeOffset>().DateTime;
+                        return ((DateTimeOffset)data).DateTime;
                     }
                     return DateTime.Parse(data.ToString());
                 }
@@ -86,7 +87,7 @@ namespace MicroORM.Utils
                     return DateTimeOffset.Parse(data.ToString());
                 }
 
-                if (type.IsNullable())
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>))
                 {
                     var under = Nullable.GetUnderlyingType(type);
                     return data.ConvertTo(under);

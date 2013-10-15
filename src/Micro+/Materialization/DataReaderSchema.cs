@@ -17,7 +17,7 @@ namespace MicroORM.Materialization
 
         private void CreateFromType(IDataReader dataReader, TableInfo tableInfo)
         {
-            int membersCount = tableInfo.Members.Count;
+            int membersCount = tableInfo.Columns.Count;
 
             _columnIndexes = new int[membersCount];
             string[] _lowerNames = MemberFieldNameToLowers(tableInfo, membersCount);
@@ -26,7 +26,7 @@ namespace MicroORM.Materialization
             {
                 string columnName = dataReader.GetName(i).ToLower();
 
-                for (int j = 0; j < tableInfo.Members.Count; j++)
+                for (int j = 0; j < tableInfo.Columns.Count; j++)
                 {
                     if (_lowerNames[j] != columnName) continue;
 
@@ -41,7 +41,7 @@ namespace MicroORM.Materialization
             string[] lowerNames = new string[membersCount];
             for (int i = 0; i < membersCount; i++)
             {
-                lowerNames[i] = tableInfo.Members[i].FieldAttribute.FieldName.ToLower();
+                lowerNames[i] = tableInfo.Columns[i].ColumnAttribute.ColumnName.ToLower();
             }
             return lowerNames;
         }

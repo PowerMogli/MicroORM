@@ -1,126 +1,103 @@
 ﻿using System;
 using System.Reflection;
+using MicroORM.Attributes;
 
 namespace MicroORM.Mapping
 {
     internal static class TableInfoBuilder
     {
-        internal static TableInfo CreateTypeMapping(Type type)
+        internal static TableInfo CreateTypeMapping(Type entityType)
         {
-            if (type == null)
-                throw new ArgumentNullException("type");
+            if (entityType == null)
+                throw new ArgumentNullException("entityType");
 
-            if (type.IsInterface)
-            {
-                throw new TableInfoException(
-                    string.Format("Cannot create mapping for interface '{0}'! Please use TypeMapping.RegisterPersistentInterface to register the interface with persistent type.", type.FullName));
-            }
-            TableAttribute attribute = GetPersistentAttribute(type);
-            if (attribute == null)
-                attribute = new TableAttribute(type.Name);
-            //throw new TableInfoException(string.Format("Cannot create mapping for type '{0}' without persistent attribute.", type.FullName));
+            if (entityType.IsInterface)
+                throw new TableInfoException(string.Format("Cannot create mapping for interface '{0}'! Please use TypeMapping.RegisterPersistentInterface to register the interface with persistent type.", entityType.FullName));
 
-            MemberInfoCollection members = new MemberInfoCollection();
-            CreateMemberMappings(type, members);
+            TableAttribute attribute = GetPersistentAttribute(entityType);
 
-            return new TableInfo(type, attribute, members);
+            TableInfo tableInfo = new TableInfo(entityType, attribute.EntityName);
+            CreateMemberMappingsFor<ColumnAttribute>(entityType, tableInfo, AddPropertyMetaInfo);
+            CreateMemberMappingsFor<PrimaryKeyAttribute>(entityType, tableInfo, AddPrimaryKeyInfo);
+
+            return tableInfo;
         }
 
-        private static TableAttribute GetPersistentAttribute(Type type)
+        private static TableAttribute GetPersistentAttribute(Type entityType)
         {
-            if (type == null) throw new ArgumentNullException("type");
+            if (entityType == null) throw new ArgumentNullException("entityType");
 
-            TableAttribute attribute = (TableAttribute)Attribute.GetCustomAttribute(type, typeof(TableAttribute), true);
-            if (attribute == null) return null;
+            TableAttribute attribute = (TableAttribute)Attribute.GetCustomAttribute(entityType, typeof(TableAttribute), true);
+            if (attribute == null)
+                return new TableAttribute(entityType.Name);
 
             if (attribute.EntityName == null)
-                attribute.EntityName = type.Name;
+                attribute.EntityName = entityType.Name;
 
             return attribute;
         }
 
-        private static void CreateMemberMappings(Type type, MemberInfoCollection list)
+        private static void CreateMemberMappingsFor<TAttribute>(Type entityType, TableInfo tableInfo, Action<TableInfo, PropertyInfo, Type, NamedAttribute> action) where TAttribute : NamedAttribute
         {
-            if (list == null) throw new ArgumentNullException("list");
+            if (entityType == null || entityType == typeof(object)) return;
 
-            // Return if we reached the object.
-            if (type == null || type == typeof(object)) return;
-
-            foreach (MemberInfo member in type.GetMembers(
-                BindingFlags.Public
-                | BindingFlags.NonPublic
-                | BindingFlags.Instance
-                | BindingFlags.DeclaredOnly))
+            foreach (PropertyInfo propertyInfo in entityType.GetProperties())
             {
-                if (member.MemberType != MemberTypes.Property) continue;
+                var attribute = GetAttribute<TAttribute>(propertyInfo);
 
-                FieldAttribute fieldAttribute = GetMemberFieldAttribute(type, member);
-                if (fieldAttribute == null)
-                    fieldAttribute = new FieldAttribute(member.Name);
-
-                if (string.IsNullOrEmpty(fieldAttribute.FieldName))
-                    fieldAttribute.FieldName = member.Name;
-
-                Type memberType = GetMemberType(type, member);
-
-                IMemberInfo info = new PropertyMetaInfo((PropertyInfo)member, memberType, fieldAttribute);
-
-                list.Add(info);
+                action(tableInfo, propertyInfo, entityType, attribute);
             }
 
-            // Create the mapping for the base class.
-            CreateMemberMappings(type.BaseType, list);
+            CreateMemberMappingsFor<TAttribute>(entityType.BaseType, tableInfo, action);
         }
 
-        private static Type GetMemberType(Type type, MemberInfo member)
+        private static void AddPropertyMetaInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, NamedAttribute attribute)
         {
-            Type memberType = null;
-            switch (member.MemberType)
-            {
-                case MemberTypes.Field:
-                    memberType = ((FieldInfo)member).FieldType;
-                    break;
-                case MemberTypes.Property:
-                    memberType = ((PropertyInfo)member).PropertyType;
-                    break;
-                default:
-                    throw new TableInfoException("Member type is not supported for mapping.");
-            }
+            attribute = CreateAttribute<ColumnAttribute>(attribute, propertyInfo.Name);
 
-            if (memberType.IsInterface)
-            {
-                // Get an instance of the given type.
-                object instance = Activator.CreateInstance(type, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, null, null);
-
-                // Get the value of the member.
-                object value = null;
-                switch (member.MemberType)
-                {
-                    case MemberTypes.Field:
-                        value = ((FieldInfo)member).GetValue(instance);
-                        break;
-                    case MemberTypes.Property:
-                        value = ((PropertyInfo)member).GetValue(instance, null);
-                        break;
-                    default:
-                        throw new TableInfoException("Member type is not supported for mapping.");
-                }
-
-                if (value != null)
-                    return value.GetType();
-            }
-
-            return memberType;
+            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, GetPropertyType(entityType, propertyInfo), attribute));
         }
 
-        private static FieldAttribute GetMemberFieldAttribute(Type type, MemberInfo member)
+        private static void AddPrimaryKeyInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, NamedAttribute attribute)
         {
-            if (type == null)
-                throw new ArgumentNullException("type");
-            if (member == null)
-                throw new ArgumentNullException("member");
+            if (attribute == null) return;
+            if (string.IsNullOrWhiteSpace(attribute.ColumnName))
+                attribute.ColumnName = propertyInfo.Name;
 
-            return (FieldAttribute)Attribute.GetCustomAttribute(member, typeof(FieldAttribute), false);
+            tableInfo.PrimaryKeys.Add(new PropertyMetaInfo(propertyInfo, GetPropertyType(entityType, propertyInfo), attribute));
+        }
+
+        private static NamedAttribute CreateAttribute<TAttribute>(NamedAttribute attribute, string name)
+        {
+            if (attribute == null)
+                attribute = Activator.CreateInstance(typeof(TAttribute), name) as NamedAttribute;
+
+            if (string.IsNullOrWhiteSpace(attribute.ColumnName))
+                attribute.ColumnName = name;
+
+            return attribute;
+        }
+
+        private static Type GetPropertyType(Type entityType, PropertyInfo propertyInfo)
+        {
+            if (propertyInfo.PropertyType.IsInterface)
+            {
+                object instance = Activator.CreateInstance(entityType, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, null, null);
+
+                object instanceValue = null;
+                instanceValue = propertyInfo.GetValue(instance, null);
+
+                if (instanceValue != null) return instanceValue.GetType();
+            }
+
+            return propertyInfo.PropertyType;
+        }
+
+        private static TAttribute GetAttribute<TAttribute>(PropertyInfo propertyInfo) where TAttribute : Attribute
+        {
+            var attributes = Attribute.GetCustomAttributes(propertyInfo, typeof(TAttribute));
+            if (attributes.Length == 0) return null;
+            return (TAttribute)attributes[0];
         }
     }
 }

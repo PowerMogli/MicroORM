@@ -61,7 +61,7 @@ namespace MicroORM.Reflection
             if (!_cacheGet.TryGetValue(hashKey, out getter))
             {
                 var mi = propertyInfo.GetGetMethod();
-                DynamicMethod met = new DynamicMethod("get_" + hashKey, typeof(object), new[] { typeof(object) }, typeof(ObjectExtend).Module, true);
+                DynamicMethod met = new DynamicMethod("get_" + hashKey, typeof(object), new[] { typeof(object) }, typeof(Entity).Module, true);
                 var il = met.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);//instance           
                 il.Emit(OpCodes.Call, mi);//call getter

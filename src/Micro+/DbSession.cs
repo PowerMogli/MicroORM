@@ -119,8 +119,8 @@ namespace MicroORM.Base
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>()
         {
-            var typeMapping = TableInfo.GetTableInfo(typeof(TEntity));
-            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("select * from {0}", (_provider.EscapeName(typeMapping.PersistentAttribute.EntityName)))));
+            var tableInfo = TableInfo.GetTableInfo(typeof(TEntity));
+            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("select * from {0}", (_provider.EscapeName(tableInfo.Name)))));
         }
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
@@ -136,7 +136,9 @@ namespace MicroORM.Base
         public LastInsertId Insert<TEntity>(TEntity data)
         {
             TableInfo tableInfo = TableInfo.GetTableInfo(typeof(TEntity));
-            return new LastInsertId(_provider.ExecuteInsert(new SqlQuery(tableInfo.CreateInsertStatement(_provider), Utils.Utils.GetEntityArguments(data, tableInfo))));
+            LastInsertId lastInsertID = new LastInsertId(_provider.ExecuteInsert(new SqlQuery(tableInfo.CreateInsertStatement(_provider), Utils.Utils.GetEntityArguments(data, tableInfo))));
+
+            return lastInsertID;
         }
 
         public bool PersistChanges()
@@ -170,7 +172,7 @@ namespace MicroORM.Base
         internal void Load<TEntity>(TEntity entity) where TEntity : Entity
         {
             ObjectReader<TEntity> objectReader = _provider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
-            if (objectReader.Load(entity) == false) throw new Exception("Das Laden war nicht erfolgreich");
+            if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
         }
     }
 }

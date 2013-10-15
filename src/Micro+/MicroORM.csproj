@@ -31,12 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CavemanTools, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CavemanTools.2.0.0\lib\Net40\CavemanTools.dll</HintPath>
-    </Reference>
-    <Reference Include="LinFu.DynamicProxy">
-      <HintPath>..\packages\LinFu.DynamicProxy.OfficialRelease.1.0.5\lib\net\LinFu.DynamicProxy.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\FieldAttribute.cs" />
+    <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="Attributes\NamedAttribute.cs" />
+    <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="ConnectionStringRegistrar.cs" />
     <Compile Include="DbEngineRegistrar.cs" />
     <Compile Include="Entity.cs" />
@@ -56,11 +52,12 @@
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="IEntitySession.cs" />
+    <Compile Include="Mapping\TypeConverter.cs" />
     <Compile Include="PrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
     <Compile Include="ITransactionalSession.cs" />
-    <Compile Include="Mapping\IMemberInfo.cs" />
-    <Compile Include="Mapping\MemberInfoCollection.cs" />
+    <Compile Include="Mapping\IPropertyInfo.cs" />
+    <Compile Include="Mapping\PropertyInfoCollection.cs" />
     <Compile Include="Mapping\MetaInfo.cs" />
     <Compile Include="Mapping\PropertyMetaInfo.cs" />
     <Compile Include="Mapping\TableInfoBuilder.cs" />
@@ -100,9 +97,6 @@
     <Compile Include="Storage\DbProviderFactory.cs" />
     <Compile Include="Storage\SqlDbProvider.cs" />
     <Compile Include="Utils\Utils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Data;
+using MicroORM.Attributes;
 using MicroORM.Base;
-using MicroORM.Mapping;
 using MicroORM.Query;
-using MicroORM.Reflection;
-using System.Reflection;
-using MicroORM.Storage;
 
 namespace Micro.Program
 {
@@ -36,7 +33,9 @@ namespace Micro.Program
                     //session.GetObject<Post>(6); // holt genau einen Post mit PrimaryKey
                     //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
-                    var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
+                    //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
+
+                    var post = dbSession.GetObjectSet<Post>();
                 }
             }
             catch (Exception ex)
@@ -56,9 +55,10 @@ namespace Micro.Program
     [Table("Users")]
     class Users
     {
-        [Field(Identifier = true)]
+        [Column]
+        [PrimaryKey]
         public int Id { get; set; }
-        [Field]
+        [Column]
         public string Name { get; set; }
     }
 
@@ -82,7 +82,8 @@ namespace Micro.Program
             CreatedOn = DateTime.Now;
 
         }
-        [Field(AutoNumber = true)]
+        [Column(AutoNumber = true)]
+        [PrimaryKey]
         public int Id { get; set; }
         public int AuthorId { get; set; }
         public string Title { get; set; }

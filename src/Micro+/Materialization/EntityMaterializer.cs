@@ -1,6 +1,6 @@
 using System;
 using System.Data;
-using LinFu.DynamicProxy;
+//using LinFu.DynamicProxy;
 using MicroORM.Mapping;
 using MicroORM.Storage;
 
@@ -8,7 +8,7 @@ namespace MicroORM.Materialization
 {
     class EntityMaterializer
     {
-        private ProxyFactory _proxyFactory = new ProxyFactory();
+        //private ProxyFactory _proxyFactory = new ProxyFactory();
         private IDbProvider _dbProvider;
 
         internal EntityMaterializer(IDbProvider provider)
@@ -20,9 +20,9 @@ namespace MicroORM.Materialization
         {
             TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
 
-            for (int index = 0; index < tableInfo.Members.Count; index++)
+            for (int index = 0; index < tableInfo.Columns.Count; index++)
             {
-                IMemberInfo memberInfo = tableInfo.Members[index];
+                IPropertyInfo memberInfo = tableInfo.Columns[index];
                 int columnIndex = dataReaderSchema.ColumnIndex(index);
                 if (columnIndex < 0) continue;
 
@@ -38,12 +38,12 @@ namespace MicroORM.Materialization
             return Materialize<T>(entity, dataReaderSchema, dataRecord);
         }
 
-        private void MaterializeEntity(object entity, IMemberInfo memberInfo, object value)
+        private void MaterializeEntity(object entity, IPropertyInfo memberInfo, object value)
         {
             if (!memberInfo.CanWrite) return;
 
             if (Convert.IsDBNull(value))
-                value = memberInfo.IsNullable ? null : _dbProvider.ResolveNullValue(value, memberInfo.MemberType);
+                value = memberInfo.IsNullable ? null : _dbProvider.ResolveNullValue(value, memberInfo.PropertyType);
 
             memberInfo.SetValue(entity, value);
         }
