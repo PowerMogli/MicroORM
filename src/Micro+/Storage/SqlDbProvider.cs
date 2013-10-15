@@ -39,7 +39,6 @@ namespace MicroORM.Storage
 
         public override object ExecuteInsert(IQuery query)
         {
-            ((SqlQuery)query).SqlStatement += ";Select SCOPE_IDENTITY() as id";
             return base.ExecuteScalar<decimal>(query);
         }
 

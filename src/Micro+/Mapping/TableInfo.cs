@@ -14,40 +14,7 @@ namespace MicroORM.Mapping
     {
         private static TypeAttributes _nonPublic = TypeAttributes.NotPublic;
         private bool _isAnonymousType;
-        private string _selectStatement;
-        private string _insertStatement;
-        private string[] _primaryKeys;
 
-        private string SelectStatement
-        {
-            get { return _selectStatement; }
-            set { _selectStatement = value; }
-        }
-
-        private string InsertStatement
-        {
-            get { return _insertStatement; }
-            set { _insertStatement = value; }
-        }
-
-        internal int NumberOfPrimaryKeys
-        {
-            get
-            {
-                if (_primaryKeys == null)
-                    _primaryKeys = GetPrimaryKeys();
-                if (_primaryKeys == null) return 0;
-                return _primaryKeys.Length;
-            }
-        }
-
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="TableInfo">TypeMapping Class</see>.
-        /// </summary>
-        /// <param name="type">Type of object managed by this class.</param>
-        /// <param name="persistentAttribute">Persistent attribute that decorates the class.</param>
-        /// <param name="members">The list of the mapped members.</param>
         internal TableInfo(Type type, string tableName)
         {
             this.EntityType = type;
@@ -55,9 +22,33 @@ namespace MicroORM.Mapping
             this.Columns = new PropertyInfoCollection();
             this.PrimaryKeys = new PropertyInfoCollection();
 
-            // Check if we have to deal with an anonymous type.
             _isAnonymousType = CheckIfAnonymousType(type);
         }
+
+        private string SelectStatement { get; set; }
+
+        private string InsertStatement { get; set; }
+
+        internal int NumberOfPrimaryKeys
+        {
+            get
+            {
+                return this.PrimaryKeys.Count;
+            }
+        }
+
+        public string Name { get; private set; }
+
+        public Type EntityType { get; private set; }
+
+        public bool IsAnonymousType
+        {
+            get { return _isAnonymousType; }
+        }
+
+        internal PropertyInfoCollection Columns { get; private set; }
+
+        internal PropertyInfoCollection PrimaryKeys { get; set; }
 
         internal string CreateSelectStatement(IDbProvider provider)
         {
@@ -68,7 +59,7 @@ namespace MicroORM.Mapping
 
             selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.Select(member => provider.EscapeName(member.Name))));
             selectStatement.AppendFormat(" from {0}", provider.EscapeName(this.Name));
-            string[] primaryKeys = GetPrimaryKeys();
+            string[] primaryKeys = this.PrimaryKeys.Select(member => member.Name).ToArray();
 
             selectStatement.Append(AppendPrimaryKeys(provider, primaryKeys));
             return this.SelectStatement = selectStatement.ToString();
@@ -98,7 +89,7 @@ namespace MicroORM.Mapping
             insertStatement.AppendFormat("({0})", tuple.Item1);
             insertStatement.AppendFormat(" values(@{0})", string.Join(",@", Enumerable.Range(0, this.Columns.Count - tuple.Item2)));
 
-            return this.InsertStatement = insertStatement.ToString();
+            return this.InsertStatement = string.Concat(insertStatement.ToString(), ";Select SCOPE_IDENTITY() as id");
         }
 
         private Tuple<string, int> CreateInsertIntoValues(IDbProvider provider)
@@ -140,7 +131,7 @@ namespace MicroORM.Mapping
         internal object[] GetPrimaryKeys<TEntity>(TEntity entity)
         {
             object[] primaryKeys = null;
-            string[] tablePrimaryKeys = GetPrimaryKeys();
+            string[] tablePrimaryKeys = this.PrimaryKeys.Select(member => member.Name).ToArray();
             if (tablePrimaryKeys.Length <= 0) throw new PrimaryKeyException("It was no valid primaryKey available!");
 
             primaryKeys = new object[tablePrimaryKeys.Length];
@@ -157,36 +148,6 @@ namespace MicroORM.Mapping
             }
             return primaryKeys;
         }
-
-        private string[] GetPrimaryKeys()
-        {
-            List<string> tablePrimaryKeys = this.PrimaryKeys.Select(member => member.Name).ToList();
-            tablePrimaryKeys.ForEach(pk => pk = pk.Trim());
-
-            return tablePrimaryKeys.ToArray();
-        }
-
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Returns the type of the mapping's persistent object.
-        /// </summary>
-        public Type EntityType { get; private set; }
-
-        /// <summary>
-        /// Gets whether the type is an anonymous type.
-        /// </summary>
-        public bool IsAnonymousType
-        {
-            get { return _isAnonymousType; }
-        }
-
-        /// <summary>
-        /// Returns the collection of members associated with the <see cref="TableInfo">TypeMapping</see>.
-        /// </summary>
-        internal PropertyInfoCollection Columns { get; private set; }
-
-        internal PropertyInfoCollection PrimaryKeys { get; set; }
 
         /// <summary>
         /// Returns the mapping for a given object.
