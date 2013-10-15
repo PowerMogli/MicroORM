@@ -37,11 +37,6 @@ namespace MicroORM.Storage
             return "[" + value + "]";
         }
 
-        public override object ExecuteInsert(IQuery query)
-        {
-            return base.ExecuteScalar<decimal>(query);
-        }
-
         public override void SetupParameter(IDbDataParameter parameter, string name, object value)
         {
             base.SetupParameter(parameter, name, value);

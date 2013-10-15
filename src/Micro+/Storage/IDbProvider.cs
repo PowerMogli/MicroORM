@@ -12,7 +12,6 @@ namespace MicroORM.Storage
         object ResolveNullValue(object value, Type type);
         IDbCommand CreateCommand();
         void SetupParameter(IDbDataParameter parameter, string name, object value);
-        object ExecuteInsert(IQuery query);
         void ExecuteCommand(IQuery query);
         ObjectReader<T> ExecuteReader<T>(IQuery query);
         T ExecuteScalar<T>(IQuery query);

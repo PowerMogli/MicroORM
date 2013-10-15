@@ -64,8 +64,6 @@ namespace MicroORM.Storage
             }
         }
 
-        public abstract object ExecuteInsert(IQuery query);
-
         public virtual ObjectReader<T> ExecuteReader<T>(IQuery query)
         {
             CreateConnection();
@@ -129,12 +127,11 @@ namespace MicroORM.Storage
                 Type valueType = value.GetType();
                 if (valueType.IsEnum)
                 {
-                    Type enumType = Enum.GetUnderlyingType(valueType);
                     if (value is string)
                     {
-                        parameter.Value = Enum.Parse(enumType, value.ToString());
+                        parameter.Value = Enum.Parse(valueType, value.ToString());
                     }
-                    parameter.Value = Enum.ToObject(enumType, value);
+                    parameter.Value = Enum.ToObject(valueType, value);
                 }
                 else
                 {

@@ -35,7 +35,15 @@ namespace Micro.Program
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                     //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
 
-                    var post = dbSession.GetObjectSet<Post>();
+                    Post post = new Post();
+                    post.Title = "Aloha aus Loha";
+                    post.Type = PostType.Page;
+                    post.AuthorId = 3829;
+                    post.IsActive = true;
+                    post.TopicId = 38202;
+                    post.CreatedOn = DateTime.Now.AddDays(-382);
+                    dbSession.Insert(post);
+                    //var post = dbSession.GetObjectSet<Post>();
                 }
             }
             catch (Exception ex)
