@@ -7,9 +7,9 @@ namespace MicroORM.Query
     {
         private ProcedureObject _procedureWorkObject;
         private string _storedProcedureName;
-        private object[] _arguments;
+        private QueryParameterCollection _arguments;
 
-        public object[] Arguments { get { return _arguments; } }
+        public QueryParameterCollection Arguments { get { return _arguments; } }
         public string SqlStatement { get { return _storedProcedureName; } }
 
         internal StoredProcedureQuery(ProcedureObject procedureWorkObject)
@@ -17,7 +17,7 @@ namespace MicroORM.Query
             _procedureWorkObject = procedureWorkObject;
         }
 
-        internal StoredProcedureQuery(string storedProcedureName, params object[] arguments)
+        internal StoredProcedureQuery(string storedProcedureName, QueryParameterCollection arguments = null)
         {
             _storedProcedureName = storedProcedureName;
             _arguments = arguments;

@@ -7,7 +7,7 @@ namespace MicroORM.Query
 {
     interface IArgumentQuery
     {
-        object[] Arguments { get; }
+        QueryParameterCollection Arguments { get; }
         string SqlStatement { get; }
     }
 }

@@ -69,13 +69,16 @@
     <Compile Include="Materialization\EntityMaterializer.cs" />
     <Compile Include="ObjectReader.cs" />
     <Compile Include="ObjectSet.cs" />
+    <Compile Include="Query\DbParameterExtension.cs" />
     <Compile Include="Query\EntityQuery.cs" />
     <Compile Include="Query\Generic\SimpleExpressionQuery.cs" />
     <Compile Include="Query\IArgumentQuery.cs" />
     <Compile Include="Query\LastInsertId.cs" />
+    <Compile Include="Query\QueryParameter.cs" />
     <Compile Include="Query\ProcedureExtensions.cs" />
     <Compile Include="Query\ProcedureObject.cs" />
     <Compile Include="Query\Generic\ExpressionQuery.cs" />
+    <Compile Include="Query\QueryParameterCollection.cs" />
     <Compile Include="Query\SqlProcedureObject.cs" />
     <Compile Include="Query\Generic\SqlQuery.cs" />
     <Compile Include="Query\IQuery.cs" />

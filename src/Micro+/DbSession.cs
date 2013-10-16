@@ -40,7 +40,7 @@ namespace MicroORM.Base
 
         public void ExecuteCommand(string sql, params object[] arguments)
         {
-            _provider.ExecuteCommand(new SqlQuery(sql, arguments));
+            _provider.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
         public void ExecuteStoredProcedure(ProcedureObject procedureObject)
@@ -56,12 +56,12 @@ namespace MicroORM.Base
 
         public void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments)
         {
-            _provider.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, arguments));
+            _provider.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create(arguments)));
         }
 
         public TEntity ExecuteStoredProcedure<TEntity>(string storedProcedureName, params object[] arguments)
         {
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(storedProcedureName, arguments));
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create<TEntity>(arguments)));
             return objectSet.SingleOrDefault();
         }
 
@@ -81,7 +81,7 @@ namespace MicroORM.Base
             if (primaryKeys == null || primaryKeys.Length == 0)
                 throw new PrimaryKeyException("No primary Keys provided!");
 
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(primaryKeys, additionalPredicate));
+            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(primaryKeys, additionalPredicate, null));
             return objectSet.SingleOrDefault();
         }
 
@@ -92,12 +92,12 @@ namespace MicroORM.Base
 
         public TEntity GetScalarValue<TEntity>(string sql, params object[] arguments)
         {
-            return _provider.ExecuteScalar<TEntity>(new SqlQuery(sql, arguments));
+            return _provider.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>(string sql, params object[] arguments)
         {
-            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(sql, arguments));
+            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(sql, QueryParameterCollection.Create<TEntity>(arguments)));
         }
 
         ObjectSet<TEntity> IDbSession.GetObjectSet<TEntity>(IQuery query)
@@ -136,9 +136,10 @@ namespace MicroORM.Base
         public LastInsertId Insert<TEntity>(TEntity data)
         {
             TableInfo tableInfo = TableInfo.GetTableInfo(typeof(TEntity));
-            LastInsertId lastInsertID = new LastInsertId(_provider.ExecuteScalar<object>(new SqlQuery(tableInfo.CreateInsertStatement(_provider), Utils.Utils.GetEntityArguments(data, tableInfo))));
+            string insertStatement = tableInfo.CreateInsertStatement(_provider);
+            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(data, tableInfo));
 
-            return lastInsertID;
+            return new LastInsertId(_provider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments)));
         }
 
         public bool PersistChanges()

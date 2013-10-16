@@ -12,7 +12,7 @@ namespace MicroORM.Query.Generic
         private string _additionalPredicate = null;
         private TableInfo _tableInfo = null;
 
-        internal SqlQuery(object[] primaryKeys, string additionalPredicate = null, params object[] arguments)
+        internal SqlQuery(object[] primaryKeys, string additionalPredicate, QueryParameterCollection arguments = null)
             : base(string.Empty, arguments)
         {
             _tableInfo = TableInfo.GetTableInfo(typeof(T));
@@ -20,7 +20,7 @@ namespace MicroORM.Query.Generic
             _additionalPredicate = additionalPredicate;
         }
 
-        internal SqlQuery(string sqlStatement, params object[] arguments)
+        internal SqlQuery(string sqlStatement, QueryParameterCollection arguments = null)
             : base(sqlStatement, arguments) { }
 
         public override IDbCommand Compile(IDbProvider provider)
@@ -48,9 +48,8 @@ namespace MicroORM.Query.Generic
                 if (_primaryKeys.Length != _tableInfo.NumberOfPrimaryKeys)
                     throw new PrimaryKeyException("The number of provided primaryKeys does not match the requested number of primaryKeys!");
 
-                arguments.AddRange(_primaryKeys);
+                Arguments.AddRange(_primaryKeys);
             }
-            base._arguments = arguments.ToArray();
         }
     }
 }

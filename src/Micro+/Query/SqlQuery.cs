@@ -6,17 +6,16 @@ namespace MicroORM.Query
     internal class SqlQuery : IQuery, IArgumentQuery
     {
         protected string _sql;
-        protected object[] _arguments;
 
         public string SqlStatement { get { return _sql; } internal set { _sql = value; } }
-        public object[] Arguments { get { return _arguments; } }
+        public QueryParameterCollection Arguments { get; private set; }
 
         internal SqlQuery() { }
 
-        internal SqlQuery(string sql, params object[] arguments)
+        internal SqlQuery(string sql, QueryParameterCollection arguments = null)
         {
             _sql = sql;
-            _arguments = arguments;
+            this.Arguments = arguments;
         }
 
         public virtual IDbCommand Compile(IDbProvider provider)

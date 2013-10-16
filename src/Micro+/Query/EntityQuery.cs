@@ -10,8 +10,7 @@ namespace MicroORM.Query
     {
         internal T Entity { get; set; }
 
-         internal EntityQuery(T entity)
-            
+        internal EntityQuery(T entity)
         {
             this.Entity = entity;
         }
@@ -21,7 +20,7 @@ namespace MicroORM.Query
             TableInfo tableInfo = TableInfo.GetTableInfo(this.Entity.GetType());
             object[] primaryKey = tableInfo.GetPrimaryKeys(this.Entity);
 
-            SqlQuery<T> sqlQuery = new SqlQuery<T>(primaryKey);
+            SqlQuery<T> sqlQuery = new SqlQuery<T>(primaryKey, null);
             return sqlQuery.Compile(provider);
         }
     }
