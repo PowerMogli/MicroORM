@@ -17,6 +17,7 @@ namespace MicroORM.Storage
 
         public abstract string ParameterPrefix { get; }
         public abstract string ProviderName { get; }
+        public abstract string ScopeIdentity { get; }
 
         public DbProvider(string connectionString)
         {
@@ -115,33 +116,6 @@ namespace MicroORM.Storage
             else if (originalType == typeof(byte[]) || originalType == typeof(object)) return new byte[] { };
 
             throw new InvalidTypeException("Unsupported type encountered while converting from DBNull.");
-        }
-
-        public virtual void SetupParameter(IDbDataParameter parameter, string name, object value)
-        {
-            if (name == null) throw new ArgumentNullException("name", "Der Name des Parameters darf niemals NULL sein");
-
-            parameter.ParameterName = string.Concat(this.ParameterPrefix, name);
-            if (value != null)
-            {
-                Type valueType = value.GetType();
-                if (valueType.IsEnum)
-                {
-                    if (value is string)
-                    {
-                        parameter.Value = Enum.Parse(valueType, value.ToString());
-                    }
-                    parameter.Value = Enum.ToObject(valueType, value);
-                }
-                else
-                {
-                    parameter.Value = value;
-                }
-            }
-            else
-            {
-                parameter.Value = DBNull.Value;
-            }
         }
 
         public void Dispose()

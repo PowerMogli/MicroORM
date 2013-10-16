@@ -11,6 +11,11 @@ namespace MicroORM.Storage
         public override string ParameterPrefix { get { return "@"; } }
         public override string ProviderName { get { return _providerName; } }
 
+        public override string ScopeIdentity
+        {
+            get { return "; Select SCOPE_IDENTITY() as id"; }
+        }
+
         internal SqlDbProvider(string connectionString)
             : base(connectionString) { }
 
@@ -35,34 +40,6 @@ namespace MicroORM.Storage
         public override string EscapeName(string value)
         {
             return "[" + value + "]";
-        }
-
-        public override void SetupParameter(IDbDataParameter parameter, string name, object value)
-        {
-            base.SetupParameter(parameter, name, value);
-            if (value == null) return;
-
-            DealWithSpecialParameterValues(parameter, value);
-        }
-
-        private static void DealWithSpecialParameterValues(IDbDataParameter parameter, object value)
-        {
-            Type valueType = value.GetType();
-
-            if (valueType == typeof(string))
-            {
-                parameter.Size = Math.Max(((string)value).Length + 1, 4000);
-            }
-            else if (valueType.Name == "SqlGeography")
-            {
-                dynamic param = parameter;
-                param.UdtTypeName = "geography";
-            }
-            else if (valueType.Name == "SqlGeometry") //SqlGeography is a CLR Type
-            {
-                dynamic param = parameter;
-                param.UdtTypeName = "geometry";
-            }
         }
     }
 }

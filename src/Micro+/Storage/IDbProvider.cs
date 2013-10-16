@@ -9,9 +9,9 @@ namespace MicroORM.Storage
     {
         string ParameterPrefix { get; }
         string ProviderName { get; }
+        string ScopeIdentity { get; }
         object ResolveNullValue(object value, Type type);
         IDbCommand CreateCommand();
-        void SetupParameter(IDbDataParameter parameter, string name, object value);
         void ExecuteCommand(IQuery query);
         ObjectReader<T> ExecuteReader<T>(IQuery query);
         T ExecuteScalar<T>(IQuery query);
