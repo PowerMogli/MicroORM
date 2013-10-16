@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using MicroORM.Attributes;
 using MicroORM.Base;
 using MicroORM.Storage;
-using MicroORM.Attributes;
-using System.Collections.Generic;
+using MicroORM.Base.Mapping;
 
 namespace MicroORM.Mapping
 {
@@ -89,7 +90,7 @@ namespace MicroORM.Mapping
             insertStatement.AppendFormat("({0})", tuple.Item1);
             insertStatement.AppendFormat(" values(@{0})", string.Join(",@", Enumerable.Range(0, this.Columns.Count - tuple.Item2)));
 
-            return this.InsertStatement = string.Concat(insertStatement.ToString(), ";Select SCOPE_IDENTITY() as id");
+            return this.InsertStatement = string.Concat(insertStatement.ToString(), provider.ScopeIdentity);
         }
 
         private Tuple<string, int> CreateInsertIntoValues(IDbProvider provider)
@@ -112,11 +113,17 @@ namespace MicroORM.Mapping
             return new Tuple<string, int>(insertValues, excludedValues);
         }
 
+        internal DbType ConvertToDbType(string name)
+        {
+            IPropertyInfo propMetaInfo = this.Columns.FirstOrDefault(mem => mem.Name == name);
+            return propMetaInfo.DbType ?? TypeConverter.ToDbType(propMetaInfo.PropertyType);
+        }
+
         /// <summary>
         /// Gets whether the given type is an anonymous type.
         /// </summary>
         /// <param name="type">The type that is inspected for being anonymous.</param>
-        private static bool CheckIfAnonymousType(Type type)
+        private bool CheckIfAnonymousType(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException("type");

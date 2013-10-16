@@ -2,6 +2,7 @@
 using System.Reflection;
 using MicroORM.Attributes;
 using MicroORM.Reflection;
+using System.Data;
 
 namespace MicroORM.Mapping
 {
@@ -10,7 +11,10 @@ namespace MicroORM.Mapping
         private PropertyInfo _propertyInfo;
 
         public PropertyMetaInfo(PropertyInfo propertyInfo, Type propertyType, NamedAttribute columnAttribute)
-            : base(propertyType, columnAttribute)
+            : this(propertyInfo, propertyType, 0, columnAttribute) { }
+
+        public PropertyMetaInfo(PropertyInfo propertyInfo, Type propertyType, DbType dbType, NamedAttribute columnAttribute)
+            : base(propertyType, dbType, columnAttribute)
         {
             if (propertyInfo == null)
                 throw new ArgumentNullException("propertyInfo");

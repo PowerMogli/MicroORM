@@ -1,11 +1,14 @@
 ﻿using System;
 using MicroORM.Attributes;
+using System.Data;
 
 namespace MicroORM.Mapping
 {
     internal interface IPropertyInfo
     {
         NamedAttribute ColumnAttribute { get; }
+
+        DbType? DbType { get; }
 
         object GetValue(object obj);
 

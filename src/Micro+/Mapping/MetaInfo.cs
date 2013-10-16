@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using MicroORM.Attributes;
+using System.Data;
 
 namespace MicroORM.Mapping
 {
@@ -16,6 +17,12 @@ namespace MicroORM.Mapping
 
             this.PropertyType = propertyType;
             this.ColumnAttribute = columnAttribute;
+        }
+
+        internal MetaInfo(Type propertyType, DbType dbType, NamedAttribute columnAttribute)
+            : this(propertyType, columnAttribute)
+        {
+            this.DbType = dbType;
 
             _isNullable = (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>));
             if (_isNullable)
@@ -26,6 +33,8 @@ namespace MicroORM.Mapping
         }
 
         public NamedAttribute ColumnAttribute { get; private set; }
+
+        public DbType? DbType { get; private set; }
 
         public bool IsNullable
         {

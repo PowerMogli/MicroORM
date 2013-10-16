@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using MicroORM.Attributes;
+using MicroORM.Base.Mapping;
 
 namespace MicroORM.Mapping
 {
@@ -54,8 +55,9 @@ namespace MicroORM.Mapping
         private static void AddPropertyMetaInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, NamedAttribute attribute)
         {
             attribute = CreateAttribute<ColumnAttribute>(attribute, propertyInfo.Name);
+            Type propertyType = GetPropertyType(entityType, propertyInfo);
 
-            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, GetPropertyType(entityType, propertyInfo), attribute));
+            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, ((ColumnAttribute)attribute).DbType ?? TypeConverter.ToDbType(propertyType), attribute));
         }
 
         private static void AddPrimaryKeyInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, NamedAttribute attribute)
@@ -64,7 +66,9 @@ namespace MicroORM.Mapping
             if (string.IsNullOrWhiteSpace(attribute.ColumnName))
                 attribute.ColumnName = propertyInfo.Name;
 
-            tableInfo.PrimaryKeys.Add(new PropertyMetaInfo(propertyInfo, GetPropertyType(entityType, propertyInfo), attribute));
+            Type propertyType =GetPropertyType(entityType, propertyInfo);
+
+            tableInfo.PrimaryKeys.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute));
         }
 
         private static NamedAttribute CreateAttribute<TAttribute>(NamedAttribute attribute, string name)

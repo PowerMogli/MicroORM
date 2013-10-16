@@ -29,7 +29,7 @@ namespace MicroORM.Base.Mapping
             { typeof(Guid), DbType.Guid },
             { typeof(Guid?), DbType.Guid }};
 
-        public static DbType ToDbType(Type type)
+        internal static DbType ToDbType(Type type)
         {
             if (!typeToDbType.ContainsKey(type))
             {
