@@ -36,12 +36,12 @@ namespace Micro.Program
                     //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
 
                     Post post = new Post();
-                    post.Title = "Aloha aus Loha";
-                    post.Type = PostType.Page;
-                    post.AuthorId = 3829;
+                    post.Title = "Die Spiele von Yoda";
+                    post.Type = PostType.Post;
+                    post.AuthorId = 382;
                     post.IsActive = true;
-                    post.TopicId = 38202;
-                    post.CreatedOn = DateTime.Now.AddDays(-382);
+                    post.TopicId = 32;
+                    post.CreatedOn = DateTime.Now.AddDays(-232);
                     dbSession.Insert(post);
                     //var post = dbSession.GetObjectSet<Post>();
                 }
