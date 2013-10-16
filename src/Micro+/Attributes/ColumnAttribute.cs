@@ -1,17 +1,17 @@
 ﻿using System;
+using System.Data;
 
 namespace MicroORM.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class ColumnAttribute : NamedAttribute
     {
-        private bool _isNullable = true;
         //private bool _identifier;
-        private bool _autoNumber;
         private int _size = -1;
 
         public ColumnAttribute()
         {
+            this.IsNullable = true;
         }
 
         public ColumnAttribute(string columndName)
@@ -20,27 +20,21 @@ namespace MicroORM.Attributes
                 throw new ArgumentNullException("columnName");
 
             this.ColumnName = columndName;
+            this.IsNullable = true;
         }
 
         public override string ColumnName { get; set; }
 
+        public DbType? DbType { get; set; }
         //public bool Identifier
         //{
         //    get { return _identifier; }
         //    set { _identifier = value; }
         //}
 
-        public bool IsNullable
-        {
-            get { return _isNullable; }
-            set { _isNullable = value; }
-        }
+        public bool IsNullable { get; set; }
 
-        public bool AutoNumber
-        {
-            get { return _autoNumber; }
-            set { _autoNumber = value; }
-        }
+        public bool AutoNumber { get; set; }
 
         public int Size
         {
