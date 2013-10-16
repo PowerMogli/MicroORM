@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using MicroORM.Mapping;
 using MicroORM.Reflection;
 using MicroORM.Utils;
-using MicroORM.Base.Mapping;
-using System;
 
 namespace MicroORM.Query
 {

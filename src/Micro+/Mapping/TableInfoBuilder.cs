@@ -1,8 +1,7 @@
 ﻿using System;
+using System.Data;
 using System.Reflection;
 using MicroORM.Attributes;
-using MicroORM.Base.Mapping;
-using System.Data;
 
 namespace MicroORM.Mapping
 {

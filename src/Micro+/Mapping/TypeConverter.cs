@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 
-namespace MicroORM.Base.Mapping
+namespace MicroORM.Mapping
 {
     internal static class TypeConverter
     {

@@ -1,6 +1,5 @@
-﻿using System.Data;
-using MicroORM.Storage;
-using System;
+﻿using System;
+using System.Data;
 
 namespace MicroORM.Query
 {
@@ -70,7 +69,7 @@ namespace MicroORM.Query
                 dynamic param = parameter;
                 param.UdtTypeName = "geography";
             }
-            else if (valueType.Name == "SqlGeometry") //SqlGeography is a CLR Type
+            else if (valueType.Name == "SqlGeometry")
             {
                 dynamic param = parameter;
                 param.UdtTypeName = "geometry";

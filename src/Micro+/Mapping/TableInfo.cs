@@ -7,7 +7,6 @@ using System.Text;
 using MicroORM.Attributes;
 using MicroORM.Base;
 using MicroORM.Storage;
-using MicroORM.Base.Mapping;
 
 namespace MicroORM.Mapping
 {
