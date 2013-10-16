@@ -44,10 +44,10 @@ namespace MicroORM.Query
                 || queryParameter.DbType == DbType.AnsiStringFixedLength
                 || queryParameter.DbType == DbType.String
                 || queryParameter.DbType == DbType.StringFixedLength)
+                && queryParameter.Size > 0
                 && (queryParameter.Value is string && ((string)queryParameter.Value).Length > queryParameter.Size)) return;
 
             SetupParameter(parameter, parameterPrefix, queryParameter.Name, queryParameter.Value);
-            if (queryParameter.Value == null) return;
 
             DealWithSpecialParameterValues(parameter, queryParameter.Value, queryParameter.DbType, queryParameter.Size);
         }
@@ -63,7 +63,7 @@ namespace MicroORM.Query
                 || dbType == DbType.String
                 || dbType == DbType.StringFixedLength)
             {
-                parameter.Size = size ?? Math.Max(((string)value).Length + 1, 4000);
+                parameter.Size = size ?? GetStringSize(value);
             }
             else if (valueType.Name == "SqlGeography")
             {
@@ -75,6 +75,18 @@ namespace MicroORM.Query
                 dynamic param = parameter;
                 param.UdtTypeName = "geometry";
             }
+        }
+
+        private static int GetStringSize(object value)
+        {
+            string strValue = value as string;
+
+            if (string.IsNullOrEmpty(strValue))
+                return 0;
+            else if (strValue.Length < 4000)
+                return strValue.Length;
+            else
+                return Math.Max(((string)value).Length + 1, 4000);
         }
     }
 }

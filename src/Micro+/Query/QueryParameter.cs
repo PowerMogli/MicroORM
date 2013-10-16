@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System;
 
 namespace MicroORM.Query
 {
@@ -6,7 +7,7 @@ namespace MicroORM.Query
     {
         internal DbType DbType { get; private set; }
         internal string Name { get; private set; }
-        internal int Size { get; private set; }
+        internal int? Size { get; private set; }
         internal object Value { get; private set; }
 
         internal QueryParameter(string name, DbType dbType, object value, int size = -1)
@@ -14,7 +15,7 @@ namespace MicroORM.Query
             this.Name = name;
             this.DbType = dbType;
             this.Value = value;
-            this.Size = size;
+            this.Size = size > 0 ? new Nullable<int>(size) : null;
         }
     }
 }

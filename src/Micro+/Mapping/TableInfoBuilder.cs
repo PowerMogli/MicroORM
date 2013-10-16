@@ -2,6 +2,7 @@
 using System.Reflection;
 using MicroORM.Attributes;
 using MicroORM.Base.Mapping;
+using System.Data;
 
 namespace MicroORM.Mapping
 {
@@ -56,6 +57,7 @@ namespace MicroORM.Mapping
         {
             attribute = CreateAttribute<ColumnAttribute>(attribute, propertyInfo.Name);
             Type propertyType = GetPropertyType(entityType, propertyInfo);
+            if (propertyType.IsEnum) ((ColumnAttribute)attribute).DbType = DbType.Int32;
 
             tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, ((ColumnAttribute)attribute).DbType ?? TypeConverter.ToDbType(propertyType), attribute));
         }

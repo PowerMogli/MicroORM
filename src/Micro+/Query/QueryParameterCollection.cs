@@ -5,6 +5,7 @@ using MicroORM.Mapping;
 using MicroORM.Reflection;
 using MicroORM.Utils;
 using MicroORM.Base.Mapping;
+using System;
 
 namespace MicroORM.Query
 {
@@ -26,7 +27,7 @@ namespace MicroORM.Query
         {
             if (arguments == null) return new QueryParameterCollection();
 
-            QueryParameterCollection collection = CreateParameterFromAnonymous(arguments, null);
+            QueryParameterCollection collection = CreateParameterFromAnonymous(arguments, tableInfo);
             if (collection.Count != 0) return collection;
 
             return CreateParameterFromRegular(arguments);
@@ -47,7 +48,9 @@ namespace MicroORM.Query
 
             for (int i = 0; i < arguments.Length; i++)
             {
-                collection.Add(new QueryParameter(i.ToString(_culture), TypeConverter.ToDbType(arguments[i].GetType()), arguments[i]));
+                Type argumentType = arguments[i].GetType();
+                if (argumentType.IsEnum) argumentType = typeof(Int32);
+                collection.Add(new QueryParameter(i.ToString(_culture), TypeConverter.ToDbType(argumentType), arguments[i]));
             }
             return collection;
         }
