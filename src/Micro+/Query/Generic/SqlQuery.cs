@@ -42,14 +42,12 @@ namespace MicroORM.Query.Generic
 
         private void PrepareArguments()
         {
-            List<object> arguments = new List<object>(base.Arguments);
-            if (_primaryKeys != null && _primaryKeys.Length > 0)
-            {
-                if (_primaryKeys.Length != _tableInfo.NumberOfPrimaryKeys)
-                    throw new PrimaryKeyException("The number of provided primaryKeys does not match the requested number of primaryKeys!");
+            if (_primaryKeys == null || _primaryKeys.Length <= 0) return;
 
-                Arguments.AddRange(_primaryKeys);
-            }
+            if (_primaryKeys.Length != _tableInfo.NumberOfPrimaryKeys)
+                throw new PrimaryKeyException("The number of provided primaryKeys does not match the requested number of primaryKeys!");
+
+            Arguments.AddRange(_primaryKeys);
         }
     }
 }
