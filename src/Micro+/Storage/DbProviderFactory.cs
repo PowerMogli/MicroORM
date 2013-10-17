@@ -1,7 +1,4 @@
-﻿using System;
-using MicroORM.Base.Storage;
-
-namespace MicroORM.Storage
+﻿namespace MicroORM.Storage
 {
     internal class DbProviderFactory
     {

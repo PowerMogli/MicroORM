@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroORM.Base.Storage
+namespace MicroORM.Storage
 {
     public class NotSupportedProviderException : Exception
     {
