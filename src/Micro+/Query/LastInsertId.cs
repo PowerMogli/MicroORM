@@ -1,5 +1,4 @@
-﻿
-namespace MicroORM.Query
+﻿namespace MicroORM.Query
 {
     public class LastInsertId
     {

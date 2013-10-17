@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Linq.Expressions;
 using MicroORM.Query;
 
@@ -8,9 +7,9 @@ namespace MicroORM.Base
     public interface IDbSession : ITransactionalSession, IDisposable
     {
         void ExecuteCommand(string sql, params object[] args);
-        void ExecuteStoredProcedure(ProcedureObject procedureObject);
+        void ExecuteStoredProcedure(StoredProcedure procedureObject);
         void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments);
-        T ExecuteStoredProcedure<T>(ProcedureObject procedureObject);
+        T ExecuteStoredProcedure<T>(StoredProcedure procedureObject);
         T ExecuteStoredProcedure<T>(string storedProcedureName, params object[] arguments);
         V GetColumnValue<T, V>(Expression<Func<T, V>> selector, Expression<Func<T, bool>> criteria);
         T GetObject<T>(Expression<Func<T, bool>> criteria);

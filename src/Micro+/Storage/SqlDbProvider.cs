@@ -1,6 +1,4 @@
-﻿using System;
-using System.Data;
-using MicroORM.Query;
+﻿using System.Data;
 
 namespace MicroORM.Storage
 {

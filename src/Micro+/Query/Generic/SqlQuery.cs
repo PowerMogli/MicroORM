@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
+using MicroORM.Base;
 using MicroORM.Mapping;
 using MicroORM.Storage;
-using MicroORM.Base;
 
 namespace MicroORM.Query.Generic
 {

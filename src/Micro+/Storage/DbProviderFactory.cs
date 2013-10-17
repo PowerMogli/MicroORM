@@ -1,4 +1,5 @@
 ﻿using System;
+using MicroORM.Base.Storage;
 
 namespace MicroORM.Storage
 {
@@ -21,7 +22,7 @@ namespace MicroORM.Storage
                 //case DbEngine.SQLite:
                 //    return new SqliteProvider();
             }
-            throw new Exception("Unkown provider");
+            throw new NotSupportedProviderException("Unkown provider");
         }
     }
 }

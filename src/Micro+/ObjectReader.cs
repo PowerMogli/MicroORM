@@ -1,9 +1,8 @@
 using System;
 using System.Data;
+using MicroORM.Mapping;
 using MicroORM.Materialization;
 using MicroORM.Storage;
-using MicroORM.Mapping;
-using System.Collections.Generic;
 
 namespace MicroORM.Base
 {

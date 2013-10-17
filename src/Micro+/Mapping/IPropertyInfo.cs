@@ -1,6 +1,6 @@
 ﻿using System;
-using MicroORM.Attributes;
 using System.Data;
+using MicroORM.Attributes;
 
 namespace MicroORM.Mapping
 {

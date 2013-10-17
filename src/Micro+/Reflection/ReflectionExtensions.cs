@@ -25,7 +25,7 @@ namespace MicroORM.Reflection
             if (!_cache.TryGetValue(key, out setter))
             {
                 var mi = propertyInfo.GetSetMethod();
-                DynamicMethod met = new DynamicMethod("set_" + key, typeof(void), new[] { typeof(object), typeof(object) }, typeof(Entity).Module, true);
+                DynamicMethod met = new DynamicMethod("set_" + key, typeof(void), new[] { typeof(object), typeof(object) }, typeof(DbSession).Module, true);
                 var il = met.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);//instance           
                 il.Emit(OpCodes.Ldarg_1);//value
@@ -61,7 +61,7 @@ namespace MicroORM.Reflection
             if (!_cacheGet.TryGetValue(hashKey, out getter))
             {
                 var mi = propertyInfo.GetGetMethod();
-                DynamicMethod met = new DynamicMethod("get_" + hashKey, typeof(object), new[] { typeof(object) }, typeof(Entity).Module, true);
+                DynamicMethod met = new DynamicMethod("get_" + hashKey, typeof(object), new[] { typeof(object) }, typeof(DbSession).Module, true);
                 var il = met.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0);//instance           
                 il.Emit(OpCodes.Call, mi);//call getter

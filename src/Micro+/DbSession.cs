@@ -43,12 +43,12 @@ namespace MicroORM.Base
             _provider.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
-        public void ExecuteStoredProcedure(ProcedureObject procedureObject)
+        public void ExecuteStoredProcedure(StoredProcedure procedureObject)
         {
             _provider.ExecuteCommand(new StoredProcedureQuery(procedureObject));
         }
 
-        public TEntity ExecuteStoredProcedure<TEntity>(ProcedureObject procedureObject)
+        public TEntity ExecuteStoredProcedure<TEntity>(StoredProcedure procedureObject)
         {
             ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(procedureObject));
             return objectSet.SingleOrDefault();
@@ -170,7 +170,7 @@ namespace MicroORM.Base
             this.Dispose();
         }
 
-        internal void Load<TEntity>(TEntity entity) where TEntity : Entity
+        internal void Load<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             ObjectReader<TEntity> objectReader = _provider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
             if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");

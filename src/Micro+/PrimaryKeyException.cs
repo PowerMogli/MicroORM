@@ -2,7 +2,7 @@ using System;
 
 namespace MicroORM.Base
 {
-    class PrimaryKeyException : Exception
+    public class PrimaryKeyException : Exception
     {
         internal PrimaryKeyException() : base() { }
 

@@ -5,22 +5,20 @@ namespace MicroORM.Query
 {
     internal class StoredProcedureQuery : IQuery, IArgumentQuery
     {
-        private ProcedureObject _procedureWorkObject;
-        private string _storedProcedureName;
-        private QueryParameterCollection _arguments;
+        private StoredProcedure _procedureWorkObject;
 
-        public QueryParameterCollection Arguments { get { return _arguments; } }
-        public string SqlStatement { get { return _storedProcedureName; } }
+        public QueryParameterCollection Arguments { get; private set; }
+        public string SqlStatement { get; private set; }
 
-        internal StoredProcedureQuery(ProcedureObject procedureWorkObject)
+        internal StoredProcedureQuery(StoredProcedure procedureWorkObject)
         {
             _procedureWorkObject = procedureWorkObject;
         }
 
         internal StoredProcedureQuery(string storedProcedureName, QueryParameterCollection arguments = null)
         {
-            _storedProcedureName = storedProcedureName;
-            _arguments = arguments;
+            this.SqlStatement = storedProcedureName;
+            this.Arguments = arguments;
         }
 
         public IDbCommand Compile(IDbProvider provider)
@@ -57,7 +55,7 @@ namespace MicroORM.Query
 
         private void SetArguments(IDbCommand command)
         {
-            foreach (var parameter in _procedureWorkObject)
+            foreach (var parameter in _procedureWorkObject.Parameters)
             {
                 command.Parameters.Add(parameter);
             }

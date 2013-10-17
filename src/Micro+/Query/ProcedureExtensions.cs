@@ -6,7 +6,7 @@ namespace MicroORM.Query
 {
     public static class ProcedureExtensions
     {
-        public static TEntity Execute<TEntity>(this ProcedureObject procedureObject)
+        public static TEntity Execute<TEntity>(this StoredProcedure procedureObject)
         {
             string connectionString = ConnectionStringRegistrar.GetFor(procedureObject.GetType());
             DbEngine dbEngine = DbEngineRegistrar.GetFor(procedureObject.GetType());
@@ -16,7 +16,7 @@ namespace MicroORM.Query
             }
         }
 
-        public static void Execute(this ProcedureObject procedureObject, IsolationLevel? isolationLevel = null)
+        public static void Execute(this StoredProcedure procedureObject, IsolationLevel? isolationLevel = null)
         {
             string connectionString = ConnectionStringRegistrar.GetFor(procedureObject.GetType());
             DbEngine dbEngine = DbEngineRegistrar.GetFor(procedureObject.GetType());

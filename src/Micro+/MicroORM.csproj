@@ -45,13 +45,13 @@
     <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="ConnectionStringRegistrar.cs" />
     <Compile Include="DbEngineRegistrar.cs" />
-    <Compile Include="Entity.cs" />
-    <Compile Include="EntityExtensions.cs" />
-    <Compile Include="EntitySession.cs" />
-    <Compile Include="EntityValue.cs" />
+    <Compile Include="Entity\Entity.cs" />
+    <Compile Include="Entity\EntityExtensions.cs" />
+    <Compile Include="Entity\EntitySession.cs" />
+    <Compile Include="Entity\EntityValue.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
-    <Compile Include="IEntitySession.cs" />
+    <Compile Include="Entity\IEntitySession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
     <Compile Include="PrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
@@ -74,12 +74,13 @@
     <Compile Include="Query\Generic\SimpleExpressionQuery.cs" />
     <Compile Include="Query\IArgumentQuery.cs" />
     <Compile Include="Query\LastInsertId.cs" />
+    <Compile Include="Query\ProcedureParameterCollection.cs" />
     <Compile Include="Query\QueryParameter.cs" />
     <Compile Include="Query\ProcedureExtensions.cs" />
-    <Compile Include="Query\ProcedureObject.cs" />
+    <Compile Include="Query\StoredProcedure.cs" />
     <Compile Include="Query\Generic\ExpressionQuery.cs" />
     <Compile Include="Query\QueryParameterCollection.cs" />
-    <Compile Include="Query\SqlProcedureObject.cs" />
+    <Compile Include="Query\SqlStoredProcedure.cs" />
     <Compile Include="Query\Generic\SqlQuery.cs" />
     <Compile Include="Query\IQuery.cs" />
     <Compile Include="Query\QueryInterpreter.cs" />
@@ -87,7 +88,7 @@
     <Compile Include="Query\StoredProcedureQuery.cs" />
     <Compile Include="Reflection\ParameterTypeDescriptor.cs" />
     <Compile Include="DbSession.cs" />
-    <Compile Include="EntityState.cs" />
+    <Compile Include="Entity\EntityState.cs" />
     <Compile Include="ObjectInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\ReflectionExtensions.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Storage\ITransactionalDbProvider.cs" />
     <Compile Include="Storage\DbProvider.cs" />
     <Compile Include="Storage\DbProviderFactory.cs" />
+    <Compile Include="Storage\NotSupportedProviderException.cs" />
     <Compile Include="Storage\SqlDbProvider.cs" />
     <Compile Include="Utils\Utils.cs" />
   </ItemGroup>

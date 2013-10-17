@@ -1,5 +1,5 @@
 using System.Data;
-using MicroORM.Base;
+using MicroORM.Base.Entity;
 using MicroORM.Mapping;
 using MicroORM.Query.Generic;
 using MicroORM.Storage;
