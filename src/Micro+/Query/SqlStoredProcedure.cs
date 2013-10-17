@@ -1,17 +1,16 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
 
 namespace MicroORM.Query
 {
-    public class SqlProcedureObject : ProcedureObject
+    public class SqlStoredProcedure : StoredProcedure
     {
-        public SqlProcedureObject(string storedProcedureName)
+        public SqlStoredProcedure(string storedProcedureName)
             : base(storedProcedureName) { }
 
         protected override bool AddParameter<T>(string parameterName, T value, DbType dbType, int length = -1)
         {
-            if (base.AddParameter(parameterName, value, dbType, length) == false) return false;
+            if (base.Parameters.AddParameter(parameterName, value, dbType, length) == false) return false;
 
             string prefix = "@";
             if (parameterName.StartsWith("@"))
@@ -26,6 +25,11 @@ namespace MicroORM.Query
             else
                 base.Parameters.Add(prefix + parameterName.ToLower(), parameter);
             return true;
+        }
+
+        protected override T GetParameterValue<T>(string parameterName)
+        {
+            return this.Parameters.GetParameterValue<T>(parameterName);
         }
     }
 }

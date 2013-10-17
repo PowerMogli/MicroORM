@@ -70,7 +70,7 @@ namespace Micro.Program
         public string Name { get; set; }
     }
 
-    public class ImportPrepareProcedureObject : SqlProcedureObject
+    public class ImportPrepareProcedureObject : SqlStoredProcedure
     {
         public ImportPrepareProcedureObject()
             : base("spExecuteSomething") { }
