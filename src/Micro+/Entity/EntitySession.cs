@@ -2,7 +2,7 @@
 using System.Data;
 using MicroORM.Storage;
 
-namespace MicroORM.Base
+namespace MicroORM.Base.Entity
 {
     internal class EntitySession : IEntitySession, IDisposable
     {
@@ -26,6 +26,11 @@ namespace MicroORM.Base
         public void Insert<TEntity>(TEntity entity) where TEntity : Entity
         {
             _dbSession.Insert(entity);
+        }
+
+        public void Delete<TEntity>(TEntity entity) where TEntity : Entity
+        {
+
         }
 
         void IDisposable.Dispose()

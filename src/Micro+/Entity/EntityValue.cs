@@ -1,4 +1,4 @@
-namespace MicroORM.Base
+namespace MicroORM.Base.Entity
 {
     public struct EntityValue<TValue>
     {

@@ -1,8 +1,5 @@
-﻿using System;
-
-namespace MicroORM.Base
+﻿namespace MicroORM.Base.Entity
 {
-    [Serializable]
     public enum EntityState
     {
         /// <summary>

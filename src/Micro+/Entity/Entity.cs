@@ -1,9 +1,6 @@
-using System;
-using System.Linq;
-using MicroORM.Mapping;
 using MicroORM.Storage;
 
-namespace MicroORM.Base
+namespace MicroORM.Base.Entity
 {
     public abstract class Entity
     {
