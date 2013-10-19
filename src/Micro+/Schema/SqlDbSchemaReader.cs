@@ -132,7 +132,7 @@ namespace MicroORM.Schema
                 try
                 {
                     dataReader = base.DbProvider.ExecuteReader(new SqlQuery(__sql_table__, QueryParameterCollection.Create(new object[] { new { tableName = tableName } })));
-                    while (dataReader.Read())
+                    if (dataReader.Read())
                     {
                         DbTable dbTable = new DbTable();
                         dbTable.Name = dataReader["TABLE_NAME"].ToString();
