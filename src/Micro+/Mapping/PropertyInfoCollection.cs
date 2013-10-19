@@ -7,41 +7,48 @@ namespace MicroORM.Mapping
 {
     internal sealed class PropertyInfoCollection : IEnumerable<IPropertyInfo>
     {
-        private Dictionary<string, IPropertyInfo> _membernameMemberMapping = new Dictionary<string, IPropertyInfo>();
-        private List<IPropertyInfo> _memberInfos = new List<IPropertyInfo>();
+        private Dictionary<string, IPropertyInfo> _propertyNameMemberMapping = new Dictionary<string, IPropertyInfo>();
+        private List<IPropertyInfo> _propertyInfos = new List<IPropertyInfo>();
 
-        internal void Add(IPropertyInfo memberInfo)
+        internal void Add(IPropertyInfo propertyInfo)
         {
-            if (memberInfo == null)
-                throw new ArgumentNullException("memberInfo");
+            if (propertyInfo == null)
+                throw new ArgumentNullException("propertyInfo");
 
-            if (!_membernameMemberMapping.ContainsKey(memberInfo.Name))
+            if (!_propertyNameMemberMapping.ContainsKey(propertyInfo.Name))
             {
-                _membernameMemberMapping.Add(memberInfo.Name, memberInfo);
-                _memberInfos.Add(memberInfo);
+                _propertyNameMemberMapping.Add(propertyInfo.Name, propertyInfo);
+                _propertyInfos.Add(propertyInfo);
             }
         }
 
-        internal int Count { get { return _memberInfos.Count; } }
+        internal int Count { get { return _propertyInfos.Count; } }
 
         internal IPropertyInfo this[int index]
         {
-            get { return _memberInfos[index]; }
+            get { return _propertyInfos[index]; }
+        }
+
+        internal void Remove(string name)
+        {
+            IPropertyInfo propertyInfo = _propertyNameMemberMapping[name];
+            _propertyNameMemberMapping.Remove(name);
+            _propertyInfos.Remove(propertyInfo);
         }
 
         public IEnumerator GetEnumerator()
         {
-            return _memberInfos.GetEnumerator();
+            return _propertyInfos.GetEnumerator();
         }
 
         IEnumerator<IPropertyInfo> IEnumerable<IPropertyInfo>.GetEnumerator()
         {
-            return _memberInfos.GetEnumerator();
+            return _propertyInfos.GetEnumerator();
         }
 
         public bool Contains(string columnName)
         {
-            return _memberInfos.Any(member => member.ColumnAttribute.ColumnName == columnName);
+            return _propertyInfos.Any(propertyInfo => propertyInfo.ColumnAttribute.ColumnName == columnName);
         }
     }
 }
