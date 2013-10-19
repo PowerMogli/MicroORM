@@ -14,18 +14,20 @@ namespace MicroORM.Attributes
             this.IsNullable = true;
         }
 
-        public ColumnAttribute(string columndName)
+        public ColumnAttribute(string columnName)
         {
-            if (columndName == null)
+            if (columnName == null)
                 throw new ArgumentNullException("columnName");
 
-            this.ColumnName = columndName;
+            this.ColumnName = columnName;
             this.IsNullable = true;
         }
 
         public override string ColumnName { get; set; }
 
-        public DbType? DbType { get; set; }
+        public DbType DbType { get; set; }
+
+        internal DbType? NullDbType { get { return new Nullable<DbType>(this.DbType); } }
         //public bool Identifier
         //{
         //    get { return _identifier; }

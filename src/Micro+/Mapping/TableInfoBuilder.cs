@@ -58,7 +58,7 @@ namespace MicroORM.Mapping
             Type propertyType = GetPropertyType(entityType, propertyInfo);
             if (propertyType.IsEnum) ((ColumnAttribute)attribute).DbType = DbType.Int32;
 
-            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, ((ColumnAttribute)attribute).DbType ?? TypeConverter.ToDbType(propertyType), attribute));
+            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, ((ColumnAttribute)attribute).NullDbType ?? TypeConverter.ToDbType(propertyType), attribute));
         }
 
         private static void AddPrimaryKeyInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, NamedAttribute attribute)
