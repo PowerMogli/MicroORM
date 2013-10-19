@@ -6,7 +6,7 @@ namespace MicroORM.Schema
     {
         public string Name { get; set; }
         public string PropertyName { get; set; }
-        public DbType PropertyType { get; set; }
+        public DbType DbType { get; set; }
         public bool IsPrimaryKey { get; set; }
         public bool IsNullable { get; set; }
         public bool IsAutoIncrement { get; set; }
