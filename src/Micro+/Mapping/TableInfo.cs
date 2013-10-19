@@ -51,8 +51,8 @@ namespace MicroORM.Mapping
                 if (value == null || this.DbTable != null)
                     return;
 
-                ReconfigureWith(value);
                 _dbTable = value;
+                ReconfigureWith();
             }
         }
 
@@ -65,14 +65,17 @@ namespace MicroORM.Mapping
 
         internal PropertyInfoCollection PrimaryKeys { get; set; }
 
-        private void ReconfigureWith(DbTable dbTable)
+        private void ReconfigureWith()
         {
-            for (int index = 0; index < dbTable.DbColumns.Count; index++)
+            foreach (DbColumn dbColumn in this.DbTable.DbColumns)
             {
-                this.Columns[index].DbType = dbTable.DbColumns[index].PropertyType;
-                this.Columns[index].IsNullable = dbTable.DbColumns[index].IsNullable;
-                ((ColumnAttribute)this.Columns[index].ColumnAttribute).Size = dbTable.DbColumns[index].Size;
-                ((ColumnAttribute)this.Columns[index].ColumnAttribute).AutoNumber = dbTable.DbColumns[index].IsAutoIncrement;
+                IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.Name == dbColumn.Name);
+                if (propertyInfo == null) continue;
+
+                propertyInfo.DbType = dbColumn.PropertyType;
+                propertyInfo.IsNullable = dbColumn.IsNullable;
+                ((ColumnAttribute)propertyInfo.ColumnAttribute).Size = dbColumn.Size;
+                ((ColumnAttribute)propertyInfo.ColumnAttribute).AutoNumber = dbColumn.IsAutoIncrement;
             }
         }
 
@@ -140,8 +143,14 @@ namespace MicroORM.Mapping
 
         internal DbType ConvertToDbType(string name)
         {
-            IPropertyInfo propMetaInfo = this.Columns.FirstOrDefault(mem => mem.Name == name);
+            IPropertyInfo propMetaInfo = this.Columns.FirstOrDefault(column => column.Name == name);
             return propMetaInfo.DbType ?? TypeConverter.ToDbType(propMetaInfo.PropertyType);
+        }
+
+        internal int GetColumnSize(string name)
+        {
+            IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.Name == name);
+            return propertyInfo.Size > 0 ? propertyInfo.Size : -1;
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace MicroORM.Entity
             }
         }
 
-        private static void Insert<TEntity>(this TEntity entity) where TEntity : Entity
+        public static void Insert<TEntity>(this TEntity entity) where TEntity : Entity
         {
             using (IEntitySession dbSession = entity.EntitySession)
             {

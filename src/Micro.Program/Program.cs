@@ -18,10 +18,13 @@ namespace Micro.Program
                 ConnectionStringRegistrar.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
                 DbEngineRegistrar.Register("Micro.Program.*", DbEngine.SqlServer);
 
-                //Post post = new Post();
-                //post.Id = 6;
-                //post.Title = "bla";
-                //post.Load();
+                Post post = new Post();
+                post.Title = "König der Löwen";
+                post.AuthorId = 322;
+                post.CreatedOn = DateTime.Now.AddDays(-302);
+                post.Type = PostType.Page;
+                post.TopicId = 23191;
+                post.Insert();
 
                 using (DbSession dbSession = new DbSession(@"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True"))
                 {
@@ -37,11 +40,6 @@ namespace Micro.Program
                     //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
 
                     var title = dbSession.GetObjectSet<string>("select Title from Posts");
-                }
-
-                using (IDbSession dbSession = new DbSession(@"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True"))
-                {
-                    var post = dbSession.GetObjectSet<Post>();
                 }
 
                 DbSchemaAllocator.FlushReader();
@@ -94,6 +92,7 @@ namespace Micro.Program
         [Column(AutoNumber = true)]
         [PrimaryKey]
         public int Id { get; set; }
+        [Column("AuthorId", DbType = DbType.Boolean)]
         public int AuthorId { get; set; }
         public string Title { get; set; }
         public DateTime CreatedOn { get; set; }
