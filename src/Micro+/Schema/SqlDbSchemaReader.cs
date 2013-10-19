@@ -58,16 +58,16 @@ namespace MicroORM.Schema
                 }
                 dbTable = GetTable(tableInfo.Name);
                 dbTable.DbColumns = GetColumns(dbTable);
-                SetPrimaryKey(dbTable);
+                SetPrimaryKeys(dbTable);
                 base.Tables.Add(dbTable);
 
                 tableInfo.DbTable = dbTable;
             }
         }
 
-        private void SetPrimaryKey(DbTable dbTable)
+        private void SetPrimaryKeys(DbTable dbTable)
         {
-            List<string> primaryKeys = GetPrimaryKey(dbTable.Name);
+            List<string> primaryKeys = GetPrimaryKeys(dbTable.Name);
 
             foreach (string primaryKey in primaryKeys)
             {
@@ -155,7 +155,7 @@ namespace MicroORM.Schema
             return new DbTable(tableName);
         }
 
-        private List<string> GetPrimaryKey(string table)
+        private List<string> GetPrimaryKeys(string table)
         {
             IDataReader dataReader = null;
             List<string> primaryKeys = new List<string>();
