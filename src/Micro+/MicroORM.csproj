@@ -96,7 +96,7 @@
     <Compile Include="Schema\DbColumn.cs" />
     <Compile Include="Schema\DbForeignKey.cs" />
     <Compile Include="Schema\DbSchemaCleaner.cs" />
-    <Compile Include="Schema\DbSchemaCollection.cs" />
+    <Compile Include="Schema\DbSchemaAllocator.cs" />
     <Compile Include="Schema\DbSchemaReader.cs" />
     <Compile Include="Schema\DbTable.cs" />
     <Compile Include="Schema\DbTableCollection.cs" />

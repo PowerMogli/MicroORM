@@ -22,6 +22,8 @@ namespace MicroORM.Query
 
         private void SetupParameter(IDbCommand command)
         {
+            if (_query.Arguments == null) return;
+
             foreach (QueryParameter argument in _query.Arguments)
             {
                 IDbDataParameter parameter = command.CreateParameter();

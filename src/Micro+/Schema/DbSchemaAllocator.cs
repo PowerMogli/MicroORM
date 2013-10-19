@@ -9,16 +9,24 @@
             SchemaReader = DbSchemaAllocator.SchemaReader;
         }
 
-        internal static void Allocate()
+        internal static DbTable DbTable
         {
-            if (SchemaReader == null) return;
+            get
+            {
+                if (SchemaReader == null) return null;
 
-            SchemaReader.ReadSchema<TEntity>();
+                return SchemaReader.ReadSchema<TEntity>();
+            }
         }
     }
 
-    internal static class DbSchemaAllocator
+    public static class DbSchemaAllocator
     {
         internal static DbSchemaReader SchemaReader { get; set; }
+
+        public static void FlushReader()
+        {
+            SchemaReader.Flush();
+        }
     }
 }

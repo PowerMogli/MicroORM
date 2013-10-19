@@ -5,6 +5,7 @@ using MicroORM.Base;
 using MicroORM.Entity;
 using MicroORM.Query;
 using MicroORM.Schema;
+using MicroORM.Storage;
 
 namespace Micro.Program
 {
@@ -14,15 +15,13 @@ namespace Micro.Program
         {
             try
             {
-                //ConnectionStringRegistrar.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
-                //DbEngineRegistrar.Register("Micro.Program.*", DbEngine.SqlServer);
+                ConnectionStringRegistrar.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
+                DbEngineRegistrar.Register("Micro.Program.*", DbEngine.SqlServer);
 
                 //Post post = new Post();
                 //post.Id = 6;
                 //post.Title = "bla";
                 //post.Load();
-                //ConnectionStringRegistrar.Flush();
-                //DbEngineRegistrar.Flush();
 
                 using (DbSession dbSession = new DbSession(@"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True"))
                 {
@@ -44,6 +43,10 @@ namespace Micro.Program
                 {
                     var post = dbSession.GetObjectSet<Post>();
                 }
+
+                DbSchemaAllocator.FlushReader();
+                ConnectionStringRegistrar.Flush();
+                DbEngineRegistrar.Flush();
             }
             catch (Exception ex)
             {
@@ -87,7 +90,6 @@ namespace Micro.Program
         public Post()
         {
             CreatedOn = DateTime.Now;
-
         }
         [Column(AutoNumber = true)]
         [PrimaryKey]

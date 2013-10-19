@@ -43,25 +43,24 @@ namespace MicroORM.Schema
             base.DbProvider = new SqlDbProvider(connectionString);
         }
 
-        public override void ReadSchema<T>()
+        public override DbTable ReadSchema<T>()
         {
             DbTable dbTable;
             using (this)
             {
-                TableInfo tableInfo = TableInfo<T>.GetTableInfo;
-                if (tableInfo == null) return;
+                TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
+                if (tableInfo == null) return null;
 
                 if ((dbTable = base.Tables[tableInfo.Name]) != null)
                 {
-                    tableInfo.DbTable = dbTable;
-                    return;
+                    return dbTable;
                 }
                 dbTable = GetTable(tableInfo.Name);
                 dbTable.DbColumns = GetColumns(dbTable);
                 SetPrimaryKeys(dbTable);
                 base.Tables.Add(dbTable);
 
-                tableInfo.DbTable = dbTable;
+                return dbTable;
             }
         }
 
@@ -84,6 +83,8 @@ namespace MicroORM.Schema
             List<DbColumn> columns = new List<DbColumn>();
             IDataReader dataReader = null;
 
+            // I am not sure if using(IDataReader dataReader = base.DbProvider.ExecuteReader()) 
+            // really closes the underlaying connection
             using (base.DbProvider)
             {
                 try
@@ -127,6 +128,8 @@ namespace MicroORM.Schema
         {
             IDataReader dataReader = null;
 
+            // I am not sure if using(IDataReader dataReader = base.DbProvider.ExecuteReader()) 
+            // really closes the underlaying connection
             using (base.DbProvider)
             {
                 try
@@ -160,6 +163,8 @@ namespace MicroORM.Schema
             IDataReader dataReader = null;
             List<string> primaryKeys = new List<string>();
 
+            // I am not sure if using(IDataReader dataReader = base.DbProvider.ExecuteReader()) 
+            // really closes the underlaying connection
             using (base.DbProvider)
             {
                 try

@@ -93,7 +93,6 @@ namespace MicroORM.Base
 
         public TEntity GetScalarValue<TEntity>(string sql, params object[] arguments)
         {
-            DbSchemaAllocator<TEntity>.Allocate();
             return _provider.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
@@ -104,7 +103,6 @@ namespace MicroORM.Base
 
         ObjectSet<TEntity> IDbSession.GetObjectSet<TEntity>(IQuery query)
         {
-            DbSchemaAllocator<TEntity>.Allocate();
             ObjectSet<TEntity> objectSet = new ObjectSet<TEntity>();
             return objectSet.Load(this, query);
         }
@@ -138,7 +136,6 @@ namespace MicroORM.Base
 
         public LastInsertId Insert<TEntity>(TEntity data)
         {
-            DbSchemaAllocator<TEntity>.Allocate();
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string insertStatement = tableInfo.CreateInsertStatement(_provider);
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(data, tableInfo));
@@ -168,7 +165,6 @@ namespace MicroORM.Base
         {
             _provider.Dispose();
             DbSchemaAllocator.SchemaReader.Dispose();
-            DbSchemaAllocator.SchemaReader = null;
         }
 
         void IDisposable.Dispose()
@@ -178,7 +174,6 @@ namespace MicroORM.Base
 
         internal void Load<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            DbSchemaAllocator<TEntity>.Allocate();
             ObjectReader<TEntity> objectReader = _provider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
             if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
         }

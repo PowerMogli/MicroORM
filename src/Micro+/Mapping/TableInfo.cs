@@ -15,7 +15,6 @@ namespace MicroORM.Mapping
     {
         private static TypeAttributes _nonPublic = TypeAttributes.NotPublic;
         private bool _isAnonymousType;
-        private bool _reconfigCompleted = false;
 
         internal TableInfo(Type type, string tableName)
         {
@@ -43,15 +42,17 @@ namespace MicroORM.Mapping
 
         internal Type EntityType { get; private set; }
 
+        private DbTable _dbTable;
         internal DbTable DbTable
         {
+            get { return _dbTable; }
             set
             {
-                if (value == null || _reconfigCompleted)
+                if (value == null || this.DbTable != null)
                     return;
 
                 ReconfigureWith(value);
-                _reconfigCompleted = true;
+                _dbTable = value;
             }
         }
 
@@ -203,7 +204,14 @@ namespace MicroORM.Mapping
     {
         internal static TableInfo GetTableInfo
         {
-            get { return TableInfo.GetTableInfo(typeof(T)); }
+            get
+            {
+                TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
+                if (tableInfo == null) return null;
+
+                tableInfo.DbTable = DbSchemaAllocator<T>.DbTable;
+                return tableInfo;
+            }
         }
     }
 }

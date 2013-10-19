@@ -1,5 +1,5 @@
-﻿using MicroORM.Storage;
-using System;
+﻿using System;
+using MicroORM.Storage;
 
 namespace MicroORM.Schema
 {
@@ -13,7 +13,7 @@ namespace MicroORM.Schema
             this.Tables = new DbTableCollection();
         }
 
-        public abstract void ReadSchema<T>();
+        public abstract DbTable ReadSchema<T>();
 
         public void Dispose()
         {

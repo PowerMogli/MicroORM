@@ -9,7 +9,7 @@ namespace MicroORM.Schema
 
         public DbTable GetTable(string tableName)
         {
-            return this.Single(dbTable => string.Compare(dbTable.Name, tableName, true) == 0);
+            return this.SingleOrDefault(dbTable => string.Compare(dbTable.Name, tableName, true) == 0);
         }
 
         public DbTable this[string tableName]
