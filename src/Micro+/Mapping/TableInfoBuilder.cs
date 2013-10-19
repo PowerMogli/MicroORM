@@ -19,7 +19,7 @@ namespace MicroORM.Mapping
 
             TableInfo tableInfo = new TableInfo(entityType, attribute.EntityName);
             CreateMemberMappingsFor<ColumnAttribute>(entityType, tableInfo, AddPropertyMetaInfo);
-            CreateMemberMappingsFor<PrimaryKeyAttribute>(entityType, tableInfo, AddPrimaryKeyInfo);
+            //CreateMemberMappingsFor<PrimaryKeyAttribute>(entityType, tableInfo, AddPrimaryKeyInfo);
 
             return tableInfo;
         }
@@ -38,7 +38,7 @@ namespace MicroORM.Mapping
             return attribute;
         }
 
-        private static void CreateMemberMappingsFor<TAttribute>(Type entityType, TableInfo tableInfo, Action<TableInfo, PropertyInfo, Type, NamedAttribute> action) where TAttribute : NamedAttribute
+        private static void CreateMemberMappingsFor<TAttribute>(Type entityType, TableInfo tableInfo, Action<TableInfo, PropertyInfo, Type, ColumnAttribute> action) where TAttribute : ColumnAttribute
         {
             if (entityType == null || entityType == typeof(object)) return;
 
@@ -52,30 +52,30 @@ namespace MicroORM.Mapping
             CreateMemberMappingsFor<TAttribute>(entityType.BaseType, tableInfo, action);
         }
 
-        private static void AddPropertyMetaInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, NamedAttribute attribute)
+        private static void AddPropertyMetaInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
         {
             attribute = CreateAttribute<ColumnAttribute>(attribute, propertyInfo.Name);
             Type propertyType = GetPropertyType(entityType, propertyInfo);
-            if (propertyType.IsEnum) ((ColumnAttribute)attribute).DbType = DbType.Int32;
+            if (propertyType.IsEnum) attribute.DbType = DbType.Int32;
 
-            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, ((ColumnAttribute)attribute).NullDbType ?? TypeConverter.ToDbType(propertyType), attribute));
+            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute.NullDbType ?? TypeConverter.ToDbType(propertyType), attribute));
         }
 
-        private static void AddPrimaryKeyInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, NamedAttribute attribute)
-        {
-            if (attribute == null) return;
-            if (string.IsNullOrWhiteSpace(attribute.ColumnName))
-                attribute.ColumnName = propertyInfo.Name;
+        //private static void AddPrimaryKeyInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
+        //{
+        //    if (attribute == null) return;
+        //    if (string.IsNullOrWhiteSpace(attribute.ColumnName))
+        //        attribute.ColumnName = propertyInfo.Name;
 
-            Type propertyType =GetPropertyType(entityType, propertyInfo);
+        //    Type propertyType = GetPropertyType(entityType, propertyInfo);
 
-            tableInfo.PrimaryKeys.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute));
-        }
+        //    tableInfo.PrimaryKeys.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute));
+        //}
 
-        private static NamedAttribute CreateAttribute<TAttribute>(NamedAttribute attribute, string name)
+        private static ColumnAttribute CreateAttribute<TAttribute>(ColumnAttribute attribute, string name)
         {
             if (attribute == null)
-                attribute = Activator.CreateInstance(typeof(TAttribute), name) as NamedAttribute;
+                attribute = Activator.CreateInstance(typeof(TAttribute), name) as ColumnAttribute;
 
             if (string.IsNullOrWhiteSpace(attribute.ColumnName))
                 attribute.ColumnName = name;

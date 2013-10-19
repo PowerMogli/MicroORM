@@ -46,7 +46,10 @@ namespace MicroORM.Query.Generic
             if (_primaryKeys.Length != _tableInfo.NumberOfPrimaryKeys)
                 throw new PrimaryKeyException("The number of provided primaryKeys does not match the requested number of primaryKeys!");
 
-            Arguments.AddRange(_primaryKeys);
+            if (base.Arguments == null)
+                base.Arguments = new QueryParameterCollection();
+
+            base.Arguments.AddRange(_primaryKeys);
         }
     }
 }

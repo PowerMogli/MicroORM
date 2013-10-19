@@ -15,16 +15,16 @@ namespace MicroORM.Utils
         {
             KeyValuePair<string, object>[] properties = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
             int count = properties.Count();
-            List<object> arguments = new List<object>();
+            List<KeyValuePair<string, object>> arguments = new List<KeyValuePair<string, object>>();
             for (int i = 0; i < count; i++)
             {
                 IPropertyInfo memberInfo = tableInfo.Columns.Where(member => member.ColumnAttribute.ColumnName == properties[i].Key).First();
-                if (tableInfo.PrimaryKeys.Contains(memberInfo.ColumnAttribute.ColumnName)
-                    && ((ColumnAttribute)memberInfo.ColumnAttribute).AutoNumber) { continue; }
+                if (tableInfo.Columns.Contains(memberInfo.ColumnAttribute.ColumnName)
+                    && memberInfo.ColumnAttribute.AutoNumber) { continue; }
 
-                arguments.Add(properties[i].Value);
+                arguments.Add(properties[i]);
             }
-            return arguments.ToArray();
+            return new object[] { arguments.ToArray() };
         }
 
         internal static bool IsCustomObject<T>(this T t)
@@ -87,7 +87,7 @@ namespace MicroORM.Utils
                     return DateTimeOffset.Parse(data.ToString());
                 }
 
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>))
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     var under = Nullable.GetUnderlyingType(type);
                     return data.ConvertTo(under);

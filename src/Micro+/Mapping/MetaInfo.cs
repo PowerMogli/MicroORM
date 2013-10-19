@@ -9,7 +9,7 @@ namespace MicroORM.Mapping
         private bool _isNullable;
         private Type _propertyType;
 
-        internal MetaInfo(Type propertyType, NamedAttribute columnAttribute)
+        internal MetaInfo(Type propertyType, ColumnAttribute columnAttribute)
         {
             if (propertyType == null)
                 throw new ArgumentNullException("propertyType");
@@ -18,7 +18,7 @@ namespace MicroORM.Mapping
             this.ColumnAttribute = columnAttribute;
         }
 
-        internal MetaInfo(Type propertyType, DbType dbType, NamedAttribute columnAttribute)
+        internal MetaInfo(Type propertyType, DbType dbType, ColumnAttribute columnAttribute)
             : this(propertyType, columnAttribute)
         {
             this.DbType = dbType;
@@ -31,11 +31,11 @@ namespace MicroORM.Mapping
             }
         }
 
-        public NamedAttribute ColumnAttribute { get; private set; }
+        public ColumnAttribute ColumnAttribute { get; private set; }
 
         public DbType? DbType { get; set; }
 
-        public int Size { get { return ((ColumnAttribute)this.ColumnAttribute).Size; } }
+        public int Size { get { return this.ColumnAttribute.Size; } }
 
         public bool IsNullable
         {

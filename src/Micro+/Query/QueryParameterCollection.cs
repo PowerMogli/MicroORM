@@ -66,16 +66,28 @@ namespace MicroORM.Query
                 if (!argument.IsListParam() && argument.IsCustomObject())
                 {
                     KeyValuePair<string, object>[] resultSet = ParameterTypeDescriptor.ToKeyValuePairs(arguments);
-                    foreach (KeyValuePair<string, object> kvp in resultSet)
-                    {
-                        collection.Add(new QueryParameter(
-                                kvp.Key,
-                                tableInfo != null ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(kvp.Value.GetType()),
-                                kvp.Value,
-                                tableInfo != null ? tableInfo.GetColumnSize(kvp.Key) : -1));
-                    }
+                    return CreateParameterFromKeyValuePairs(resultSet, tableInfo);
+                }
+                else if (argument.GetType() == typeof(KeyValuePair<string, object>[]))
+                {
+                    return CreateParameterFromKeyValuePairs((KeyValuePair<string, object>[])argument, tableInfo);
                 }
             }
+            return collection;
+        }
+
+        private static QueryParameterCollection CreateParameterFromKeyValuePairs(KeyValuePair<string, object>[] argument, TableInfo tableInfo)
+        {
+            QueryParameterCollection collection = new QueryParameterCollection();
+            foreach (KeyValuePair<string, object> kvp in argument)
+            {
+                collection.Add(new QueryParameter(
+                        kvp.Key,
+                        tableInfo != null ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(kvp.Value.GetType()),
+                        kvp.Value,
+                        tableInfo != null ? tableInfo.GetColumnSize(kvp.Key) : -1));
+            }
+
             return collection;
         }
     }

@@ -4,9 +4,8 @@ using System.Data;
 namespace MicroORM.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public sealed class ColumnAttribute : NamedAttribute
+    public class ColumnAttribute : Attribute
     {
-        //private bool _identifier;
         private int _size = -1;
 
         public ColumnAttribute()
@@ -23,16 +22,13 @@ namespace MicroORM.Attributes
             this.IsNullable = true;
         }
 
-        public override string ColumnName { get; set; }
+        public string ColumnName { get; set; }
 
         public DbType DbType { get; set; }
 
         internal DbType? NullDbType { get { return new Nullable<DbType>(this.DbType); } }
-        //public bool Identifier
-        //{
-        //    get { return _identifier; }
-        //    set { _identifier = value; }
-        //}
+
+        public bool IsPrimaryKey { get; set; }
 
         public bool IsNullable { get; set; }
 

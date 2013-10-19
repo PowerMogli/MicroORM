@@ -19,12 +19,8 @@ namespace Micro.Program
                 DbEngineRegistrar.Register("Micro.Program.*", DbEngine.SqlServer);
 
                 Post post = new Post();
-                post.Title = "König der Löwen";
-                post.AuthorId = 322;
-                post.CreatedOn = DateTime.Now.AddDays(-302);
-                post.Type = PostType.Page;
-                post.TopicId = 23191;
-                post.Insert();
+                post.Id = 22;
+                post.Load();
 
                 using (DbSession dbSession = new DbSession(@"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True"))
                 {
@@ -39,6 +35,7 @@ namespace Micro.Program
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                     //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
 
+                    //var post = dbSession.GetObject<Post>(22);
                     var title = dbSession.GetObjectSet<string>("select Title from Posts");
                 }
 
@@ -63,8 +60,7 @@ namespace Micro.Program
     [Table("Users")]
     class Users
     {
-        [Column]
-        [PrimaryKey]
+        [Column(IsPrimaryKey = true)]
         public int Id { get; set; }
         [Column]
         public string Name { get; set; }
@@ -89,8 +85,7 @@ namespace Micro.Program
         {
             CreatedOn = DateTime.Now;
         }
-        [Column(AutoNumber = true)]
-        [PrimaryKey]
+        [Column(AutoNumber = true, IsPrimaryKey = true)]
         public int Id { get; set; }
         [Column("AuthorId", DbType = DbType.Boolean)]
         public int AuthorId { get; set; }

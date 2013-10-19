@@ -6,7 +6,7 @@ namespace MicroORM.Mapping
 {
     internal interface IPropertyInfo
     {
-        NamedAttribute ColumnAttribute { get; }
+        ColumnAttribute ColumnAttribute { get; }
 
         DbType? DbType { get; set; }
 

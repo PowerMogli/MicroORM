@@ -4,10 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using MicroORM.Attributes;
 using MicroORM.Base;
-using MicroORM.Storage;
 using MicroORM.Schema;
+using MicroORM.Storage;
 
 namespace MicroORM.Mapping
 {
@@ -21,7 +20,6 @@ namespace MicroORM.Mapping
             this.EntityType = type;
             this.Name = tableName;
             this.Columns = new PropertyInfoCollection();
-            this.PrimaryKeys = new PropertyInfoCollection();
 
             _isAnonymousType = CheckIfAnonymousType(type);
         }
@@ -34,7 +32,7 @@ namespace MicroORM.Mapping
         {
             get
             {
-                return this.PrimaryKeys.Count;
+                return this.Columns.Where(columns => columns.ColumnAttribute.IsPrimaryKey).Count();
             }
         }
 
@@ -63,8 +61,6 @@ namespace MicroORM.Mapping
 
         internal PropertyInfoCollection Columns { get; private set; }
 
-        internal PropertyInfoCollection PrimaryKeys { get; set; }
-
         private void ReconfigureWith()
         {
             foreach (DbColumn dbColumn in this.DbTable.DbColumns)
@@ -74,8 +70,8 @@ namespace MicroORM.Mapping
 
                 propertyInfo.DbType = dbColumn.PropertyType;
                 propertyInfo.IsNullable = dbColumn.IsNullable;
-                ((ColumnAttribute)propertyInfo.ColumnAttribute).Size = dbColumn.Size;
-                ((ColumnAttribute)propertyInfo.ColumnAttribute).AutoNumber = dbColumn.IsAutoIncrement;
+                propertyInfo.ColumnAttribute.Size = dbColumn.Size;
+                propertyInfo.ColumnAttribute.AutoNumber = dbColumn.IsAutoIncrement;
             }
         }
 
@@ -88,7 +84,7 @@ namespace MicroORM.Mapping
 
             selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.Select(member => provider.EscapeName(member.Name))));
             selectStatement.AppendFormat(" from {0}", provider.EscapeName(this.Name));
-            string[] primaryKeys = this.PrimaryKeys.Select(member => member.Name).ToArray();
+            string[] primaryKeys = this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.Name).ToArray();
 
             selectStatement.Append(AppendPrimaryKeys(provider, primaryKeys));
             return this.SelectStatement = selectStatement.ToString();
@@ -99,10 +95,10 @@ namespace MicroORM.Mapping
             StringBuilder whereClause = new StringBuilder(" where ");
             int i = 0;
             string seperator = " and ";
-            foreach (string pirmaryKey in primaryKeys)
+            foreach (string primaryKey in primaryKeys)
             {
                 if (i >= primaryKeys.Length - 1) seperator = string.Empty;
-                whereClause.AppendFormat("{0}=@{1}{2}", provider.EscapeName(pirmaryKey), i++, seperator);
+                whereClause.AppendFormat("{0}=@{1}{2}", provider.EscapeName(primaryKey), i++, seperator);
             }
             return whereClause.ToString();
         }
@@ -116,29 +112,25 @@ namespace MicroORM.Mapping
 
             var tuple = CreateInsertIntoValues(provider);
             insertStatement.AppendFormat("({0})", tuple.Item1);
-            insertStatement.AppendFormat(" values(@{0})", string.Join(",@", Enumerable.Range(0, this.Columns.Count - tuple.Item2)));
+            insertStatement.AppendFormat(" values({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.IsPrimaryKey).Select(column => "@" + column.Name)));
 
             return this.InsertStatement = string.Concat(insertStatement.ToString(), provider.ScopeIdentity);
         }
 
-        private Tuple<string, int> CreateInsertIntoValues(IDbProvider provider)
+        private Tuple<string> CreateInsertIntoValues(IDbProvider provider)
         {
-            int excludedValues = 0;
-            string insertValues = string.Join(", ", this.Columns.Select(member =>
+            string insertValues = string.Join(", ", this.Columns.Select(column =>
             {
-                if (this.PrimaryKeys.Contains(member.Name)
-                    && ((ColumnAttribute)(member.ColumnAttribute)).AutoNumber)
-                {
-                    excludedValues++;
+                if (this.Columns.Contains(column.Name) && column.ColumnAttribute.AutoNumber)
                     return string.Empty;
-                }
-                return provider.EscapeName(member.Name);
+
+                return provider.EscapeName(column.Name);
             }));
 
             if (insertValues.StartsWith(","))
                 insertValues = insertValues.Substring(2, insertValues.Length - 2);
 
-            return new Tuple<string, int>(insertValues, excludedValues);
+            return new Tuple<string>(insertValues);
         }
 
         internal DbType ConvertToDbType(string name)
@@ -171,22 +163,20 @@ namespace MicroORM.Mapping
 
         internal object[] GetPrimaryKeys<TEntity>(TEntity entity)
         {
-            object[] primaryKeys = null;
-            string[] tablePrimaryKeys = this.PrimaryKeys.Select(member => member.Name).ToArray();
-            if (tablePrimaryKeys.Length <= 0) throw new PrimaryKeyException("It was no valid primaryKey available!");
-
-            primaryKeys = new object[tablePrimaryKeys.Length];
             int index = 0;
-            foreach (string tablePrimaryKey in tablePrimaryKeys)
+            var columnPrimaryKeys = this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);
+            object[] primaryKeys = new object[columnPrimaryKeys.Count()];
+
+            foreach (IPropertyInfo propertyInfo in columnPrimaryKeys)
             {
                 object primaryKey = null;
-                IPropertyInfo memberInfo = this.Columns.FirstOrDefault(member => member.Name == tablePrimaryKey);
-
-                if (memberInfo == null || (primaryKey = memberInfo.GetValue(entity)) == null)
-                    throw new PrimaryKeyException(string.Format("The requested pirmaryKey '{0}' was not found! Please set those Property to a valid value!", tablePrimaryKey));
-
+                if ((primaryKey = propertyInfo.GetValue(entity)) == null)
+                    throw new PrimaryKeyException(string.Format("The requested pirmaryKey '{0}' was not found! Please set those Property to a valid value!", propertyInfo.Name));
                 primaryKeys[index++] = primaryKey;
             }
+            if (index <= 0)
+                throw new PrimaryKeyException("It was no valid primaryKey available!");
+
             return primaryKeys;
         }
 

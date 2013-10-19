@@ -10,10 +10,7 @@ namespace MicroORM.Mapping
     {
         private PropertyInfo _propertyInfo;
 
-        public PropertyMetaInfo(PropertyInfo propertyInfo, Type propertyType, NamedAttribute columnAttribute)
-            : this(propertyInfo, propertyType, 0, columnAttribute) { }
-
-        public PropertyMetaInfo(PropertyInfo propertyInfo, Type propertyType, DbType dbType, NamedAttribute columnAttribute)
+        public PropertyMetaInfo(PropertyInfo propertyInfo, Type propertyType, DbType dbType, ColumnAttribute columnAttribute)
             : base(propertyType, dbType, columnAttribute)
         {
             if (propertyInfo == null)

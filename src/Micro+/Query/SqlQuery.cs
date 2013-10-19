@@ -8,7 +8,7 @@ namespace MicroORM.Query
         protected string _sql;
 
         public string SqlStatement { get { return _sql; } internal set { _sql = value; } }
-        public QueryParameterCollection Arguments { get; private set; }
+        public QueryParameterCollection Arguments { get; protected set; }
 
         internal SqlQuery() { }
 
