@@ -97,7 +97,7 @@ namespace MicroORM.Schema
                             DbColumn dbColumn =new DbColumn();
                             dbColumn.Name = SqlTools.GetDbValue<string>(dataReader["ColumnName"]);
                             dbColumn.PropertyName = DbSchemaCleaner.CleanUp(dbColumn.Name);
-                            try { dbColumn.PropertyType = TypeConverter.ToDbType(SqlTools.GetDbValue<string>(dataReader["DataType"])); }
+                            try { dbColumn.DbType = TypeConverter.ToDbType(SqlTools.GetDbValue<string>(dataReader["DataType"])); }
                             catch { }
                             dbColumn.Size = SqlTools.GetDbValue<int>(dataReader["MaxLength"]);
                             try { dbColumn.Precision = SqlTools.GetDbValue<int>(dataReader["DatePrecision"]); }
