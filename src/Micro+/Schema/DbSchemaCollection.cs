@@ -1,6 +1,6 @@
 ﻿namespace MicroORM.Schema
 {
-    internal static class DbSchemaAllocator<T>
+    internal static class DbSchemaAllocator<TEntity>
     {
         private static DbSchemaReader SchemaReader { get; set; }
 
@@ -13,7 +13,7 @@
         {
             if (SchemaReader == null) return;
 
-            SchemaReader.ReadSchema<T>();
+            SchemaReader.ReadSchema<TEntity>();
         }
     }
 
