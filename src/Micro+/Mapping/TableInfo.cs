@@ -13,7 +13,6 @@ namespace MicroORM.Mapping
 {
     internal sealed class TableInfo
     {
-        private static TypeAttributes _nonPublic = TypeAttributes.NotPublic;
         private bool _isAnonymousType;
 
         internal TableInfo(Type type, string tableName)
@@ -22,7 +21,7 @@ namespace MicroORM.Mapping
             this.Name = tableName;
             this.Columns = new PropertyInfoCollection();
 
-            _isAnonymousType = CheckIfAnonymousType(type);
+            _isAnonymousType = Utils.Utils.CheckIfAnonymousType(type);
         }
 
         private string SelectStatement { get; set; }
@@ -164,23 +163,7 @@ namespace MicroORM.Mapping
             return propertyInfo.Size > 0 ? propertyInfo.Size : -1;
         }
 
-        /// <summary>
-        /// Gets whether the given type is an anonymous type.
-        /// </summary>
-        /// <param name="type">The type that is inspected for being anonymous.</param>
-        private bool CheckIfAnonymousType(Type type)
-        {
-            if (type == null)
-                throw new ArgumentNullException("type");
-
-            // HACK: The only way to detect anonymous types right now.
-            return Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), false)
-                   && type.IsGenericType && type.Name.Contains("AnonymousType")
-                   && (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$"))
-                   && (type.Attributes & _nonPublic) == _nonPublic;
-        }
-
-        internal object[] GetPrimaryKeys<TEntity>(TEntity entity)
+        internal object[] GetPrimaryKeyValues<TEntity>(TEntity entity)
         {
             int index = 0;
             var columnPrimaryKeys = this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);

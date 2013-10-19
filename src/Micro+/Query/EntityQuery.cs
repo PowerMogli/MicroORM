@@ -18,9 +18,9 @@ namespace MicroORM.Query
         public IDbCommand Compile(IDbProvider provider)
         {
             TableInfo tableInfo = TableInfo<T>.GetTableInfo;
-            object[] primaryKey = tableInfo.GetPrimaryKeys(this.Entity);
+            object[] primaryKeyValues = tableInfo.GetPrimaryKeyValues(this.Entity);
 
-            SqlQuery<T> sqlQuery = new SqlQuery<T>(primaryKey, null);
+            SqlQuery<T> sqlQuery = new SqlQuery<T>(primaryKeyValues, null);
             return sqlQuery.Compile(provider);
         }
     }
