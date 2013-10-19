@@ -7,6 +7,7 @@ using System.Text;
 using MicroORM.Base;
 using MicroORM.Schema;
 using MicroORM.Storage;
+using System.Collections.Generic;
 
 namespace MicroORM.Mapping
 {
@@ -28,11 +29,14 @@ namespace MicroORM.Mapping
 
         private string InsertStatement { get; set; }
 
+        private int _numberOfPrimaryKeys = -1;
         internal int NumberOfPrimaryKeys
         {
             get
             {
-                return this.Columns.Where(columns => columns.ColumnAttribute.IsPrimaryKey).Count();
+                if (_numberOfPrimaryKeys != -1) return _numberOfPrimaryKeys;
+
+                return _numberOfPrimaryKeys = this.Columns.Where(columns => columns.ColumnAttribute.IsPrimaryKey).Count();
             }
         }
 
@@ -51,6 +55,7 @@ namespace MicroORM.Mapping
 
                 _dbTable = value;
                 ReconfigureWith();
+                CleanUpColumns();
             }
         }
 
@@ -68,11 +73,25 @@ namespace MicroORM.Mapping
                 IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.Name == dbColumn.Name);
                 if (propertyInfo == null) continue;
 
-                propertyInfo.DbType = dbColumn.PropertyType;
+                propertyInfo.DbType = dbColumn.DbType;
                 propertyInfo.IsNullable = dbColumn.IsNullable;
                 propertyInfo.ColumnAttribute.Size = dbColumn.Size;
                 propertyInfo.ColumnAttribute.AutoNumber = dbColumn.IsAutoIncrement;
+                propertyInfo.ColumnAttribute.IsPrimaryKey = dbColumn.IsPrimaryKey;
             }
+        }
+
+        private void CleanUpColumns()
+        {
+            List<string> indexToRemove = new List<string>();
+            for (int index = 0; index < this.Columns.Count; index++)
+            {
+                if (this.DbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name == this.Columns[index].Name) != null)
+                    continue;
+
+                indexToRemove.Add(this.Columns[index].Name);
+            }
+            indexToRemove.ForEach(name => this.Columns.Remove(name));
         }
 
         internal string CreateSelectStatement(IDbProvider provider)
