@@ -48,7 +48,7 @@ namespace MicroORM.Schema
             DbTable dbTable;
             using (this)
             {
-                TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
+                TableInfo tableInfo = TableInfo<T>.GetTableInfo;
                 if (tableInfo == null) return;
 
                 if ((dbTable = base.Tables[tableInfo.Name]) != null)

@@ -122,7 +122,7 @@ namespace MicroORM.Base
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>()
         {
-            var tableInfo = TableInfo.GetTableInfo(typeof(TEntity));
+            var tableInfo = TableInfo<TEntity>.GetTableInfo;
             return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("select * from {0}", (_provider.EscapeName(tableInfo.Name)))));
         }
 
@@ -139,7 +139,7 @@ namespace MicroORM.Base
         public LastInsertId Insert<TEntity>(TEntity data)
         {
             DbSchemaAllocator<TEntity>.Allocate();
-            TableInfo tableInfo = TableInfo.GetTableInfo(typeof(TEntity));
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string insertStatement = tableInfo.CreateInsertStatement(_provider);
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(data, tableInfo));
 

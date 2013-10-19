@@ -18,7 +18,7 @@ namespace MicroORM.Materialization
 
         internal T Materialize<T>(T entity, DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
         {
-            TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
+            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
 
             for (int index = 0; index < tableInfo.Columns.Count; index++)
             {

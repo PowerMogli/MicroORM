@@ -16,7 +16,7 @@ namespace MicroORM.Base
 
         internal ObjectReader(IDataReader dataReader, IDbProvider dbProvider)
         {
-            _tableInfo = TableInfo.GetTableInfo(typeof(T));
+            _tableInfo = TableInfo<T>.GetTableInfo;
             _dbProvider = dbProvider;
             _dataReader = dataReader;
             _materlizer = new EntityMaterializer(dbProvider);

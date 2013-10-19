@@ -47,7 +47,7 @@ namespace MicroORM.Mapping
         {
             set
             {
-                if (value == null || _reconfigCompleted) 
+                if (value == null || _reconfigCompleted)
                     return;
 
                 ReconfigureWith(value);
@@ -196,6 +196,14 @@ namespace MicroORM.Mapping
         public static TableInfo GetTableInfo(Type type)
         {
             return TableInfoContainer.GetTableInfo(type);
+        }
+    }
+
+    internal static class TableInfo<T>
+    {
+        internal static TableInfo GetTableInfo
+        {
+            get { return TableInfo.GetTableInfo(typeof(T)); }
         }
     }
 }

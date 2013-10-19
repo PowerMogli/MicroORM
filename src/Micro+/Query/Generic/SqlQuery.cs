@@ -14,7 +14,7 @@ namespace MicroORM.Query.Generic
         internal SqlQuery(object[] primaryKeys, string additionalPredicate, QueryParameterCollection arguments = null)
             : base(string.Empty, arguments)
         {
-            _tableInfo = TableInfo.GetTableInfo(typeof(T));
+            _tableInfo = TableInfo<T>.GetTableInfo;
             _primaryKeys = primaryKeys;
             _additionalPredicate = additionalPredicate;
         }

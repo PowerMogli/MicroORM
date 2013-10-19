@@ -33,11 +33,12 @@ namespace MicroORM.Mapping
 
         public NamedAttribute ColumnAttribute { get; private set; }
 
-        public DbType? DbType { get; private set; }
+        public DbType? DbType { get; set; }
 
         public bool IsNullable
         {
             get { return _isNullable; }
+            set { _isNullable = value; }
         }
 
         public Type PropertyType { get; private set; }

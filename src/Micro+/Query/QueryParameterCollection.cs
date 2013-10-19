@@ -37,7 +37,7 @@ namespace MicroORM.Query
         {
             if (arguments == null) return new QueryParameterCollection();
 
-            TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
+            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
 
             return Create(arguments, tableInfo);
         }
