@@ -51,10 +51,9 @@ namespace MicroORM.Schema
                 TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
                 if (tableInfo == null) return null;
 
-                if ((dbTable = base.Tables[tableInfo.Name]) != null)
-                {
+                else if ((dbTable = base.Tables[tableInfo.Name]) != null)
                     return dbTable;
-                }
+
                 dbTable = GetTable(tableInfo.Name);
                 dbTable.DbColumns = GetColumns(dbTable);
                 SetPrimaryKeys(dbTable);
