@@ -35,6 +35,8 @@ namespace MicroORM.Mapping
 
         public DbType? DbType { get; set; }
 
+        public int Size { get { return ((ColumnAttribute)this.ColumnAttribute).Size; } }
+
         public bool IsNullable
         {
             get { return _isNullable; }

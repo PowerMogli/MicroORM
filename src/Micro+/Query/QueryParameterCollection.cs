@@ -68,7 +68,11 @@ namespace MicroORM.Query
                     KeyValuePair<string, object>[] resultSet = ParameterTypeDescriptor.ToKeyValuePairs(arguments);
                     foreach (KeyValuePair<string, object> kvp in resultSet)
                     {
-                        collection.Add(new QueryParameter(kvp.Key, tableInfo != null ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(kvp.Value.GetType()), kvp.Value));
+                        collection.Add(new QueryParameter(
+                                kvp.Key,
+                                tableInfo != null ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(kvp.Value.GetType()),
+                                kvp.Value,
+                                tableInfo != null ? tableInfo.GetColumnSize(kvp.Key) : -1));
                     }
                 }
             }

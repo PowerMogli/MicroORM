@@ -10,6 +10,8 @@ namespace MicroORM.Mapping
 
         DbType? DbType { get; set; }
 
+        int Size { get; }
+
         object GetValue(object obj);
 
         void SetValue(object obj, object value);
