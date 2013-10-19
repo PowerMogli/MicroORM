@@ -1,13 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using MicroORM.Base;
 using MicroORM.Schema;
 using MicroORM.Storage;
-using System.Collections.Generic;
 
 namespace MicroORM.Mapping
 {
@@ -53,8 +51,8 @@ namespace MicroORM.Mapping
                     return;
 
                 _dbTable = value;
-                ReconfigureWith();
                 CleanUpColumns();
+                ReconfigureWith();
             }
         }
 
