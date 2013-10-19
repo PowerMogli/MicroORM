@@ -95,7 +95,7 @@ namespace MicroORM.Schema
                         try
                         {
                             DbColumn dbColumn =new DbColumn();
-                            dbColumn.Name = dataReader["ColumnName"].ToString();
+                            dbColumn.Name = SqlTools.GetDbValue<string>(dataReader["ColumnName"]);
                             dbColumn.PropertyName = DbSchemaCleaner.CleanUp(dbColumn.Name);
                             try { dbColumn.PropertyType = TypeConverter.ToDbType(SqlTools.GetDbValue<string>(dataReader["DataType"])); }
                             catch { }
@@ -137,9 +137,9 @@ namespace MicroORM.Schema
                     if (dataReader.Read())
                     {
                         DbTable dbTable = new DbTable();
-                        dbTable.Name = dataReader["TABLE_NAME"].ToString();
-                        dbTable.Schema = dataReader["TABLE_SCHEMA"].ToString();
-                        dbTable.IsView = string.Compare(dataReader["TABLE_TYPE"].ToString(), "View", true) == 0;
+                        dbTable.Name = SqlTools.GetDbValue<string>(dataReader["TABLE_NAME"]);
+                        dbTable.Schema = SqlTools.GetDbValue<string>(dataReader["TABLE_SCHEMA"]);
+                        dbTable.IsView = string.Compare(SqlTools.GetDbValue<string>(dataReader["TABLE_TYPE"]), "View", true) == 0;
                         dbTable.CleanName = DbSchemaCleaner.CleanUp(dbTable.Name);
 
                         return dbTable;
@@ -172,7 +172,7 @@ namespace MicroORM.Schema
 
                     while (dataReader.Read())
                     {
-                        primaryKeys.Add(dataReader["ColumnName"].ToString());
+                        primaryKeys.Add(SqlTools.GetDbValue<string>(dataReader["ColumnName"]));
                     }
                     return primaryKeys;
                 }
