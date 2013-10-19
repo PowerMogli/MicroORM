@@ -1,12 +1,12 @@
 using System.Data;
-using MicroORM.Base.Entity;
+using MicroORM.Entity;
 using MicroORM.Mapping;
 using MicroORM.Query.Generic;
 using MicroORM.Storage;
 
 namespace MicroORM.Query
 {
-    internal class EntityQuery<T> : IQuery where T : Entity
+    internal class EntityQuery<T> : IQuery where T : Entity.Entity
     {
         internal T Entity { get; set; }
 
@@ -17,7 +17,7 @@ namespace MicroORM.Query
 
         public IDbCommand Compile(IDbProvider provider)
         {
-            TableInfo tableInfo = TableInfo.GetTableInfo(this.Entity.GetType());
+            TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
             object[] primaryKey = tableInfo.GetPrimaryKeys(this.Entity);
 
             SqlQuery<T> sqlQuery = new SqlQuery<T>(primaryKey, null);

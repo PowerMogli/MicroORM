@@ -1,4 +1,5 @@
-﻿namespace MicroORM.Storage
+﻿using MicroORM.Schema;
+namespace MicroORM.Storage
 {
     internal class DbProviderFactory
     {
@@ -7,6 +8,8 @@
             switch (engine)
             {
                 case DbEngine.SqlServer:
+                    if (DbSchemaAllocator.SchemaReader == null)
+                        DbSchemaAllocator.SchemaReader = new SqlDbSchemaReader(connectionString);
                     return new SqlDbProvider(connectionString);
                 //case DbEngine.SqlServerCE:
                 //    return new SqlServerCEProvider();
@@ -19,7 +22,7 @@
                 //case DbEngine.SQLite:
                 //    return new SqliteProvider();
             }
-            throw new NotSupportedProviderException("Unkown provider");
+            throw new NotSupportedProviderException(string.Format("Unkown engine {0}!", engine.ToString()));
         }
     }
 }

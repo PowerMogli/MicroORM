@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Common;
 using MicroORM.Base;
 using MicroORM.Query;
+using MicroORM.Schema;
 
 namespace MicroORM.Storage
 {
@@ -62,6 +63,15 @@ namespace MicroORM.Storage
             {
                 Dispose();
             }
+        }
+
+        public virtual IDataReader ExecuteReader(IQuery query)
+        {
+            CreateConnection();
+            _dbCommand = query.Compile(this);
+            _dbCommand.Transaction = _dbTransaction;
+
+            return _dbCommand.ExecuteReader();
         }
 
         public virtual ObjectReader<T> ExecuteReader<T>(IQuery query)

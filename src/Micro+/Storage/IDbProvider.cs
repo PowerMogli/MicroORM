@@ -2,6 +2,7 @@
 using System.Data;
 using MicroORM.Base;
 using MicroORM.Query;
+using MicroORM.Schema;
 
 namespace MicroORM.Storage
 {
@@ -13,6 +14,7 @@ namespace MicroORM.Storage
         object ResolveNullValue(object value, Type type);
         IDbCommand CreateCommand();
         void ExecuteCommand(IQuery query);
+        IDataReader ExecuteReader(IQuery query);
         ObjectReader<T> ExecuteReader<T>(IQuery query);
         T ExecuteScalar<T>(IQuery query);
     }

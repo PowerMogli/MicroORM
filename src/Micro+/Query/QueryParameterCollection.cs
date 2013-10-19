@@ -5,6 +5,7 @@ using System.Globalization;
 using MicroORM.Mapping;
 using MicroORM.Reflection;
 using MicroORM.Utils;
+using MicroORM.Schema;
 
 namespace MicroORM.Query
 {

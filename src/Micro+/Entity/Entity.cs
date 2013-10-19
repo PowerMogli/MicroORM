@@ -1,10 +1,10 @@
+using MicroORM.Base;
 using MicroORM.Storage;
 
-namespace MicroORM.Base.Entity
+namespace MicroORM.Entity
 {
     public abstract class Entity
     {
-        internal EntityState EntityState { get; set; }
         internal IEntitySession EntitySession { get; set; }
 
         public Entity()

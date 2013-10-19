@@ -8,13 +8,13 @@ namespace MicroORM.Mapping
     {
         NamedAttribute ColumnAttribute { get; }
 
-        DbType? DbType { get; }
+        DbType? DbType { get; set; }
 
         object GetValue(object obj);
 
         void SetValue(object obj, object value);
 
-        bool IsNullable { get; }
+        bool IsNullable { get; set; }
 
         bool CanWrite { get; }
 

@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace MicroORM.Base.Entity
+namespace MicroORM.Entity
 {
     public static class EntityExtensions
     {
@@ -9,11 +9,10 @@ namespace MicroORM.Base.Entity
             using (IEntitySession entitySession = entity.EntitySession)
             {
                 entitySession.Load(entity);
-                entity.EntityState = EntityState.Loaded;
             }
         }
 
-        public static void Update<TEntity>(this TEntity entity) where TEntity : Entity
+        private static void Update<TEntity>(this TEntity entity) where TEntity : Entity
         {
             using (IEntitySession dbSession = entity.EntitySession)
             {
@@ -21,12 +20,11 @@ namespace MicroORM.Base.Entity
                 {
                     dbSession.Update(entity);
                     transaction.Commit();
-                    entity.EntityState = EntityState.Updated;
                 }
             }
         }
 
-        public static void Insert<TEntity>(this TEntity entity) where TEntity : Entity
+        private static void Insert<TEntity>(this TEntity entity) where TEntity : Entity
         {
             using (IEntitySession dbSession = entity.EntitySession)
             {
@@ -34,7 +32,22 @@ namespace MicroORM.Base.Entity
                 {
                     dbSession.Insert(entity);
                     transaction.Commit();
-                    entity.EntityState = EntityState.Inserted;
+                }
+            }
+        }
+
+        public static void Save<TEntity>(this TEntity entity) where TEntity : Entity
+        {
+        }
+
+        public static void Delete<TEntity>(this TEntity entity) where TEntity : Entity
+        {
+            using (IEntitySession dbSession = entity.EntitySession)
+            {
+                using (IDbTransaction transaction = dbSession.BeginTransaction(IsolationLevel.ReadUncommitted))
+                {
+                    dbSession.Delete(entity);
+                    transaction.Commit();
                 }
             }
         }

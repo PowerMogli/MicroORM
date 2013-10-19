@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Data;
+using MicroORM.Base;
 using MicroORM.Storage;
 
-namespace MicroORM.Base.Entity
+namespace MicroORM.Entity
 {
     internal class EntitySession : IEntitySession, IDisposable
     {

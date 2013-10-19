@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using MicroORM.Schema;
 
 namespace MicroORM.Storage
 {

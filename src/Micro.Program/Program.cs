@@ -2,7 +2,9 @@
 using System.Data;
 using MicroORM.Attributes;
 using MicroORM.Base;
+using MicroORM.Entity;
 using MicroORM.Query;
+using MicroORM.Schema;
 
 namespace Micro.Program
 {
@@ -35,15 +37,12 @@ namespace Micro.Program
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                     //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
 
-                    Post post = new Post();
-                    post.Title = "Die Spiele von Yoda";
-                    post.Type = PostType.Post;
-                    post.AuthorId = 382;
-                    post.IsActive = true;
-                    post.TopicId = 32;
-                    post.CreatedOn = DateTime.Now.AddDays(-232);
-                    dbSession.Insert(post);
-                    //var post = dbSession.GetObjectSet<Post>();
+                    var title = dbSession.GetObjectSet<string>("select Title from Posts");
+                }
+
+                using (IDbSession dbSession = new DbSession(@"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True"))
+                {
+                    var post = dbSession.GetObjectSet<Post>();
                 }
             }
             catch (Exception ex)
@@ -83,7 +82,7 @@ namespace Micro.Program
     }
 
     [Table("Posts")]
-    class Post
+    class Post : Entity
     {
         public Post()
         {

@@ -7,6 +7,7 @@ using System.Text;
 using MicroORM.Attributes;
 using MicroORM.Base;
 using MicroORM.Storage;
+using MicroORM.Schema;
 
 namespace MicroORM.Mapping
 {
@@ -14,6 +15,7 @@ namespace MicroORM.Mapping
     {
         private static TypeAttributes _nonPublic = TypeAttributes.NotPublic;
         private bool _isAnonymousType;
+        private bool _reconfigCompleted = false;
 
         internal TableInfo(Type type, string tableName)
         {
@@ -37,11 +39,23 @@ namespace MicroORM.Mapping
             }
         }
 
-        public string Name { get; private set; }
+        internal string Name { get; private set; }
 
-        public Type EntityType { get; private set; }
+        internal Type EntityType { get; private set; }
 
-        public bool IsAnonymousType
+        internal DbTable DbTable
+        {
+            set
+            {
+                if (value == null || _reconfigCompleted) 
+                    return;
+
+                ReconfigureWith(value);
+                _reconfigCompleted = true;
+            }
+        }
+
+        internal bool IsAnonymousType
         {
             get { return _isAnonymousType; }
         }
@@ -49,6 +63,17 @@ namespace MicroORM.Mapping
         internal PropertyInfoCollection Columns { get; private set; }
 
         internal PropertyInfoCollection PrimaryKeys { get; set; }
+
+        private void ReconfigureWith(DbTable dbTable)
+        {
+            for (int index = 0; index < dbTable.DbColumns.Count; index++)
+            {
+                this.Columns[index].DbType = dbTable.DbColumns[index].PropertyType;
+                this.Columns[index].IsNullable = dbTable.DbColumns[index].IsNullable;
+                ((ColumnAttribute)this.Columns[index].ColumnAttribute).Size = dbTable.DbColumns[index].Size;
+                ((ColumnAttribute)this.Columns[index].ColumnAttribute).AutoNumber = dbTable.DbColumns[index].IsAutoIncrement;
+            }
+        }
 
         internal string CreateSelectStatement(IDbProvider provider)
         {

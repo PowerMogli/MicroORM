@@ -1,6 +1,7 @@
 ﻿using System;
+using MicroORM.Base;
 
-namespace MicroORM.Base.Entity
+namespace MicroORM.Entity
 {
     internal interface IEntitySession : ITransactionalSession, IDisposable
     {
