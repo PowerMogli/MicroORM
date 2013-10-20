@@ -8,6 +8,7 @@ using MicroORM.Query;
 using MicroORM.Query.Generic;
 using MicroORM.Schema;
 using MicroORM.Storage;
+using MicroORM.Entity;
 
 namespace MicroORM.Base
 {
@@ -144,6 +145,9 @@ namespace MicroORM.Base
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string deleteStatement = tableInfo.CreateDeleteStatement(_provider);
+            EntityInfo entityInfo = ReferenceCacheManager.GetEntityInfo<TEntity>(entity);
+            entityInfo.EntityState = EntityState.Deleted;
+
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(tableInfo.GetPrimaryKeyValues(entity));
             _provider.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
         }
