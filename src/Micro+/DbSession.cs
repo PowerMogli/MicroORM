@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using MicroORM.Caching;
 using MicroORM.Mapping;
 using MicroORM.Query;
 using MicroORM.Query.Generic;
@@ -26,8 +27,8 @@ namespace MicroORM.Base
 
         public DbSession(Type assemblyType)
         {
-            string connectionString = ConnectionStringRegistrar.GetFor(assemblyType);
-            _dbEngine = DbEngineRegistrar.GetFor(assemblyType);
+            string connectionString = Registrar<string>.GetFor(assemblyType);
+            _dbEngine = Registrar<DbEngine>.GetFor(assemblyType);
             _provider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
         }
 
@@ -114,14 +115,13 @@ namespace MicroORM.Base
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
-            return objectSet;
+            return ((IDbSession)this).GetObjectSet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
         }
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>()
         {
-            var tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("select * from {0}", (_provider.EscapeName(tableInfo.Name)))));
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _provider.EscapeName(tableInfo.Name))));
         }
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
@@ -134,11 +134,25 @@ namespace MicroORM.Base
 
         }
 
-        public LastInsertId Insert<TEntity>(TEntity data)
+        void IDbSession.Load<TEntity>(TEntity entity)
+        {
+            ObjectReader<TEntity> objectReader = _provider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
+            if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
+        }
+
+        public void Delete<TEntity>(TEntity entity)
+        {
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+            string deleteStatement = tableInfo.CreateDeleteStatement(_provider);
+            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(tableInfo.GetPrimaryKeyValues(entity));
+            _provider.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
+        }
+
+        public LastInsertId Insert<TEntity>(TEntity entity)
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string insertStatement = tableInfo.CreateInsertStatement(_provider);
-            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(data, tableInfo));
+            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(entity, tableInfo));
 
             return new LastInsertId(_provider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments)));
         }
@@ -170,12 +184,6 @@ namespace MicroORM.Base
         void IDisposable.Dispose()
         {
             this.Dispose();
-        }
-
-        internal void Load<TEntity>(TEntity entity) where TEntity : Entity.Entity
-        {
-            ObjectReader<TEntity> objectReader = _provider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
-            if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
         }
     }
 }
