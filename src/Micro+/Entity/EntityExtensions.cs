@@ -1,4 +1,6 @@
 using System.Data;
+using MicroORM.Base;
+using MicroORM.Mapping;
 
 namespace MicroORM.Entity
 {
@@ -6,7 +8,7 @@ namespace MicroORM.Entity
     {
         public static void Load<TEntity>(this TEntity entity) where TEntity : Entity, new()
         {
-            using (IEntitySession entitySession = entity.EntitySession)
+            using (IDbSession entitySession = entity.EntitySession)
             {
                 entitySession.Load(entity);
             }
@@ -14,7 +16,7 @@ namespace MicroORM.Entity
 
         private static void Update<TEntity>(this TEntity entity) where TEntity : Entity
         {
-            using (IEntitySession dbSession = entity.EntitySession)
+            using (IDbSession dbSession = entity.EntitySession)
             {
                 using (IDbTransaction transaction = dbSession.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
@@ -24,9 +26,9 @@ namespace MicroORM.Entity
             }
         }
 
-        public static void Insert<TEntity>(this TEntity entity) where TEntity : Entity
+        private static void Insert<TEntity>(this TEntity entity) where TEntity : Entity
         {
-            using (IEntitySession dbSession = entity.EntitySession)
+            using (IDbSession dbSession = entity.EntitySession)
             {
                 using (IDbTransaction transaction = dbSession.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
@@ -36,13 +38,17 @@ namespace MicroORM.Entity
             }
         }
 
-        public static void Save<TEntity>(this TEntity entity) where TEntity : Entity
+        public static void PersistChanges<TEntity>(this TEntity entity) where TEntity : Entity
         {
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+
+            if (entity.Delete)
+                Delete(entity);
         }
 
-        public static void Delete<TEntity>(this TEntity entity) where TEntity : Entity
+        private static void Delete<TEntity>(this TEntity entity) where TEntity : Entity
         {
-            using (IEntitySession dbSession = entity.EntitySession)
+            using (IDbSession dbSession = entity.EntitySession)
             {
                 using (IDbTransaction transaction = dbSession.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
