@@ -18,7 +18,7 @@ namespace MicroORM.Caching
             if (entityInfo != null)
                 return entityInfo;
 
-            return SetObjectInfo<TEntity>(entity, new EntityInfo());
+            return SetEntityInfo<TEntity>(entity, new EntityInfo());
         }
 
         private static EntityInfo SetEntityInfo<TEntity>(TEntity entity, EntityInfo entityInfo)
