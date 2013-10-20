@@ -6,7 +6,7 @@ using MicroORM.Schema;
 
 namespace MicroORM.Storage
 {
-    public interface IDbProvider : IDisposable, IEscapeDbIdentifier
+    internal interface IDbProvider : IDisposable, IEscapeDbIdentifier
     {
         string ParameterPrefix { get; }
         string ProviderName { get; }

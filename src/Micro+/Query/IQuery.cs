@@ -3,7 +3,7 @@ using MicroORM.Storage;
 
 namespace MicroORM.Query
 {
-    public interface IQuery
+    internal interface IQuery
     {
         IDbCommand Compile(IDbProvider provider);
     }

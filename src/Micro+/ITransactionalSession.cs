@@ -2,7 +2,7 @@
 
 namespace MicroORM.Base
 {
-    public interface ITransactionalSession
+    internal interface ITransactionalSession
     {
         IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null);
     }

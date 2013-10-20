@@ -1,6 +1,6 @@
 ﻿namespace MicroORM.Storage
 {
-    public interface IEscapeDbIdentifier
+    internal interface IEscapeDbIdentifier
     {
         string EscapeName(string s);
     }

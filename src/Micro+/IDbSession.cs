@@ -4,7 +4,7 @@ using MicroORM.Query;
 
 namespace MicroORM.Base
 {
-    public interface IDbSession : ITransactionalSession, IDisposable
+    internal interface IDbSession : ITransactionalSession, IDisposable
     {
         void ExecuteCommand(string sql, params object[] args);
         void ExecuteStoredProcedure(StoredProcedure procedureObject);
@@ -23,6 +23,8 @@ namespace MicroORM.Base
         bool PersistChanges();
         void Update<T>(Expression<Func<T, bool>> criteria, params object[] setArguments);
         void Update<T>(T data);
+        void Load<TEntity>(TEntity entity) where TEntity : Entity.Entity;
+        void Delete<TEntity>(TEntity entity);
         LastInsertId Insert<T>(T data);
         ObjectReader<T> GetObjectReader<T>(IQuery query);
     }
