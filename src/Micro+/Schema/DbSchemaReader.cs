@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using MicroORM.Mapping;
 using MicroORM.Storage;
 
 namespace MicroORM.Schema
@@ -13,7 +15,29 @@ namespace MicroORM.Schema
             this.Tables = new DbTableCollection();
         }
 
-        public abstract DbTable ReadSchema<T>();
+        internal DbTable ReadSchema<T>()
+        {
+            DbTable dbTable = null;
+            using (this)
+            {
+                TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
+                if (tableInfo == null) return null;
+
+                else if ((dbTable = this.Tables[tableInfo.Name]) != null)
+                    return dbTable;
+
+                dbTable = GetTable(tableInfo.Name);
+                dbTable.DbColumns = GetColumns(dbTable);
+                SetPrimaryKeys(dbTable);
+                this.Tables.Add(dbTable);
+            }
+            return dbTable;
+        }
+
+        protected abstract void SetPrimaryKeys(DbTable dbTable);
+        protected abstract List<DbColumn> GetColumns(DbTable dbTable);
+        protected abstract DbTable GetTable(string tableName);
+        protected abstract List<string> GetPrimaryKeys(string table);
 
         public void Dispose()
         {
