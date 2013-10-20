@@ -21,7 +21,7 @@ namespace MicroORM.Caching
             return SetObjectInfo<TEntity>(entity, new EntityInfo());
         }
 
-        private static EntityInfo SetObjectInfo<TEntity>(TEntity entity, EntityInfo entityInfo)
+        private static EntityInfo SetEntityInfo<TEntity>(TEntity entity, EntityInfo entityInfo)
         {
             lock (_lock)
             {
