@@ -6,7 +6,7 @@ using MicroORM.Storage;
 
 namespace MicroORM.Base
 {
-    public class ObjectReader<T> : IDisposable
+    internal class ObjectReader<T> : IDisposable
     {
         private IDataReader _dataReader;
         private EntityMaterializer _materlizer;

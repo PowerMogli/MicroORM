@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
+using System.Threading;
 using MicroORM.Attributes;
 using MicroORM.Base;
 using MicroORM.Entity;
@@ -15,14 +17,10 @@ namespace Micro.Program
         {
             try
             {
-                ConnectionStringRegistrar.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
-                DbEngineRegistrar.Register("Micro.Program.*", DbEngine.SqlServer);
+                Registrar<DbEngine>.Register("Micro.Program.*", DbEngine.SqlServer);
+                Registrar<string>.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
 
-                Post post = new Post();
-                post.Id = 22;
-                post.Load();
-
-                using (DbSession dbSession = new DbSession(@"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True"))
+                using (DbSession dbSession = new DbSession(typeof(Program)))
                 {
                     //session.ExecuteCommand("select * from Posts where Title=@0 and Id=@1", "Mark", 3);
                     //var objectSet = session.GetObjectSet<Post>(); // holt alle Posts
@@ -34,14 +32,11 @@ namespace Micro.Program
                     //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                     //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
-
-                    //var post = dbSession.GetObject<Post>(22);
-                    var title = dbSession.GetObjectSet<string>("select Title from Posts");
+                    
+                    var users = dbSession.GetObjectSet<Users>();
                 }
 
                 DbSchemaAllocator.FlushReader();
-                ConnectionStringRegistrar.Flush();
-                DbEngineRegistrar.Flush();
             }
             catch (Exception ex)
             {
@@ -57,12 +52,9 @@ namespace Micro.Program
         public Users User { get; set; }
     }
 
-    [Table("Users")]
     class Users
     {
-        [Column(IsPrimaryKey = true)]
         public int Id { get; set; }
-        [Column]
         public string Name { get; set; }
     }
 
@@ -85,15 +77,15 @@ namespace Micro.Program
         {
             CreatedOn = DateTime.Now;
         }
-        [Column(AutoNumber = true, IsPrimaryKey = true)]
         public int Id { get; set; }
-        [Column("AuthorId", DbType = DbType.Boolean)]
         public int AuthorId { get; set; }
         public string Title { get; set; }
         public DateTime CreatedOn { get; set; }
         public PostType Type { get; set; }
         public int? TopicId { get; set; }
         public bool IsActive { get; set; }
+        public string Test1 { get; set; }
+        public bool Test2 { get; set; }
     }
 
     public enum PostType
