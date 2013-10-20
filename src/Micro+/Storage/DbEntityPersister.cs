@@ -27,17 +27,22 @@ namespace MicroORM.Storage
 
             if (entity.Delete)
             {
-                if (entity is Entity.Entity && (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None))
+                // Entity was already deleted
+                // or is not yet loaded!!
+                if (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None)
                     return;
 
                 Delete(entity, entityInfo);
             }
-            else if (entityInfo.EntityState == EntityState.None || entityInfo.EntityState == EntityState.Deleted)
+            // Entity was already deleted
+            // or is not yet loaded!!
+            else if (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None)
             {
                 Insert(entity, entityInfo);
             }
             else
             {
+                // Any changes made to entity?!
                 if (entityInfo.Checksum == CheckSumBuilder.CalculateEntityChecksum(entity))
                     return;
 
