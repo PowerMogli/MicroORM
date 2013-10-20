@@ -47,14 +47,15 @@ namespace MicroORM.Materialization
             return Materialize<T>(entity, dataReaderSchema, dataRecord);
         }
 
-        private void MaterializeEntity(object entity, IPropertyInfo memberInfo, object value)
+        private void MaterializeEntity(object entity, IPropertyInfo propertyInfo, object value)
         {
-            if (!memberInfo.CanWrite) return;
+            if (!propertyInfo.CanWrite) return;
 
             if (Convert.IsDBNull(value))
-                value = memberInfo.IsNullable ? null : _dbProvider.ResolveNullValue(value, memberInfo.PropertyType);
+                value = propertyInfo.IsNullable ? null : _dbProvider.ResolveNullValue(value, propertyInfo.PropertyType);
 
-            memberInfo.SetValue(entity, value);
+            propertyInfo.SetValue(entity, value);
+            _checkSumBuilder.AddPropertyValue(propertyInfo.GetValue(entity));
         }
     }
 }
