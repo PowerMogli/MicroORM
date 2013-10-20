@@ -23,8 +23,8 @@ namespace MicroORM.Mapping
         }
 
         private string SelectStatement { get; set; }
-
         private string InsertStatement { get; set; }
+        private string DeleteStatement { get; set; }
 
         private int _numberOfPrimaryKeys = -1;
         internal int NumberOfPrimaryKeys
@@ -93,24 +93,33 @@ namespace MicroORM.Mapping
 
         internal string CreateSelectStatement(IDbProvider provider)
         {
-            if (string.IsNullOrEmpty(this.SelectStatement) == false) return this.SelectStatement;
+            if (string.IsNullOrEmpty(this.SelectStatement) == false)
+                return this.SelectStatement;
 
             StringBuilder selectStatement = new StringBuilder();
-            selectStatement.Append("select ");
+            selectStatement.Append("SELECT ");
 
             selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.Select(member => provider.EscapeName(member.Name))));
-            selectStatement.AppendFormat(" from {0}", provider.EscapeName(this.Name));
-            string[] primaryKeys = this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.Name).ToArray();
+            selectStatement.AppendFormat(" FROM {0}", provider.EscapeName(this.Name));
 
-            selectStatement.Append(AppendPrimaryKeys(provider, primaryKeys));
+            selectStatement.Append(AppendPrimaryKeys(provider));
             return this.SelectStatement = selectStatement.ToString();
         }
 
-        private string AppendPrimaryKeys(IDbProvider provider, string[] primaryKeys)
+        internal string CreateDeleteStatement(IDbProvider provider)
         {
-            StringBuilder whereClause = new StringBuilder(" where ");
+            if (string.IsNullOrWhiteSpace(this.DeleteStatement) == false)
+                return this.DeleteStatement;
+
+            return this.DeleteStatement = string.Format("DELETE FROM {0} {1}", provider.EscapeName(this.Name), AppendPrimaryKeys(provider));
+        }
+
+        private string AppendPrimaryKeys(IDbProvider provider)
+        {
+            string[] primaryKeys = this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.Name).ToArray();
+            StringBuilder whereClause = new StringBuilder(" WHERE ");
             int i = 0;
-            string seperator = " and ";
+            string seperator = " AND ";
             foreach (string primaryKey in primaryKeys)
             {
                 if (i >= primaryKeys.Length - 1) seperator = string.Empty;
@@ -121,32 +130,16 @@ namespace MicroORM.Mapping
 
         internal string CreateInsertStatement(IDbProvider provider)
         {
-            if (string.IsNullOrEmpty(this.InsertStatement) == false) return this.InsertStatement;
+            if (string.IsNullOrEmpty(this.InsertStatement) == false)
+                return this.InsertStatement;
 
             StringBuilder insertStatement = new StringBuilder();
-            insertStatement.AppendFormat("insert into {0} ", provider.EscapeName(this.Name));
+            insertStatement.AppendFormat("INSERT INTO {0} ", provider.EscapeName(this.Name));
 
-            var tuple = CreateInsertIntoValues(provider);
-            insertStatement.AppendFormat("({0})", tuple.Item1);
-            insertStatement.AppendFormat(" values({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.IsPrimaryKey).Select(column => "@" + column.Name)));
+            insertStatement.AppendFormat("({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => provider.EscapeName(column.Name))));
+            insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name)));
 
             return this.InsertStatement = string.Concat(insertStatement.ToString(), provider.ScopeIdentity);
-        }
-
-        private Tuple<string> CreateInsertIntoValues(IDbProvider provider)
-        {
-            string insertValues = string.Join(", ", this.Columns.Select(column =>
-            {
-                if (this.Columns.Contains(column.Name) && column.ColumnAttribute.AutoNumber)
-                    return string.Empty;
-
-                return provider.EscapeName(column.Name);
-            }));
-
-            if (insertValues.StartsWith(","))
-                insertValues = insertValues.Substring(2, insertValues.Length - 2);
-
-            return new Tuple<string>(insertValues);
         }
 
         internal DbType ConvertToDbType(string name)
