@@ -3,19 +3,20 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using MicroORM.Caching;
+using MicroORM.Entity;
 using MicroORM.Mapping;
 using MicroORM.Query;
 using MicroORM.Query.Generic;
 using MicroORM.Schema;
 using MicroORM.Storage;
-using MicroORM.Entity;
 
 namespace MicroORM.Base
 {
     public class DbSession : IDisposable, IDbSession
     {
-        private IDbProvider _provider = null;
+        private IDbProvider _dbProvider = null;
         private DbEngine _dbEngine;
+        private DbEntityPersister _dbEntityPersister;
 
         public DbSession(string connectionString, DbEngine dbEngine)
         {
@@ -23,18 +24,24 @@ namespace MicroORM.Base
                 throw new ArgumentNullException("connectionString", "The connectionString cannot be null or empty!");
 
             _dbEngine = dbEngine;
-            _provider = DbProviderFactory.GetProvider(dbEngine, connectionString);
+            Initialize(connectionString, _dbEngine);
         }
 
         public DbSession(Type assemblyType)
         {
             string connectionString = Registrar<string>.GetFor(assemblyType);
             _dbEngine = Registrar<DbEngine>.GetFor(assemblyType);
-            _provider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
+            Initialize(connectionString, _dbEngine);
         }
 
         public DbSession(string connectionString)
             : this(connectionString, DbEngine.SqlServer) { }
+
+        private void Initialize(string connectionString, DbEngine dbEngine)
+        {
+            _dbProvider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
+            _dbEntityPersister = new DbEntityPersister(_dbProvider);
+        }
 
         ~DbSession()
         {
@@ -43,12 +50,12 @@ namespace MicroORM.Base
 
         public void ExecuteCommand(string sql, params object[] arguments)
         {
-            _provider.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
+            _dbProvider.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
         public void ExecuteStoredProcedure(StoredProcedure procedureObject)
         {
-            _provider.ExecuteCommand(new StoredProcedureQuery(procedureObject));
+            _dbProvider.ExecuteCommand(new StoredProcedureQuery(procedureObject));
         }
 
         public TEntity ExecuteStoredProcedure<TEntity>(StoredProcedure procedureObject)
@@ -59,7 +66,7 @@ namespace MicroORM.Base
 
         public void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments)
         {
-            _provider.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create(arguments)));
+            _dbProvider.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create(arguments)));
         }
 
         public TEntity ExecuteStoredProcedure<TEntity>(string storedProcedureName, params object[] arguments)
@@ -95,7 +102,7 @@ namespace MicroORM.Base
 
         public TEntity GetScalarValue<TEntity>(string sql, params object[] arguments)
         {
-            return _provider.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
+            return _dbProvider.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>(string sql, params object[] arguments)
@@ -111,7 +118,7 @@ namespace MicroORM.Base
 
         ObjectReader<TEntity> IDbSession.GetObjectReader<TEntity>(IQuery query)
         {
-            return _provider.ExecuteReader<TEntity>(query);
+            return _dbProvider.ExecuteReader<TEntity>(query);
         }
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>(Expression<Func<TEntity, bool>> condition)
@@ -122,7 +129,7 @@ namespace MicroORM.Base
         public ObjectSet<TEntity> GetObjectSet<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _provider.EscapeName(tableInfo.Name))));
+            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
         }
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
@@ -137,38 +144,39 @@ namespace MicroORM.Base
 
         void IDbSession.Load<TEntity>(TEntity entity)
         {
-            ObjectReader<TEntity> objectReader = _provider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
+            ObjectReader<TEntity> objectReader = _dbProvider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
             if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
         }
 
         public void Delete<TEntity>(TEntity entity)
         {
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string deleteStatement = tableInfo.CreateDeleteStatement(_provider);
-            EntityInfo entityInfo = ReferenceCacheManager.GetEntityInfo<TEntity>(entity);
-            entityInfo.EntityState = EntityState.Deleted;
-
-            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(tableInfo.GetPrimaryKeyValues(entity));
-            _provider.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
+            EntityInfo entityInfo = ReferenceCacheManager.GetEntityInfo(entity);
+            _dbEntityPersister.Delete(entity, entityInfo);
         }
 
-        public LastInsertId Insert<TEntity>(TEntity entity)
+        public void Insert<TEntity>(TEntity entity)
         {
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string insertStatement = tableInfo.CreateInsertStatement(_provider);
-            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(entity, tableInfo));
-
-            return new LastInsertId(_provider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments)));
+            EntityInfo entityInfo = ReferenceCacheManager.GetEntityInfo(entity);
+            _dbEntityPersister.Insert(entity, entityInfo);
         }
 
-        public bool PersistChanges()
+        bool IDbSession.PersistChanges<TEntity>(TEntity entity)
         {
-            return true;
+            try
+            {
+                _dbEntityPersister.PersistChanges(entity);
+                return true;
+            }
+            catch (Exception)
+            {
+                // do something here!
+            }
+            return false;
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
         {
-            ITransactionalDbProvider transactionalProvider = _provider as ITransactionalDbProvider;
+            ITransactionalDbProvider transactionalProvider = _dbProvider as ITransactionalDbProvider;
             if (transactionalProvider == null)
                 throw new NotSupportedException(
                     string.Format(@"This type of DbEngine ('{0}') does not implement the interface ITransactionalDbProvider
@@ -181,7 +189,7 @@ namespace MicroORM.Base
 
         private void Dispose()
         {
-            _provider.Dispose();
+            _dbProvider.Dispose();
             DbSchemaAllocator.SchemaReader.Dispose();
         }
 

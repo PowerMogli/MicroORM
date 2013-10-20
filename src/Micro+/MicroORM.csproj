@@ -50,6 +50,7 @@
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
+    <Compile Include="Materialization\ByteArrayBuilder.cs" />
     <Compile Include="Materialization\CheckSumBuilder.cs" />
     <Compile Include="PrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Schema\PostgreSqlDbSchemaReader.cs" />
     <Compile Include="Schema\SqlDbSchemaReader.cs" />
     <Compile Include="Storage\DbEngine.cs" />
+    <Compile Include="Storage\DbEntityPersister.cs" />
     <Compile Include="Storage\IEscapeIdentifier.cs" />
     <Compile Include="Storage\IDbProvider.cs" />
     <Compile Include="Storage\ITransactionalDbProvider.cs" />

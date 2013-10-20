@@ -20,12 +20,12 @@ namespace MicroORM.Base
         ObjectSet<T> GetObjectSet<T>(string sql, params object[] args);
         ObjectSet<T> GetObjectSet<T>(IQuery query);
         T GetScalarValue<T>(string sql, params object[] args);
-        bool PersistChanges();
+        bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity;
         void Update<T>(Expression<Func<T, bool>> criteria, params object[] setArguments);
         void Update<T>(T data);
         void Load<TEntity>(TEntity entity) where TEntity : Entity.Entity;
         void Delete<TEntity>(TEntity entity);
-        LastInsertId Insert<T>(T data);
+        void Insert<T>(T data);
         ObjectReader<T> GetObjectReader<T>(IQuery query);
     }
 }
