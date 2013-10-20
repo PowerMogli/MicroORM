@@ -2,12 +2,11 @@
 {
     public enum DbEngine
     {
-        None,
         SqlServer,
         SqlServerCE,
         MySql,
         PostgreSQL,
-        // Oracle,
+        Oracle,
         SQLite
     }
 }
