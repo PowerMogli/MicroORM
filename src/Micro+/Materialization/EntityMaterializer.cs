@@ -3,6 +3,8 @@ using System.Data;
 //using LinFu.DynamicProxy;
 using MicroORM.Mapping;
 using MicroORM.Storage;
+using MicroORM.Entity;
+using MicroORM.Caching;
 
 namespace MicroORM.Materialization
 {
@@ -10,15 +12,19 @@ namespace MicroORM.Materialization
     {
         //private ProxyFactory _proxyFactory = new ProxyFactory();
         private IDbProvider _dbProvider;
+        private EntityInfo _entityInfo;
+        private CheckSumBuilder _checkSumBuilder;
 
         internal EntityMaterializer(IDbProvider provider)
         {
             _dbProvider = provider;
+            _checkSumBuilder = new CheckSumBuilder();
         }
 
         internal T Materialize<T>(T entity, DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
         {
             TableInfo tableInfo = TableInfo<T>.GetTableInfo;
+            _entityInfo = ReferenceCacheManager.GetEntityInfo<T>(entity);
 
             for (int index = 0; index < tableInfo.Columns.Count; index++)
             {
@@ -28,6 +34,9 @@ namespace MicroORM.Materialization
 
                 MaterializeEntity(entity, memberInfo, dataRecord[columnIndex]);
             }
+
+            _entityInfo.Checksum = _checkSumBuilder.ToCheckSum();
+            _entityInfo.EntityState = EntityState.Loaded;
 
             return entity;
         }

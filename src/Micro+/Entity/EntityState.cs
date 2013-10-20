@@ -1,6 +1,6 @@
 ﻿namespace MicroORM.Entity
 {
-    public enum EntityState
+    internal enum EntityState
     {
         /// <summary>
         /// Persistent objects with this state aren't loaded, saved or deleted. They have been recently created in memory.
