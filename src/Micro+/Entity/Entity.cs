@@ -5,13 +5,14 @@ namespace MicroORM.Entity
 {
     public abstract class Entity
     {
-        internal IEntitySession EntitySession { get; set; }
+        internal IDbSession EntitySession { get; set; }
+        public bool Delete { get; set; }
 
         public Entity()
         {
-            string connectionString = ConnectionStringRegistrar.GetFor(this.GetType());
-            DbEngine dbEngine = DbEngineRegistrar.GetFor(this.GetType());
-            this.EntitySession = new EntitySession(connectionString, dbEngine);
+            string connectionString = Registrar<string>.GetFor(this.GetType());
+            DbEngine dbEngine = Registrar<DbEngine>.GetFor(this.GetType());
+            this.EntitySession = new DbSession(connectionString, dbEngine);
         }
     }
 }
