@@ -3,23 +3,29 @@ using System.Collections.Concurrent;
 
 namespace MicroORM.Base
 {
-    public abstract class Registrar<T>
+    public static class Registrar<T>
     {
-        protected static ConcurrentDictionary<string, T> _container = new ConcurrentDictionary<string, T>();
+        private static ConcurrentDictionary<string, T> _container = new ConcurrentDictionary<string, T>();
 
         public static void Flush()
         {
             _container.Clear();
         }
 
-        public static bool Register(string entityType, T value)
+        /// <summary>
+        /// Registers a value for the given namespace.
+        /// </summary>
+        /// <param name="nameSpace"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool Register(string nameSpace, T value)
         {
-            if (_container.ContainsKey(entityType)) return false;
+            if (_container.ContainsKey(nameSpace)) return false;
 
-            return _container.TryAdd(entityType, value);
+            return _container.TryAdd(nameSpace, value);
         }
 
-        public static T GetFor(Type entityType)
+        internal static T GetFor(Type entityType)
         {
             T value = default(T);
 

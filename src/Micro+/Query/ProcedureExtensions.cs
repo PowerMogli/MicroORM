@@ -8,8 +8,8 @@ namespace MicroORM.Query
     {
         public static TEntity Execute<TEntity>(this StoredProcedure procedureObject)
         {
-            string connectionString = ConnectionStringRegistrar.GetFor(procedureObject.GetType());
-            DbEngine dbEngine = DbEngineRegistrar.GetFor(procedureObject.GetType());
+            string connectionString = Registrar<string>.GetFor(procedureObject.GetType());
+            DbEngine dbEngine = Registrar<DbEngine>.GetFor(procedureObject.GetType());
             using (IDbSession dbSession = new DbSession(connectionString, dbEngine))
             {
                 return dbSession.ExecuteStoredProcedure<TEntity>(procedureObject);
@@ -18,8 +18,8 @@ namespace MicroORM.Query
 
         public static void Execute(this StoredProcedure procedureObject, IsolationLevel? isolationLevel = null)
         {
-            string connectionString = ConnectionStringRegistrar.GetFor(procedureObject.GetType());
-            DbEngine dbEngine = DbEngineRegistrar.GetFor(procedureObject.GetType());
+            string connectionString = Registrar<string>.GetFor(procedureObject.GetType());
+            DbEngine dbEngine = Registrar<DbEngine>.GetFor(procedureObject.GetType());
             using (IDbSession dbSession = new DbSession(connectionString, dbEngine))
             {
                 IDbTransaction transaction = null;
