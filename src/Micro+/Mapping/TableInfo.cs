@@ -146,7 +146,8 @@ namespace MicroORM.Mapping
         {
             string updateStatement = string.Format("UPDATE {0} SET ", dbProvider.EscapeName(this.Name));
             updateStatement += string.Join(", ",
-                arguments.Select(kvp => string.Format("{0} = @{0}", kvp.Key)));
+                arguments.SkipWhile(kvp => this.DbTable.DbColumns.Find(column => column.Name == kvp.Key && (column.IsPrimaryKey || column.IsAutoIncrement)) != null)
+                .Select(kvp2 => string.Format("{0} = @{0}", kvp2.Key)));
             updateStatement += AppendPrimaryKeys(dbProvider);
 
             return updateStatement;

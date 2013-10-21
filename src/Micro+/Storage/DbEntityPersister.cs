@@ -60,7 +60,7 @@ namespace MicroORM.Storage
                 ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity }),
                 dbEntity != null ? dbEntity.EntityInfo.EntityValueCollection : new EntityValueCollection());
 
-            if (valuesToUpdate.Length == 0)
+            if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
 
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;

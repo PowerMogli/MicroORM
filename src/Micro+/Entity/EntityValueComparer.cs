@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using MicroORM.Utils;
 using MicroORM.Mapping;
 using MicroORM.Schema;
-using System;
+using MicroORM.Utils;
 
 namespace MicroORM.Entity
 {
@@ -12,7 +12,7 @@ namespace MicroORM.Entity
         internal static KeyValuePair<string, object>[] ComputeChangedValues<TEntity>(KeyValuePair<string, object>[] namedValues, EntityValueCollection entityValueCollection)
         {
             namedValues = CleanUpNamedValues<TEntity>(namedValues);
-            if (namedValues.Length != entityValueCollection.Count)
+            if (entityValueCollection.Count != 0 && (namedValues.Length != entityValueCollection.Count))
                 return null;
 
             Dictionary<string, object> valuesForUpdate = new Dictionary<string, object>();
@@ -20,7 +20,7 @@ namespace MicroORM.Entity
             {
                 string propertyName = namedValues[index].Key;
                 KeyValuePair<string, object> keyValuePair = entityValueCollection.FirstOrDefault(kvp => kvp.Key == propertyName);
-                if (keyValuePair.IsDefault()) continue;
+                if (keyValuePair.IsDefault() && entityValueCollection.Count != 0) continue; // Ja die Überprüfung auf Count != 0 ist vll. doof, aber dient dem Zweck!!
 
                 if (NullValueCheck(namedValues[index].Value, keyValuePair.Value, valuesForUpdate, propertyName))
                     continue;
