@@ -1,8 +1,9 @@
-﻿using MicroORM.Caching;
+﻿using System.Collections.Generic;
 using MicroORM.Entity;
 using MicroORM.Mapping;
-using MicroORM.Materialization;
 using MicroORM.Query;
+using MicroORM.Reflection;
+using System;
 
 namespace MicroORM.Storage
 {
@@ -23,59 +24,74 @@ namespace MicroORM.Storage
         /// <param name="entity"></param>
         internal void PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            EntityInfo entityInfo = ReferenceCacheManager.GetEntityInfo(entity);
-
             if (entity.Delete)
             {
                 // Entity was already deleted
                 // or is not yet loaded!!
-                if (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None)
+                if (entity.EntityInfo.EntityState == EntityState.Deleted || entity.EntityInfo.EntityState == EntityState.None)
                     return;
 
-                Delete(entity, entityInfo);
+                Delete(entity);
+                entity.EntityInfo.EntityState = EntityState.Deleted;
             }
             // Entity was already deleted
             // or is not yet loaded!!
-            else if (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None)
+            else if (entity.EntityInfo.EntityState == EntityState.Deleted || entity.EntityInfo.EntityState == EntityState.None)
             {
-                Insert(entity, entityInfo);
+                Insert(entity);
+                entity.EntityInfo.EntityState = EntityState.Inserted;
             }
             else
             {
-                // Any changes made to entity?!
-                if (entityInfo.Checksum == CheckSumBuilder.CalculateEntityChecksum(entity))
-                    return;
+                Tuple<bool, string, QueryParameterCollection> tuple = PrepareForUpdate<TEntity>(entity);
+                if (tuple.Item1) return;
 
-                Update(entity, entityInfo);
+                Update<TEntity>(new SqlQuery(tuple.Item2, tuple.Item3));
+                entity.EntityInfo.EntityState = EntityState.Updated;
             }
         }
 
-        private void Update<TEntity>(TEntity entity, EntityInfo entityInfo)
+        internal Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity)
         {
+            // Any changes made to entity?!
+            Entity.Entity dbEntity = entity as Entity.Entity;
+            KeyValuePair<string, object>[] valuesToUpdate = 
+                EntityValueComparer.ComputeChangedValues<TEntity>(
+                ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity }),
+                dbEntity != null ? dbEntity.EntityInfo.EntityValueCollection : new EntityValueCollection());
 
+            if (valuesToUpdate.Length == 0)
+                return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
+
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+            string updateStatement = tableInfo.CreateUpdateStatement(_dbProvider, valuesToUpdate);
+            QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
+            queryParameterCollection.AddRange(tableInfo.GetPrimaryKeyValues<TEntity>(entity));
+
+            return new Tuple<bool, string, QueryParameterCollection>(true, updateStatement, queryParameterCollection);
         }
 
-        internal void Delete<TEntity>(TEntity entity, EntityInfo entityInfo)
+        internal void Update<TEntity>(IQuery query)
+        {
+            _dbProvider.ExecuteCommand(query);
+        }
+
+        internal void Delete<TEntity>(TEntity entity)
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string deleteStatement = tableInfo.CreateDeleteStatement(_dbProvider);
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(tableInfo.GetPrimaryKeyValues(entity));
 
             _dbProvider.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
-
-            entityInfo.EntityState = EntityState.Deleted;
         }
 
-        internal void Insert<TEntity>(TEntity entity, EntityInfo entityInfo)
+        internal void Insert<TEntity>(TEntity entity)
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string insertStatement = tableInfo.CreateInsertStatement(_dbProvider);
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(entity, tableInfo));
 
             LastInsertId insertId = new LastInsertId(_dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments)));
-
-            entityInfo.Checksum = CheckSumBuilder.CalculateEntityChecksum(entity);
-            entityInfo.EntityState = EntityState.Inserted;
         }
     }
 }
