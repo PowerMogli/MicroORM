@@ -1,7 +1,5 @@
 using System.Data;
 using MicroORM.Base;
-using MicroORM.Mapping;
-using MicroORM.Caching;
 
 namespace MicroORM.Entity
 {
@@ -12,6 +10,7 @@ namespace MicroORM.Entity
             using (IDbSession entitySession = entity.EntitySession)
             {
                 entitySession.Load(entity);
+                entity.EntityInfo.EntityState = EntityState.Loaded;
             }
         }
 
