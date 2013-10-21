@@ -63,11 +63,11 @@ namespace MicroORM.Query
             var argument = arguments[0];
             if (argument != null)
             {
-                KeyValuePair<string, object>[] namedArguments =argument as KeyValuePair<string, object>[];
+                KeyValuePair<string, object>[] namedArguments = argument as KeyValuePair<string, object>[];
                 if (namedArguments == null && !argument.IsListParam() && argument.IsCustomObject())
                     namedArguments = ParameterTypeDescriptor.ToKeyValuePairs(arguments);
 
-                return CreateParameterFromKeyValuePairs((KeyValuePair<string, object>[])argument, tableInfo);
+                return CreateParameterFromKeyValuePairs((KeyValuePair<string, object>[])namedArguments, tableInfo);
             }
             return collection;
         }
