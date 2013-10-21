@@ -41,17 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\ColumnAttribute.cs" />
-    <Compile Include="Caching\CacheItem.cs" />
-    <Compile Include="Caching\ReferenceCacheManager.cs" />
     <Compile Include="Entity\Entity.cs" />
     <Compile Include="Entity\EntityExtensions.cs" />
-    <Compile Include="Caching\EntityInfoReferenceCache.cs" />
-    <Compile Include="Entity\EntityValue.cs" />
+    <Compile Include="Entity\EntityValueCollection.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
+    <Compile Include="Entity\EntityValueComparer.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
-    <Compile Include="Materialization\ByteArrayBuilder.cs" />
-    <Compile Include="Materialization\CheckSumBuilder.cs" />
     <Compile Include="PrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
     <Compile Include="ITransactionalSession.cs" />
