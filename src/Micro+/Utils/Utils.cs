@@ -3,11 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using MicroORM.Attributes;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using MicroORM.Mapping;
 using MicroORM.Reflection;
-using System.Runtime.CompilerServices;
-using System.Reflection;
 
 namespace MicroORM.Utils
 {
@@ -55,6 +54,13 @@ namespace MicroORM.Utils
         {
             if (data == null) return false;
             return data is IEnumerable && !(data is string) && !(data is byte[]);
+        }
+
+        public static bool IsDefault<T>(this T value) where T : struct
+        {
+            bool isDefault = value.Equals(default(T));
+
+            return isDefault;
         }
 
         internal static object ConvertTo(this object data, Type type)
