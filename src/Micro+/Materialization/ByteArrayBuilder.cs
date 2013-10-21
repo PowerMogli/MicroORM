@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace MicroORM.Materialization
 {
-    internal class ByteArrayBuilder
+    internal class ByteArrayBuilder : IDisposable
     {
         List<byte> _byteValues = new List<byte>();
         StringBuilder _stringValues = new StringBuilder();
@@ -23,5 +24,12 @@ namespace MicroORM.Materialization
             _byteValues.AddRange(new UTF8Encoding().GetBytes(_stringValues.ToString()));
             return _byteValues.ToArray();
         }
+
+        public void Dispose()
+        {
+            _byteValues.Clear();
+            _stringValues.Clear();
+        }
     }
 }
+
