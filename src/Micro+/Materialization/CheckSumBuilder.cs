@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System;
@@ -7,7 +7,7 @@ using MicroORM.Mapping;
 
 namespace MicroORM.Materialization
 {
-    internal class CheckSumBuilder
+    internal class CheckSumBuilder : IDisposable
     {
         private ByteArrayBuilder _byteArrayBuilder = new ByteArrayBuilder();
         CultureInfo _germanCulture = new CultureInfo("de-DE");
@@ -108,6 +108,11 @@ namespace MicroORM.Materialization
             }
 
             return checkSumBuilder.ToCheckSum();
+        }
+
+        public void Dispose()
+        {
+            _byteArrayBuilder.Dispose();
         }
     }
 }
