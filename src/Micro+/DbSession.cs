@@ -2,8 +2,6 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using MicroORM.Caching;
-using MicroORM.Entity;
 using MicroORM.Mapping;
 using MicroORM.Query;
 using MicroORM.Query.Generic;
@@ -137,9 +135,10 @@ namespace MicroORM.Base
 
         }
 
-        public void Update<TEntity>(TEntity data)
+        public void Update<TEntity>(TEntity entity)
         {
-
+            Tuple<bool, string, QueryParameterCollection> result = _dbEntityPersister.PrepareForUpdate(entity);
+            _dbEntityPersister.Update<TEntity>(new SqlQuery(result.Item2, result.Item3));
         }
 
         void IDbSession.Load<TEntity>(TEntity entity)
@@ -150,14 +149,12 @@ namespace MicroORM.Base
 
         public void Delete<TEntity>(TEntity entity)
         {
-            EntityInfo entityInfo = ReferenceCacheManager.GetEntityInfo(entity);
-            _dbEntityPersister.Delete(entity, entityInfo);
+            _dbEntityPersister.Delete(entity);
         }
 
         public void Insert<TEntity>(TEntity entity)
         {
-            EntityInfo entityInfo = ReferenceCacheManager.GetEntityInfo(entity);
-            _dbEntityPersister.Insert(entity, entityInfo);
+            _dbEntityPersister.Insert(entity);
         }
 
         bool IDbSession.PersistChanges<TEntity>(TEntity entity)
@@ -169,9 +166,8 @@ namespace MicroORM.Base
             }
             catch (Exception)
             {
-                // do something here!
+                throw;
             }
-            return false;
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
@@ -191,7 +187,6 @@ namespace MicroORM.Base
         {
             _dbProvider.Dispose();
             DbSchemaAllocator.SchemaReader.Dispose();
-            ReferenceCacheManager.Dispose();
         }
 
         void IDisposable.Dispose()
