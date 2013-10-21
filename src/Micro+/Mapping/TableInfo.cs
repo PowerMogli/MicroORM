@@ -91,7 +91,7 @@ namespace MicroORM.Mapping
             indexToRemove.ForEach(name => this.Columns.Remove(name));
         }
 
-        internal string CreateSelectStatement(IDbProvider provider)
+        internal string CreateSelectStatement(IDbProvider dbProvider)
         {
             if (string.IsNullOrEmpty(this.SelectStatement) == false)
                 return this.SelectStatement;
@@ -99,10 +99,10 @@ namespace MicroORM.Mapping
             StringBuilder selectStatement = new StringBuilder();
             selectStatement.Append("SELECT ");
 
-            selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.Select(member => provider.EscapeName(member.Name))));
-            selectStatement.AppendFormat(" FROM {0}", provider.EscapeName(this.Name));
+            selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.Select(member => dbProvider.EscapeName(member.Name))));
+            selectStatement.AppendFormat(" FROM {0}", dbProvider.EscapeName(this.Name));
 
-            selectStatement.Append(AppendPrimaryKeys(provider));
+            selectStatement.Append(AppendPrimaryKeys(dbProvider));
             return this.SelectStatement = selectStatement.ToString();
         }
 
@@ -114,7 +114,7 @@ namespace MicroORM.Mapping
             return this.DeleteStatement = string.Format("DELETE FROM {0} {1}", provider.EscapeName(this.Name), AppendPrimaryKeys(provider));
         }
 
-        private string AppendPrimaryKeys(IDbProvider provider)
+        private string AppendPrimaryKeys(IDbProvider dbProvider)
         {
             string[] primaryKeys = this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.Name).ToArray();
             StringBuilder whereClause = new StringBuilder(" WHERE ");
@@ -123,23 +123,33 @@ namespace MicroORM.Mapping
             foreach (string primaryKey in primaryKeys)
             {
                 if (i >= primaryKeys.Length - 1) seperator = string.Empty;
-                whereClause.AppendFormat("{0}=@{1}{2}", provider.EscapeName(primaryKey), i++, seperator);
+                whereClause.AppendFormat("{0}=@{1}{2}", dbProvider.EscapeName(primaryKey), i++, seperator);
             }
             return whereClause.ToString();
         }
 
-        internal string CreateInsertStatement(IDbProvider provider)
+        internal string CreateInsertStatement(IDbProvider dbProvider)
         {
             if (string.IsNullOrEmpty(this.InsertStatement) == false)
                 return this.InsertStatement;
 
             StringBuilder insertStatement = new StringBuilder();
-            insertStatement.AppendFormat("INSERT INTO {0} ", provider.EscapeName(this.Name));
+            insertStatement.AppendFormat("INSERT INTO {0} ", dbProvider.EscapeName(this.Name));
 
-            insertStatement.AppendFormat("({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => provider.EscapeName(column.Name))));
+            insertStatement.AppendFormat("({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.Name))));
             insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name)));
 
-            return this.InsertStatement = string.Concat(insertStatement.ToString(), provider.ScopeIdentity);
+            return this.InsertStatement = string.Concat(insertStatement.ToString(), dbProvider.ScopeIdentity);
+        }
+
+        internal string CreateUpdateStatement(IDbProvider dbProvider, KeyValuePair<string, object>[] arguments)
+        {
+            string updateStatement = string.Format("UPDATE {0} SET ", dbProvider.EscapeName(this.Name));
+            updateStatement += string.Join(", ",
+                arguments.Select(kvp => string.Format("{0} = @{0}", kvp.Key)));
+            updateStatement += AppendPrimaryKeys(dbProvider);
+
+            return updateStatement;
         }
 
         internal DbType ConvertToDbType(string name)
@@ -194,20 +204,20 @@ namespace MicroORM.Mapping
 
     internal static class TableInfo<T>
     {
-        private static TableInfo TableInfo { get; set; }
+        private static TableInfo InternalTableInfo { get; set; }
 
         internal static TableInfo GetTableInfo
         {
             get
             {
-                if (TableInfo != null)
-                    return TableInfo;
+                if (InternalTableInfo != null)
+                    return InternalTableInfo;
 
-                TableInfo = TableInfo.GetTableInfo(typeof(T));
-                if (TableInfo == null) return null;
+                InternalTableInfo = TableInfo.GetTableInfo(typeof(T));
+                if (InternalTableInfo == null) return null;
 
-                TableInfo.DbTable = DbSchemaAllocator<T>.DbTable;
-                return TableInfo;
+                InternalTableInfo.DbTable = DbSchemaAllocator<T>.DbTable;
+                return InternalTableInfo;
             }
         }
     }
