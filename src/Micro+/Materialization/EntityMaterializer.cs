@@ -18,26 +18,27 @@ namespace MicroORM.Materialization
         internal EntityMaterializer(IDbProvider provider)
         {
             _dbProvider = provider;
-            _checkSumBuilder = new CheckSumBuilder();
         }
 
         internal T Materialize<T>(T entity, DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
         {
-            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
-            _entityInfo = ReferenceCacheManager.GetEntityInfo<T>(entity);
-
-            for (int index = 0; index < tableInfo.Columns.Count; index++)
+            using (_checkSumBuilder = new CheckSumBuilder())
             {
-                IPropertyInfo memberInfo = tableInfo.Columns[index];
-                int columnIndex = dataReaderSchema.ColumnIndex(index);
-                if (columnIndex < 0) continue;
+                TableInfo tableInfo = TableInfo<T>.GetTableInfo;
+                _entityInfo = ReferenceCacheManager.GetEntityInfo<T>(entity);
 
-                MaterializeEntity(entity, memberInfo, dataRecord[columnIndex]);
+                for (int index = 0; index < tableInfo.Columns.Count; index++)
+                {
+                    IPropertyInfo memberInfo = tableInfo.Columns[index];
+                    int columnIndex = dataReaderSchema.ColumnIndex(index);
+                    if (columnIndex < 0) continue;
+
+                    MaterializeEntity(entity, memberInfo, dataRecord[columnIndex]);
+                }
+
+                _entityInfo.Checksum = _checkSumBuilder.ToCheckSum();
+                _entityInfo.EntityState = EntityState.Loaded;
             }
-
-            _entityInfo.Checksum = _checkSumBuilder.ToCheckSum();
-            _entityInfo.EntityState = EntityState.Loaded;
-
             return entity;
         }
 
