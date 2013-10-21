@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using MicroORM.Mapping;
 using MicroORM.Reflection;
-using MicroORM.Utils;
 using MicroORM.Schema;
+using MicroORM.Utils;
 
 namespace MicroORM.Query
 {
@@ -67,7 +68,7 @@ namespace MicroORM.Query
                 if (namedArguments == null && !argument.IsListParam() && argument.IsCustomObject())
                     namedArguments = ParameterTypeDescriptor.ToKeyValuePairs(arguments);
 
-                return CreateParameterFromKeyValuePairs((KeyValuePair<string, object>[])namedArguments, tableInfo);
+                return CreateParameterFromKeyValuePairs(namedArguments, tableInfo);
             }
             return collection;
         }
@@ -75,16 +76,40 @@ namespace MicroORM.Query
         private static QueryParameterCollection CreateParameterFromKeyValuePairs(KeyValuePair<string, object>[] argument, TableInfo tableInfo)
         {
             QueryParameterCollection collection = new QueryParameterCollection();
+            if (argument == null) return collection;
+
             foreach (KeyValuePair<string, object> kvp in argument)
             {
                 collection.Add(new QueryParameter(
                         kvp.Key,
                         tableInfo != null ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(kvp.Value.GetType()),
-                        kvp.Value,
+                        EvaluateParameterValue(tableInfo, kvp),
                         tableInfo != null ? tableInfo.GetColumnSize(kvp.Key) : -1));
             }
 
             return collection;
+        }
+
+        private static object EvaluateParameterValue(TableInfo tableInfo, KeyValuePair<string, object> kvp)
+        {
+            if (tableInfo == null)
+                return kvp.Value == null ? DBNull.Value : kvp.Value;
+
+            DbColumn dbColumn = tableInfo.DbTable.DbColumns.FirstOrDefault(column => column.Name == kvp.Key && column.IsNullable);
+            if (kvp.Value == null)
+            {
+                if (dbColumn != null)
+                {
+                    if (string.IsNullOrWhiteSpace(dbColumn.DefaultValue))
+                        return DBNull.Value;
+                    else
+                        return (object)dbColumn.DefaultValue;
+                }
+                else
+                    return DBNull.Value;
+            }
+            else
+                return kvp.Value;
         }
     }
 }
