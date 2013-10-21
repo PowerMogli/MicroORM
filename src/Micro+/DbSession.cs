@@ -191,6 +191,7 @@ namespace MicroORM.Base
         {
             _dbProvider.Dispose();
             DbSchemaAllocator.SchemaReader.Dispose();
+            ReferenceCacheManager.Dispose();
         }
 
         void IDisposable.Dispose()
