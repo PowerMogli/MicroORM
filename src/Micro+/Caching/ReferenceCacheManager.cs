@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MicroORM.Entity;
 
 namespace MicroORM.Caching
