@@ -3,6 +3,7 @@
     internal static class DbSchemaAllocator<TEntity>
     {
         private static DbSchemaReader SchemaReader { get; set; }
+        private static DbTable DbInternTable { get; set; }
 
         static DbSchemaAllocator()
         {
@@ -14,8 +15,9 @@
             get
             {
                 if (SchemaReader == null) return null;
+                if (DbInternTable != null) return DbInternTable;
 
-                return SchemaReader.ReadSchema<TEntity>();
+                return DbInternTable = SchemaReader.ReadSchema<TEntity>();
             }
         }
     }
