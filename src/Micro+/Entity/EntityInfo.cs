@@ -1,39 +1,14 @@
-﻿using System;
-
-namespace MicroORM.Entity
+﻿namespace MicroORM.Entity
 {
-    internal sealed class EntityInfo : ICloneable
+    internal sealed class EntityInfo
     {
-
-        public EntityInfo() { }
-
-        public EntityState EntityState { get; set; }
-
-        public byte[] Checksum { get; set; }
-
-        internal void Restore(EntityInfo objectInfo)
+        internal EntityInfo()
         {
-            this.Checksum = objectInfo.Checksum;
+            this.EntityState = EntityState.None;
+            this.EntityValueCollection = new EntityValueCollection();
         }
 
-        #region ICloneable Members
-
-        public EntityInfo Clone()
-        {
-            // ATTENTION: When changing this method change also the Restore method. They are required for transaction management.
-            EntityInfo objectInfo = new EntityInfo();
-
-            if (this.Checksum != null)
-                objectInfo.Checksum = (byte[])this.Checksum.Clone();
-
-            return objectInfo;
-        }
-
-        object ICloneable.Clone()
-        {
-            return this.Clone();
-        }
-
-        #endregion
+        internal EntityState EntityState { get; set; }
+        internal EntityValueCollection EntityValueCollection { get; private set; }
     }
 }
