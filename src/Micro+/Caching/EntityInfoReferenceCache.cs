@@ -46,13 +46,16 @@ namespace MicroORM.Caching
 
         internal void Add(TEntity entity, EntityInfo entityInfo)
         {
-            List<CacheItem<TEntity>> items = new List<CacheItem<TEntity>>();
-            if (_referenceCache.ContainsKey(entity.GetType()) == false)
+            List<CacheItem<TEntity>> items;
+
+            if (_referenceCache.TryGetValue(entity.GetType(), out items) == false)
             {
+                items = new List<CacheItem<TEntity>>();
                 _referenceCache.TryAdd(entity.GetType(), items);
-                _keys.Add(entity.GetType());
-                items.Add(new CacheItem<TEntity>(entity, entityInfo));
             }
+            if (_keys.Contains(entity.GetType()) == false)
+                _keys.Add(entity.GetType());
+            items.Add(new CacheItem<TEntity>(entity, entityInfo));
         }
 
         internal void Update(TEntity entity, EntityInfo entityInfo)
