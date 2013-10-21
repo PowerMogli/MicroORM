@@ -194,15 +194,20 @@ namespace MicroORM.Mapping
 
     internal static class TableInfo<T>
     {
+        private static TableInfo TableInfo { get; set; }
+
         internal static TableInfo GetTableInfo
         {
             get
             {
-                TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
-                if (tableInfo == null) return null;
+                if (TableInfo != null)
+                    return TableInfo;
 
-                tableInfo.DbTable = DbSchemaAllocator<T>.DbTable;
-                return tableInfo;
+                TableInfo = TableInfo.GetTableInfo(typeof(T));
+                if (TableInfo == null) return null;
+
+                TableInfo.DbTable = DbSchemaAllocator<T>.DbTable;
+                return TableInfo;
             }
         }
     }
