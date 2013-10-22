@@ -51,7 +51,7 @@ namespace MicroORM.Storage
             }
         }
 
-        internal Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity)
+       internal Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity)
         {
             // Any changes made to entity?!
             Entity.Entity dbEntity = entity as Entity.Entity;
@@ -61,14 +61,14 @@ namespace MicroORM.Storage
                 dbEntity != null ? dbEntity.EntityInfo.EntityValueCollection : new EntityValueCollection());
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
-                return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
+                return new Tuple<bool, string, QueryParameterCollection>(true, null, null);
 
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string updateStatement = tableInfo.CreateUpdateStatement(_dbProvider, valuesToUpdate);
             QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
             queryParameterCollection.AddRange(tableInfo.GetPrimaryKeyValues<TEntity>(entity));
 
-            return new Tuple<bool, string, QueryParameterCollection>(true, updateStatement, queryParameterCollection);
+            return new Tuple<bool, string, QueryParameterCollection>(false, updateStatement, queryParameterCollection);
         }
 
         internal void Update<TEntity>(IQuery query)
