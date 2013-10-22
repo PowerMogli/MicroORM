@@ -60,7 +60,7 @@ namespace MicroORM.Entity
             if ((namedValue == null && keyValue != null)
                 || namedValue != null && keyValue == null)
             {
-                valuesForUpdate.Add(propertyName, null);
+                valuesForUpdate.Add(propertyName, namedValue ?? keyValue);
                 return true;
             }
             else if (namedValue == null && keyValue == null)
