@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
+using MicroORM.Caching;
+using MicroORM.Entity;
 //using LinFu.DynamicProxy;
 using MicroORM.Mapping;
 using MicroORM.Storage;
@@ -29,6 +30,8 @@ namespace MicroORM.Materialization
 
                 MaterializeEntity(entity, propertyInfo, dataRecord[columnIndex]);
             }
+
+            EntityInfoCacheManager.SetEntityInfo(entity, new EntityInfo());
             return entity;
         }
 
@@ -46,15 +49,6 @@ namespace MicroORM.Materialization
                 value = propertyInfo.IsNullable ? null : _dbProvider.ResolveNullValue(value, propertyInfo.PropertyType);
 
             propertyInfo.SetValue(entity, value);
-            SaveToEntityCollection(entity, propertyInfo.Name, value);
-        }
-
-        private void SaveToEntityCollection(object entity, string name, object value)
-        {
-            Entity.Entity _entity = entity as Entity.Entity;
-            if (_entity == null) return;
-
-            _entity.EntityInfo.EntityValueCollection.Add(new KeyValuePair<string, object>(name, value));
         }
     }
 }
