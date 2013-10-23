@@ -7,7 +7,7 @@ using System;
 
 namespace MicroORM.Storage
 {
-    internal class DbEntityPersister
+    internal class DbEntityPersister<TEntity>
     {
         private IDbProvider _dbProvider;
 
@@ -51,14 +51,13 @@ namespace MicroORM.Storage
             }
         }
 
-        internal Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity)
+        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             // Any changes made to entity?!
-            Entity.Entity dbEntity = entity as Entity.Entity;
             KeyValuePair<string, object>[] valuesToUpdate = 
                 EntityValueComparer.ComputeChangedValues<TEntity>(
                 ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity }),
-                dbEntity != null ? dbEntity.EntityInfo.EntityValueCollection : new EntityValueCollection());
+                entity.EntityInfo.EntityValueCollection);
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
