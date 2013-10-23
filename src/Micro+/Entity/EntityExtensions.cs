@@ -1,5 +1,6 @@
 using System.Data;
 using MicroORM.Base;
+using MicroORM.Storage;
 
 namespace MicroORM.Entity
 {
@@ -7,16 +8,24 @@ namespace MicroORM.Entity
     {
         public static void Load<TEntity>(this TEntity entity) where TEntity : Entity, new()
         {
-            using (IDbSession entitySession = entity.EntitySession)
+            if (entity.EntityState == EntityState.Loaded) return;
+
+            string connectionString = Registrar<string>.GetFor(entity.GetType());
+            DbEngine dbEngine = Registrar<DbEngine>.GetFor(entity.GetType());
+
+            using (IDbSession entitySession = new DbSession(connectionString, dbEngine))
             {
                 entitySession.Load(entity);
-                entity.EntityInfo.EntityState = EntityState.Loaded;
+                entity.EntityState = EntityState.Loaded;
             }
         }
 
         public static void PersistChanges<TEntity>(this TEntity entity) where TEntity : Entity
         {
-            using (IDbSession dbSession = entity.EntitySession)
+            string connectionString = Registrar<string>.GetFor(entity.GetType());
+            DbEngine dbEngine = Registrar<DbEngine>.GetFor(entity.GetType());
+
+            using (IDbSession dbSession = new DbSession(connectionString, dbEngine))
             {
                 using (IDbTransaction transaction = dbSession.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
