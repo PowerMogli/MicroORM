@@ -14,6 +14,9 @@ namespace MicroORM.Query
         {
             if (name == null) throw new ArgumentNullException("name", "Der Name des Parameters darf niemals NULL sein");
 
+            if (name.StartsWith(parameterPrefix))
+                parameterPrefix = string.Empty;
+
             parameter.ParameterName = string.Concat(parameterPrefix, name);
             if (value != null)
             {
