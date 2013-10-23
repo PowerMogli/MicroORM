@@ -41,13 +41,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="Caching\CacheItem.cs" />
+    <Compile Include="Caching\EntityInfoCache.cs" />
+    <Compile Include="Caching\EntityInfoCacheManager.cs" />
     <Compile Include="Entity\Entity.cs" />
     <Compile Include="Entity\EntityExtensions.cs" />
-    <Compile Include="Entity\EntityValueCollection.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
-    <Compile Include="Entity\EntityValueComparer.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
+    <Compile Include="Materialization\EntityHashSetManager.cs" />
     <Compile Include="PrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
     <Compile Include="ITransactionalSession.cs" />
@@ -78,7 +80,7 @@
     <Compile Include="Query\SqlStoredProcedure.cs" />
     <Compile Include="Query\Generic\SqlQuery.cs" />
     <Compile Include="Query\IQuery.cs" />
-    <Compile Include="Query\QueryInterpreter.cs" />
+    <Compile Include="Query\DbCommandCompiler.cs" />
     <Compile Include="Query\SqlQuery.cs" />
     <Compile Include="Query\StoredProcedureQuery.cs" />
     <Compile Include="Reflection\ParameterTypeDescriptor.cs" />
