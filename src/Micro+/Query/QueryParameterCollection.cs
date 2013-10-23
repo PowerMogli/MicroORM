@@ -7,6 +7,7 @@ using MicroORM.Mapping;
 using MicroORM.Reflection;
 using MicroORM.Schema;
 using MicroORM.Utils;
+using System.Data;
 
 namespace MicroORM.Query
 {
@@ -31,7 +32,23 @@ namespace MicroORM.Query
             QueryParameterCollection collection = CreateParameterFromAnonymous(arguments, tableInfo);
             if (collection.Count != 0) return collection;
 
+            collection = CreateParameterFromProcedureParameterCollection(arguments);
+            if (collection.Count != 0) return collection;
+
             return CreateParameterFromRegular(arguments);
+        }
+
+        private static QueryParameterCollection CreateParameterFromProcedureParameterCollection(object[] arguments)
+        {
+            ProcedureParameterCollection procedureCollection = arguments[0] as ProcedureParameterCollection;
+            if (procedureCollection == null) return new QueryParameterCollection();
+
+            QueryParameterCollection queryParameterCollection = new QueryParameterCollection();
+            foreach (IDbDataParameter parameter in procedureCollection)
+            {
+                queryParameterCollection.Add(new QueryParameter(parameter.ParameterName, parameter.DbType, parameter.Value, parameter.Size));
+            }
+            return queryParameterCollection;
         }
 
         internal static QueryParameterCollection Create<T>(object[] arguments)
