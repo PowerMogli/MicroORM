@@ -51,10 +51,13 @@ namespace MicroORM.Storage
             }
         }
 
+<<<<<<< HEAD
         private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity) where TEntity : Entity.Entity
+=======
+       internal Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity)
+>>>>>>> 685316dc7dc9ab309144c3ba5229657472b29911
         {
             // Any changes made to entity?!
-            Entity.Entity dbEntity = entity as Entity.Entity;
             KeyValuePair<string, object>[] valuesToUpdate = 
                 EntityValueComparer.ComputeChangedValues<TEntity>(
                 ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity }),
