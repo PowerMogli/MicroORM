@@ -14,7 +14,6 @@ namespace MicroORM.Base
     {
         private IDbProvider _dbProvider = null;
         private DbEngine _dbEngine;
-        private DbEntityPersister _dbEntityPersister;
 
         public DbSession(string connectionString, DbEngine dbEngine)
         {
@@ -38,7 +37,6 @@ namespace MicroORM.Base
         private void Initialize(string connectionString, DbEngine dbEngine)
         {
             _dbProvider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
-            _dbEntityPersister = new DbEntityPersister(_dbProvider);
         }
 
         ~DbSession()
@@ -135,11 +133,11 @@ namespace MicroORM.Base
 
         }
 
-        public void Update<TEntity>(TEntity entity)
-        {
-            Tuple<bool, string, QueryParameterCollection> result = _dbEntityPersister.PrepareForUpdate(entity);
-            _dbEntityPersister.Update<TEntity>(new SqlQuery(result.Item2, result.Item3));
-        }
+        //public void Update<TEntity>(TEntity entity)
+        //{
+        //    Tuple<bool, string, QueryParameterCollection> result = _dbEntityPersister.PrepareForUpdate(entity);
+        //    _dbEntityPersister.Update<TEntity>(new SqlQuery(result.Item2, result.Item3));
+        //}
 
         void IDbSession.Load<TEntity>(TEntity entity)
         {
@@ -149,25 +147,20 @@ namespace MicroORM.Base
 
         public void Delete<TEntity>(TEntity entity)
         {
+            DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
             _dbEntityPersister.Delete(entity);
         }
 
         public void Insert<TEntity>(TEntity entity)
         {
+            DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
             _dbEntityPersister.Insert(entity);
         }
 
         bool IDbSession.PersistChanges<TEntity>(TEntity entity)
         {
-            try
-            {
-                _dbEntityPersister.PersistChanges(entity);
-                return true;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
+            return _dbEntityPersister.PersistChanges(entity);
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
