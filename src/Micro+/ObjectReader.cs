@@ -40,12 +40,15 @@ namespace MicroORM.Base
                 if (_dataReader.Read() == false) { return false; }
             }
 
-            if (_tableInfo != null) { return ReadInternal(); }
+            if (_tableInfo != null)
+            {
+                return ReadInternal();
+            }
 
-            return GetListOfValues();
+            return GetListOfPrimitivValues();
         }
 
-        private bool GetListOfValues()
+        private bool GetListOfPrimitivValues()
         {
             this.Current = (T)_dataReader.GetValue(0);
             return true;
