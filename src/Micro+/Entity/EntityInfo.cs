@@ -1,14 +1,20 @@
-﻿namespace MicroORM.Entity
+﻿using System.Collections.Generic;
+using System;
+
+namespace MicroORM.Entity
 {
     internal sealed class EntityInfo
     {
         internal EntityInfo()
         {
             this.EntityState = EntityState.None;
-            this.EntityValueCollection = new EntityValueCollection();
+            this.EntityHashSet = new Dictionary<string, int>();
+            this.LastCallTime = DateTime.Now;
         }
 
+        internal bool CanBeRemoved { get { return DateTime.Now.Subtract(this.LastCallTime) > TimeSpan.FromMinutes(2); } }
         internal EntityState EntityState { get; set; }
-        internal EntityValueCollection EntityValueCollection { get; private set; }
+        internal Dictionary<string, int> EntityHashSet { get; set; }
+        internal DateTime LastCallTime { get; set; }
     }
 }
