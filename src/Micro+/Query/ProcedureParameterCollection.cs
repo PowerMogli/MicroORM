@@ -5,14 +5,14 @@ using System.Data;
 
 namespace MicroORM.Query
 {
-    internal class ProcedureParameterCollection : IEnumerable
+    internal class ProcedureParameterCollection : IEnumerable<IDbDataParameter>
     {
         internal ProcedureParameterCollection()
         {
-            this.Parameters = new Dictionary<string, IDataParameter>();
+            this.Parameters = new Dictionary<string, IDbDataParameter>();
         }
 
-        internal Dictionary<string, IDataParameter> Parameters { get; private set; }
+        internal Dictionary<string, IDbDataParameter> Parameters { get; private set; }
 
         internal bool AddParameter<T>(string parameterName, T value, DbType dbType, int length)
         {
@@ -42,12 +42,12 @@ namespace MicroORM.Query
             return this.Parameters.Values.GetEnumerator();
         }
 
-        internal void Add(string key, IDataParameter parameter)
+        internal void Add(string key, IDbDataParameter parameter)
         {
             this.Parameters.Add(key, parameter);
         }
 
-        internal IDataParameter this[string key]
+        internal IDbDataParameter this[string key]
         {
             get { return this.Parameters[key]; }
         }
@@ -55,6 +55,11 @@ namespace MicroORM.Query
         internal bool ContainsKey(string key)
         {
             return this.Parameters.ContainsKey(key);
+        }
+
+        IEnumerator<IDbDataParameter> IEnumerable<IDbDataParameter>.GetEnumerator()
+        {
+            return (IEnumerator<IDbDataParameter>)this.GetEnumerator();
         }
     }
 }
