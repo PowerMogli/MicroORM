@@ -6,6 +6,7 @@ using System.Text;
 using MicroORM.Base;
 using MicroORM.Schema;
 using MicroORM.Storage;
+using MicroORM.Attributes;
 
 namespace MicroORM.Mapping
 {
@@ -13,10 +14,10 @@ namespace MicroORM.Mapping
     {
         private bool _isAnonymousType;
 
-        internal TableInfo(Type type, string tableName)
+        internal TableInfo(Type type, TableAttribute tableAttribute)
         {
             this.EntityType = type;
-            this.Name = tableName;
+            this.TableAttribute = tableAttribute;
             this.Columns = new PropertyInfoCollection();
 
             _isAnonymousType = Utils.Utils.CheckIfAnonymousType(type);
@@ -25,6 +26,7 @@ namespace MicroORM.Mapping
         private string SelectStatement { get; set; }
         private string InsertStatement { get; set; }
         private string DeleteStatement { get; set; }
+        private TableAttribute TableAttribute { get; set; }
 
         private int _numberOfPrimaryKeys = -1;
         internal int NumberOfPrimaryKeys
@@ -37,8 +39,7 @@ namespace MicroORM.Mapping
             }
         }
 
-        internal string Name { get; private set; }
-
+        internal string Name { get { return TableAttribute.EntityName; } }
         internal Type EntityType { get; private set; }
 
         private DbTable _dbTable;
@@ -116,16 +117,29 @@ namespace MicroORM.Mapping
 
         private string AppendPrimaryKeys(IDbProvider dbProvider)
         {
-            string[] primaryKeys = this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.Name).ToArray();
+            var primaryKeys = GetPrimaryKeyNames();
+            int count = primaryKeys.Count();
+
             StringBuilder whereClause = new StringBuilder(" WHERE ");
             int i = 0;
             string seperator = " AND ";
             foreach (string primaryKey in primaryKeys)
             {
-                if (i >= primaryKeys.Length - 1) seperator = string.Empty;
+                if (i >= count - 1) seperator = string.Empty;
                 whereClause.AppendFormat("{0}=@{1}{2}", dbProvider.EscapeName(primaryKey), i++, seperator);
             }
             return whereClause.ToString();
+        }
+
+        private IEnumerable<string> GetPrimaryKeyNames()
+        {
+            if (string.IsNullOrWhiteSpace(this.TableAttribute.PrimaryKeys) == false)
+            {
+                string[] attrPrimaryKeys = this.TableAttribute.PrimaryKeys.Split(',');
+                return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name)).Select(column => column.Name);
+            }
+            else
+                return this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.Name);
         }
 
         internal string CreateInsertStatement(IDbProvider dbProvider)
@@ -168,7 +182,7 @@ namespace MicroORM.Mapping
         internal object[] GetPrimaryKeyValues<TEntity>(TEntity entity)
         {
             int index = 0;
-            var columnPrimaryKeys = this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);
+            var columnPrimaryKeys = GetPrimaryKeyColumns();
             object[] primaryKeys = new object[columnPrimaryKeys.Count()];
 
             foreach (IPropertyInfo propertyInfo in columnPrimaryKeys)
@@ -182,6 +196,17 @@ namespace MicroORM.Mapping
                 throw new PrimaryKeyException("It was no valid primaryKey available!");
 
             return primaryKeys;
+        }
+
+        private IEnumerable<IPropertyInfo> GetPrimaryKeyColumns()
+        {
+            if (string.IsNullOrWhiteSpace(this.TableAttribute.PrimaryKeys) == false)
+            {
+                string[] attrPrimaryKeys = this.TableAttribute.PrimaryKeys.Split(',');
+                return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
+            }
+            else
+                return this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);
         }
 
         /// <summary>

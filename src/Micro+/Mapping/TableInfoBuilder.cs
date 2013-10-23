@@ -16,8 +16,7 @@ namespace MicroORM.Mapping
                 throw new TableInfoException(string.Format("Cannot create mapping for interface '{0}'! Please use TypeMapping.RegisterPersistentInterface to register the interface with persistent type.", entityType.FullName));
 
             TableAttribute attribute = GetPersistentAttribute(entityType);
-
-            TableInfo tableInfo = new TableInfo(entityType, attribute.EntityName);
+            TableInfo tableInfo = new TableInfo(entityType, attribute);
             CreateMemberMappingsFor<ColumnAttribute>(entityType, tableInfo, AddPropertyMetaInfo);
             //CreateMemberMappingsFor<PrimaryKeyAttribute>(entityType, tableInfo, AddPrimaryKeyInfo);
 
