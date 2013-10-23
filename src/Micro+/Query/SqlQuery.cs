@@ -20,12 +20,11 @@ namespace MicroORM.Query
 
         public virtual IDbCommand Compile(IDbProvider provider)
         {
-            IDbCommand command = provider.CreateCommand();
-            command.CommandType = CommandType.Text;
-            QueryInterpreter queryInterpreter = new QueryInterpreter(this, provider);
-            queryInterpreter.Setup(command);
+            DbCommandCompiler commandCompiler = new DbCommandCompiler(this, provider);
+            IDbCommand dbCommand = commandCompiler.Compile();
+            dbCommand.CommandType = CommandType.Text;
 
-            return command;
+            return dbCommand;
         }
     }
 }
