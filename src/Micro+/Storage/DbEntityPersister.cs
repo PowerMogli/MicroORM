@@ -4,10 +4,12 @@ using MicroORM.Mapping;
 using MicroORM.Query;
 using MicroORM.Reflection;
 using System;
+using MicroORM.Materialization;
+using MicroORM.Caching;
 
 namespace MicroORM.Storage
 {
-    internal class DbEntityPersister<TEntity>
+    internal class DbEntityPersister
     {
         private IDbProvider _dbProvider;
 
@@ -22,53 +24,56 @@ namespace MicroORM.Storage
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="entity"></param>
-        internal void PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
+        internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             if (entity.Delete)
             {
                 // Entity was already deleted
                 // or is not yet loaded!!
-                if (entity.EntityInfo.EntityState == EntityState.Deleted || entity.EntityInfo.EntityState == EntityState.None)
-                    return;
+                if (entity.EntityState == EntityState.Deleted || entity.EntityState == EntityState.None)
+                    return false;
 
                 Delete(entity);
-                entity.EntityInfo.EntityState = EntityState.Deleted;
+                entity.EntityState = EntityState.Deleted;
             }
             // Entity was already deleted
             // or is not yet loaded!!
-            else if (entity.EntityInfo.EntityState == EntityState.Deleted || entity.EntityInfo.EntityState == EntityState.None)
+            else if (entity.EntityState == EntityState.Deleted || entity.EntityState == EntityState.None)
             {
                 Insert(entity);
-                entity.EntityInfo.EntityState = EntityState.Inserted;
+                entity.EntityState = EntityState.Inserted;
+                return true;
             }
-            else
+            else if (entity.EntityState == EntityState.Loaded
+                || entity.EntityState == EntityState.Inserted
+                || entity.EntityState == EntityState.Updated)
             {
                 Tuple<bool, string, QueryParameterCollection> tuple = PrepareForUpdate<TEntity>(entity);
-                if (tuple.Item1) return;
+                if (tuple.Item1 == false) return false;
 
                 Update<TEntity>(new SqlQuery(tuple.Item2, tuple.Item3));
-                entity.EntityInfo.EntityState = EntityState.Updated;
+                entity.EntityState = EntityState.Updated;
+                return true;
             }
+
+            return false;
         }
 
         private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             // Any changes made to entity?!
-            Entity.Entity dbEntity = entity as Entity.Entity;
-            KeyValuePair<string, object>[] valuesToUpdate = 
-                EntityValueComparer.ComputeChangedValues<TEntity>(
-                ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity }),
-                entity.EntityInfo.EntityValueCollection);
+            EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+            KeyValuePair<string, object>[] valuesToUpdate = EntityHashSetManager.ComputeUpdateValues(entity, entityInfo);
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
-                return new Tuple<bool, string, QueryParameterCollection>(true, null, null);
+                return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
 
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string updateStatement = tableInfo.CreateUpdateStatement(_dbProvider, valuesToUpdate);
             QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
             queryParameterCollection.AddRange(tableInfo.GetPrimaryKeyValues<TEntity>(entity));
 
-            return new Tuple<bool, string, QueryParameterCollection>(false, updateStatement, queryParameterCollection);
+            return new Tuple<bool, string, QueryParameterCollection>(true, updateStatement, queryParameterCollection);
         }
 
         internal void Update<TEntity>(IQuery query)
