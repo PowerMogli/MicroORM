@@ -1,10 +1,10 @@
 using System;
 using System.Data;
-using MicroORM.Mapping;
-using MicroORM.Materialization;
-using MicroORM.Storage;
+using RabbitDB.Mapping;
+using RabbitDB.Materialization;
+using RabbitDB.Storage;
 
-namespace MicroORM.Base
+namespace RabbitDB.Base
 {
     internal class ObjectReader<T> : IDisposable
     {

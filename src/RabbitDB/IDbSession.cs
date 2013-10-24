@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
-using MicroORM.Query;
+using RabbitDB.Query;
 
-namespace MicroORM.Base
+namespace RabbitDB.Base
 {
     internal interface IDbSession : ITransactionalSession, IDisposable
     {

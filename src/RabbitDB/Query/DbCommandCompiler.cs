@@ -1,7 +1,7 @@
 using System.Data;
-using MicroORM.Storage;
+using RabbitDB.Storage;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     internal class DbCommandCompiler
     {

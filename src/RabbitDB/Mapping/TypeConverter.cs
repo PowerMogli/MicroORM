@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     internal static class TypeConverter
     {

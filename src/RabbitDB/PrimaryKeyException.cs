@@ -1,6 +1,6 @@
 using System;
 
-namespace MicroORM.Base
+namespace RabbitDB.Base
 {
     public class PrimaryKeyException : Exception
     {

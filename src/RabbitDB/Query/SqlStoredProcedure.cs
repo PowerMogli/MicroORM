@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     public class SqlStoredProcedure : StoredProcedure
     {

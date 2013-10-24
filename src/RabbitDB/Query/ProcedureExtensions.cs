@@ -1,8 +1,8 @@
 ﻿using System.Data;
-using MicroORM.Base;
-using MicroORM.Storage;
+using RabbitDB.Base;
+using RabbitDB.Storage;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     public static class ProcedureExtensions
     {

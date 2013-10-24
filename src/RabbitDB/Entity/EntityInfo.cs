@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MicroORM.Materialization;
-using MicroORM.Reflection;
-using MicroORM.Mapping;
+using RabbitDB.Materialization;
+using RabbitDB.Reflection;
+using RabbitDB.Mapping;
 
-namespace MicroORM.Entity
+namespace RabbitDB.Entity
 {
     internal sealed class EntityInfo
     {

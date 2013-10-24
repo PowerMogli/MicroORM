@@ -1,7 +1,7 @@
 ﻿using System.Data;
-using MicroORM.Mapping;
+using RabbitDB.Mapping;
 
-namespace MicroORM.Materialization
+namespace RabbitDB.Materialization
 {
     class DataReaderSchema
     {

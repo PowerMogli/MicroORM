@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 
-namespace MicroORM.Attributes
+namespace RabbitDB.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class ColumnAttribute : Attribute

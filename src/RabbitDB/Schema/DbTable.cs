@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal class DbTable
     {

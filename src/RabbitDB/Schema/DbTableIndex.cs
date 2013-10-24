@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal class DbTableIndex
     {

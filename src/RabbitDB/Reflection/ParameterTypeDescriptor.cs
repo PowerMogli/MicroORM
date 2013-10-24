@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace MicroORM.Reflection
+namespace RabbitDB.Reflection
 {
     internal class ParameterTypeDescriptor
     {

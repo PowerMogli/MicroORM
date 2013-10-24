@@ -1,4 +1,4 @@
-﻿namespace MicroORM.Query
+﻿namespace RabbitDB.Query
 {
     interface IArgumentQuery
     {

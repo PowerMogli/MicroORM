@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using MicroORM.Reflection;
+using RabbitDB.Reflection;
 
-namespace MicroORM.Materialization
+namespace RabbitDB.Materialization
 {
     internal class EntityHashSetManager
     {

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     internal sealed class PropertyInfoCollection : IEnumerable<IPropertyInfo>
     {

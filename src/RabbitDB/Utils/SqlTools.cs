@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroORM.Utils
+namespace RabbitDB.Utils
 {
     internal class SqlTools
     {

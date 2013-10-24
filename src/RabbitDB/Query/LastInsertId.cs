@@ -1,4 +1,4 @@
-﻿namespace MicroORM.Query
+﻿namespace RabbitDB.Query
 {
     public class LastInsertId
     {

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Data;
-using System.Diagnostics;
-using System.Threading;
-using MicroORM.Attributes;
-using MicroORM.Base;
-using MicroORM.Entity;
-using MicroORM.Query;
-using MicroORM.Schema;
-using MicroORM.Storage;
+using RabbitDB.Attributes;
+using RabbitDB.Base;
+using RabbitDB.Entity;
+using RabbitDB.Query;
+using RabbitDB.Schema;
+using RabbitDB.Storage;
 
-namespace Micro.Program
+namespace RabbitDB.Program
 {
     class Program
     {
@@ -17,8 +15,8 @@ namespace Micro.Program
         {
             try
             {
-                Registrar<DbEngine>.Register("Micro.Program.*", DbEngine.SqlServer);
-                Registrar<string>.Register("Micro.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
+                Registrar<DbEngine>.Register("RabbitDB.Program.*", DbEngine.SqlServer);
+                Registrar<string>.Register("RabbitDB.Program.*", @"Data Source=ASLUPIANEKW764\SQLEXPRESS;Initial Catalog=AdventureWorks2012;Integrated Security=True");
 
                 using (DbSession dbSession = new DbSession(typeof(Program)))
                 {
@@ -76,7 +74,7 @@ namespace Micro.Program
     }
 
     [Table("Posts")]
-    class Post : Entity
+    class Post : Entity.Entity
     {
         public int Id { get; set; }
         public int AuthorId { get; set; }

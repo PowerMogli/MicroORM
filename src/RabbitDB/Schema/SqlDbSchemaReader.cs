@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using MicroORM.Mapping;
-using MicroORM.Query;
-using MicroORM.Storage;
-using MicroORM.Utils;
+using RabbitDB.Mapping;
+using RabbitDB.Query;
+using RabbitDB.Storage;
+using RabbitDB.Utils;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal class SqlDbSchemaReader : DbSchemaReader
     {

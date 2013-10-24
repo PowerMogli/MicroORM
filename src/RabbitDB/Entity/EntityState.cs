@@ -1,4 +1,4 @@
-﻿namespace MicroORM.Entity
+﻿namespace RabbitDB.Entity
 {
     internal enum EntityState
     {

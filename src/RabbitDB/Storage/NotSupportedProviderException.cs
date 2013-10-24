@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroORM.Storage
+namespace RabbitDB.Storage
 {
     public class NotSupportedProviderException : Exception
     {

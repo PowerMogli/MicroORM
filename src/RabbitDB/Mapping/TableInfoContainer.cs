@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     internal static class TableInfoContainer
     {

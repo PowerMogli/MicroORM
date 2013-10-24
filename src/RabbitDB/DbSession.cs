@@ -2,13 +2,13 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using MicroORM.Mapping;
-using MicroORM.Query;
-using MicroORM.Query.Generic;
-using MicroORM.Schema;
-using MicroORM.Storage;
+using RabbitDB.Mapping;
+using RabbitDB.Query;
+using RabbitDB.Query.Generic;
+using RabbitDB.Schema;
+using RabbitDB.Storage;
 
-namespace MicroORM.Base
+namespace RabbitDB.Base
 {
     public class DbSession : IDisposable, IDbSession
     {

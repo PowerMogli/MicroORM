@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal class DbSchemaCleaner
     {

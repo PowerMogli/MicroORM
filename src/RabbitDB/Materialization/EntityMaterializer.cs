@@ -1,10 +1,10 @@
 using System;
 using System.Data;
 //using LinFu.DynamicProxy;
-using MicroORM.Mapping;
-using MicroORM.Storage;
+using RabbitDB.Mapping;
+using RabbitDB.Storage;
 
-namespace MicroORM.Materialization
+namespace RabbitDB.Materialization
 {
     class EntityMaterializer
     {

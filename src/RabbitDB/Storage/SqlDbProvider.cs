@@ -1,7 +1,7 @@
 ﻿using System.Data;
-using MicroORM.Schema;
+using RabbitDB.Schema;
 
-namespace MicroORM.Storage
+namespace RabbitDB.Storage
 {
     internal class SqlDbProvider : DbProvider, ITransactionalDbProvider, IDbProvider
     {

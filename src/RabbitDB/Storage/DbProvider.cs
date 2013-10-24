@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using MicroORM.Base;
-using MicroORM.Query;
+using RabbitDB.Base;
+using RabbitDB.Query;
 
-namespace MicroORM.Storage
+namespace RabbitDB.Storage
 {
     internal abstract class DbProvider : IDbProvider
     {

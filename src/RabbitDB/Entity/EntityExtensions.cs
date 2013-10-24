@@ -1,9 +1,9 @@
 using System.Data;
-using MicroORM.Base;
-using MicroORM.Caching;
-using MicroORM.Storage;
+using RabbitDB.Base;
+using RabbitDB.Caching;
+using RabbitDB.Storage;
 
-namespace MicroORM.Entity
+namespace RabbitDB.Entity
 {
     public static class EntityExtensions
     {

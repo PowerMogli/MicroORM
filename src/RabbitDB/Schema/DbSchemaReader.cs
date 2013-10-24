@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using MicroORM.Mapping;
-using MicroORM.Storage;
+using RabbitDB.Mapping;
+using RabbitDB.Storage;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal abstract class DbSchemaReader : IDisposable
     {

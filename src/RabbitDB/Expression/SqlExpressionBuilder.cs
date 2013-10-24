@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Text;
-using MicroORM.Mapping;
+using RabbitDB.Mapping;
 
-namespace MicroORM.Expression
+namespace RabbitDB.Expression
 {
     internal class ExpressionSqlBuilder<T>
     {

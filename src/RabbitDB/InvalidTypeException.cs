@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroORM
+namespace RabbitDB
 {
     class InvalidTypeException : Exception
     {

@@ -1,7 +1,7 @@
 using System;
-using MicroORM.Entity;
+using RabbitDB.Entity;
 
-namespace MicroORM.Caching
+namespace RabbitDB.Caching
 {
     internal static class EntityInfoCacheManager
     {

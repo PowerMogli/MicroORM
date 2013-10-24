@@ -5,10 +5,10 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using MicroORM.Mapping;
-using MicroORM.Reflection;
+using RabbitDB.Mapping;
+using RabbitDB.Reflection;
 
-namespace MicroORM.Utils
+namespace RabbitDB.Utils
 {
     internal static class Utils
     {

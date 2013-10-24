@@ -1,4 +1,4 @@
-﻿namespace MicroORM.Storage
+﻿namespace RabbitDB.Storage
 {
     public enum DbEngine
     {

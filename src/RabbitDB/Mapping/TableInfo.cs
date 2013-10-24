@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using MicroORM.Base;
-using MicroORM.Schema;
-using MicroORM.Storage;
-using MicroORM.Attributes;
+using RabbitDB.Base;
+using RabbitDB.Schema;
+using RabbitDB.Storage;
+using RabbitDB.Attributes;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     internal sealed class TableInfo
     {

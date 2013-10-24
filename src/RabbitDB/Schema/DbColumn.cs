@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal class DbColumn
     {

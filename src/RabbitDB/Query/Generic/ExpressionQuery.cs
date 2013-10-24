@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.Linq.Expressions;
-using MicroORM.Expression;
-using MicroORM.Storage;
+using RabbitDB.Expression;
+using RabbitDB.Storage;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     internal class ExpressionQuery<T, V> : IQuery
     {

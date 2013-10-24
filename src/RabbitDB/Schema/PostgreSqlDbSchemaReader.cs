@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using MicroORM.Storage;
+using RabbitDB.Storage;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal class PostgreSqlDbSchemaReader : DbSchemaReader
     {

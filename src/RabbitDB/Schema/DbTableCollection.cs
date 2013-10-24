@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace MicroORM.Schema
+namespace RabbitDB.Schema
 {
     internal class DbTableCollection : Collection<DbTable>
     {

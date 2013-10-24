@@ -1,9 +1,9 @@
 using System.Data;
-using MicroORM.Mapping;
-using MicroORM.Query.Generic;
-using MicroORM.Storage;
+using RabbitDB.Mapping;
+using RabbitDB.Query.Generic;
+using RabbitDB.Storage;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     internal class EntityQuery<T> : IQuery where T : Entity.Entity
     {

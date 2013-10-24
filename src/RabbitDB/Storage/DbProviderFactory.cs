@@ -1,5 +1,5 @@
-﻿using MicroORM.Schema;
-namespace MicroORM.Storage
+﻿using RabbitDB.Schema;
+namespace RabbitDB.Storage
 {
     internal class DbProviderFactory
     {

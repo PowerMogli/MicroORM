@@ -2,9 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
-using MicroORM.Base;
+using RabbitDB.Base;
 
-namespace MicroORM.Reflection
+namespace RabbitDB.Reflection
 {
     internal static class ReflectionExtensions
     {

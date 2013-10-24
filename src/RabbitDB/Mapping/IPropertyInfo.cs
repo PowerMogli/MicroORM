@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Data;
-using MicroORM.Attributes;
+using RabbitDB.Attributes;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     internal interface IPropertyInfo
     {

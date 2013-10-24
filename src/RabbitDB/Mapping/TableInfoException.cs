@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     /// <summary>
     /// Exception is thrown if the mapping for a persistent object couldn't been constructed.

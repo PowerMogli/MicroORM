@@ -1,5 +1,5 @@
 ﻿using System.Data;
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     public abstract class StoredProcedure
     {

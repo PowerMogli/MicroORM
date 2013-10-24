@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace MicroORM.Base
+namespace RabbitDB.Base
 {
     public static class Registrar<T>
     {

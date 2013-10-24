@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.Reflection;
-using MicroORM.Attributes;
-using MicroORM.Reflection;
+using RabbitDB.Attributes;
+using RabbitDB.Reflection;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     internal sealed class PropertyMetaInfo : MetaInfo
     {

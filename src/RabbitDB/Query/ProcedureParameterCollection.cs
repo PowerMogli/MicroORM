@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     internal class ProcedureParameterCollection : IEnumerable<IDbDataParameter>
     {

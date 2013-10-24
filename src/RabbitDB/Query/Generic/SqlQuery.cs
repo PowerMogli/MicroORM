@@ -1,9 +1,9 @@
 ﻿using System.Data;
-using MicroORM.Base;
-using MicroORM.Mapping;
-using MicroORM.Storage;
+using RabbitDB.Base;
+using RabbitDB.Mapping;
+using RabbitDB.Storage;
 
-namespace MicroORM.Query.Generic
+namespace RabbitDB.Query.Generic
 {
     internal sealed class SqlQuery<T> : SqlQuery
     {

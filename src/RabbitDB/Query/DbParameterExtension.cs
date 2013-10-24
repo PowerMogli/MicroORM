@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     internal static class DbParameterExtension
     {

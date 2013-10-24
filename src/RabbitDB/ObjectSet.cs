@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using MicroORM.Query;
+using RabbitDB.Query;
 
-namespace MicroORM.Base
+namespace RabbitDB.Base
 {
     public class ObjectSet<T> : IEnumerable<T>
     {

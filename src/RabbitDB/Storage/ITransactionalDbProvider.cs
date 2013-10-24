@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace MicroORM.Storage
+namespace RabbitDB.Storage
 {
     interface ITransactionalDbProvider : IDbProvider
     {

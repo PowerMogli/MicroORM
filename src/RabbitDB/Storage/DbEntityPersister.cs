@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using MicroORM.Entity;
-using MicroORM.Mapping;
-using MicroORM.Query;
-using MicroORM.Reflection;
+using RabbitDB.Entity;
+using RabbitDB.Mapping;
+using RabbitDB.Query;
+using RabbitDB.Reflection;
 using System;
-using MicroORM.Materialization;
-using MicroORM.Caching;
+using RabbitDB.Materialization;
+using RabbitDB.Caching;
 
-namespace MicroORM.Storage
+namespace RabbitDB.Storage
 {
     internal class DbEntityPersister
     {

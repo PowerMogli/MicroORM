@@ -4,12 +4,12 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Linq;
-using MicroORM.Mapping;
-using MicroORM.Reflection;
-using MicroORM.Schema;
-using MicroORM.Utils;
+using RabbitDB.Mapping;
+using RabbitDB.Reflection;
+using RabbitDB.Schema;
+using RabbitDB.Utils;
 
-namespace MicroORM.Query
+namespace RabbitDB.Query
 {
     class QueryParameterCollection : Collection<QueryParameter>
     {

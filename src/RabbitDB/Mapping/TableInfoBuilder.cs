@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Data;
 using System.Reflection;
-using MicroORM.Attributes;
+using RabbitDB.Attributes;
 
-namespace MicroORM.Mapping
+namespace RabbitDB.Mapping
 {
     internal static class TableInfoBuilder
     {

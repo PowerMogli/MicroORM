@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroORM.Attributes
+namespace RabbitDB.Attributes
 {
     [Serializable]
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]

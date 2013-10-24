@@ -1,4 +1,4 @@
-﻿namespace MicroORM.Schema
+﻿namespace RabbitDB.Schema
 {
     internal static class DbSchemaAllocator<TEntity>
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Data;
-using MicroORM.Base;
-using MicroORM.Query;
-using MicroORM.Schema;
+using RabbitDB.Base;
+using RabbitDB.Query;
+using RabbitDB.Schema;
 
-namespace MicroORM.Storage
+namespace RabbitDB.Storage
 {
     internal interface IDbProvider : IDisposable, IEscapeDbIdentifier
     {
