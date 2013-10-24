@@ -62,7 +62,7 @@ using (DbSession dbSession = new DbSession(@"YourConnectionString")) // SqlServe
     ...
 }
 
-using (DbSession dbSession = new DbSession()) // uses registered connection string and DbEngine.
+using (DbSession dbSession = new DbSession(typeof(this))) // uses registered connection string and DbEngine for types namespace.
 {
     ...
 }
