@@ -24,47 +24,46 @@ namespace MicroORM.Storage
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="entity"></param>
-        internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
+        internal bool PersistChanges<TEntity>(TEntity entity, bool isToDelete = false) where TEntity : Entity.Entity
         {
-            if (entity.Delete)
+            EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+            if (isToDelete)
             {
                 // Entity was already deleted
-                // or is not yet loaded!!
-                if (entity.EntityState == EntityState.Deleted || entity.EntityState == EntityState.None)
+                if (entityInfo.EntityState == EntityState.Deleted)
                     return false;
 
                 Delete(entity);
-                entity.EntityState = EntityState.Deleted;
+                entityInfo.EntityState = EntityState.Deleted;
+                return true;
             }
             // Entity was already deleted
             // or is not yet loaded!!
-            else if (entity.EntityState == EntityState.Deleted || entity.EntityState == EntityState.None)
+            else if (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None)
             {
                 Insert(entity);
-                entity.EntityState = EntityState.Inserted;
+                entityInfo.EntityState = EntityState.Inserted;
                 return true;
             }
-            else if (entity.EntityState == EntityState.Loaded
-                || entity.EntityState == EntityState.Inserted
-                || entity.EntityState == EntityState.Updated)
+            else if (entityInfo.EntityState == EntityState.Loaded
+                || entityInfo.EntityState == EntityState.Inserted
+                || entityInfo.EntityState == EntityState.Updated)
             {
-                Tuple<bool, string, QueryParameterCollection> tuple = PrepareForUpdate<TEntity>(entity);
+                Tuple<bool, string, QueryParameterCollection> tuple = PrepareForUpdate<TEntity>(entity, entityInfo);
                 if (tuple.Item1 == false) return false;
 
                 Update<TEntity>(new SqlQuery(tuple.Item2, tuple.Item3));
-                entity.EntityState = EntityState.Updated;
+                entityInfo.EntityState = EntityState.Updated;
                 return true;
             }
 
             return false;
         }
 
-        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity) where TEntity : Entity.Entity
+        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
         {
             // Any changes made to entity?!
-
-            EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-            KeyValuePair<string, object>[] valuesToUpdate = EntityHashSetManager.ComputeUpdateValues(entity, entityInfo);
+            KeyValuePair<string, object>[] valuesToUpdate = entityInfo.ComputeUpdateValues(entity);
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
