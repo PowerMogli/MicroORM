@@ -1,7 +1,5 @@
 using System;
 using System.Data;
-using MicroORM.Caching;
-using MicroORM.Entity;
 //using LinFu.DynamicProxy;
 using MicroORM.Mapping;
 using MicroORM.Storage;
@@ -31,7 +29,6 @@ namespace MicroORM.Materialization
                 MaterializeEntity(entity, propertyInfo, dataRecord[columnIndex]);
             }
 
-            EntityInfoCacheManager.SetEntityInfo(entity, new EntityInfo());
             return entity;
         }
 
