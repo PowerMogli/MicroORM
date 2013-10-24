@@ -96,18 +96,29 @@ using (DbSession dbSession = new DbSession(typeof(this))) // uses registered con
 Self-explanatory command executions:
 ```charp
 var scalarValue = dbSession.GetScalarValue<int>("SELECT ProductID FROM Products WHERE Name=@name", new { name = "Herbie" });
+
 dbSsession.ExecuteCommand("UPDATE Posts SET IsActive=@0 WHERE Title=@1 and Id=@2", true, "Mark", 3);
-var objectSet = dbSession.GetObjectSet<Post>(); // gets all table entries.
+
+// gets all table entries.
+var objectSet = dbSession.GetObjectSet<Post>();
+
 var objectSet = dbSession.GetObjectSet<Post>("SELECT * FROM Posts WHERE Title=@title OR Id=@id", new { title = "Mark", id = 5 });
+
 // the same but without anonymous arguments
 var objectSet = dbSession.GetObjectSet<Post>("SELECT * FROM Posts WHERE Title=@0 OR Id=@1", "Mark", 5);
+
 // select your data by using lambda expressions.
 var objectSet = dbSsession.GetObjectSet<Post>(post => post.Id == 4 || post.IsActive);
-var singleObject = dbSession.GetObject<Post>(6); // gets the post by primary key '6'
+ 
+// gets the post with primary key '6'
+var singleObject = dbSession.GetObject<Post>(6);
+
 // gets all posts which fulfill this lambda expression criteria
 var singleObject = dbSession.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); 
+
 // gets a single value
 var value = dbSession.GetValue<int>("SELECT COUNT(*) FROM Posts");
+
 // gets a set of values
 var titles = dbSession.GetObjectSet<string>("SELECT Title FROM Posts");
 ```
