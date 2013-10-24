@@ -11,13 +11,13 @@ No dynamics, simple and no obscure command execution.
 Feature-rich
 ------------
 
-Lazy loading, unit of Work, change tracking, identity map, multiple resultsets, custom mappings
+Change tracking, identity map, multiple resultsets, custom mappings
 (all on request - soon to come)
 
 Clean
 -----
 
-Based on clean-code principles and SOLID principles (I tried!!) :)
+Based on clean-code principles and SOLID principles.
 
 Efficient
 ---------
