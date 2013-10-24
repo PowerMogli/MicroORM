@@ -155,6 +155,7 @@ using (DbSession dbSession = new DbSession("YourConnectionStringHere", DbEngine.
     ExampleProcedure procedure = new ExampleProcedure();
     dbSession.ExecuteStoredProcedure(procedure);
 }
+```
 
 Clean
 -----
