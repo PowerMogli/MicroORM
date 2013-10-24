@@ -26,6 +26,8 @@ namespace MicroORM.Base
             get { return _list[index]; }
         }
 
+        public int Count { get { return _list.Count; } }
+        
         public IEnumerator<T> GetEnumerator()
         {
             return _list.GetEnumerator();
