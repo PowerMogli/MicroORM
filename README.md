@@ -43,7 +43,25 @@ If you decide to use alternative primary keys the default primary key will be ig
 And like you can see, you don´t have to use `Entity` class. You can use your own POCOs.
 
 If you name your class like your table and your properties like your columns you don´t need attributes.
-All needed information like dbtype, primarykey(s), default value, nullable is gathered by rabbitDB for you.
+All needed information like dbtype, primarykey(s), default value, nullable is gathered by RabbitDB for you.
+
+Loading data for entity:
+```csharp
+var post = new Post();
+post.Id = 6;
+post.Load();
+```
+Update entity (changes made to entity are tracked by RabbitDB for you). 
+So if you change AuthorId to an other value then the one which was loaded, RabbitDB tracks this change and
+executes an update command by calling `PersistChanges()` on the entity.
+```csharp
+var post = new Post();
+post.Id = 6;
+post.Load();
+
+post.AuthorId = 444
+post.PersistChanges();
+```
 
 If you decide to inherit from `Entity` you have to register your connection string and the used DbEngine.
 ```csharp
