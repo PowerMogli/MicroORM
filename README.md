@@ -29,6 +29,16 @@ class Post : Entity
     public bool IsActive { get; set; }
 }
 ```
+Let´s assume you want to use an other primary key then `ID`:
+```charp
+[Table("Posts", AlternativePKs="FirstID, SecondID")]
+class Post
+{
+    public int Id { get; set; }
+    public ....
+}
+```
+
 If you name your class like your table and your properties like your columns you don´t need attributes.
 All needed information like dbtype, primarykey(s), default value, nullable is gathered by rabbitDB for you.
 
