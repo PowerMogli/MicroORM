@@ -35,7 +35,8 @@ namespace MicroORM.Caching
             CacheItem<TEntity> item;
             if (_referenceCache.TryGetValue(entity.GetHashCode(), out item))
             {
-                if (entity.Equals(item.Target))
+                if (entity.Equals(item.Target) && item.IsHashed)
+
                     return item.EntityInfo;
             }
 
