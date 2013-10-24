@@ -13,7 +13,7 @@ Features
 ------------
 
 Change tracking, identity map, multiple resultsets, custom mappings
-(all on request - soon to come)
+(all on request - soon to come).
 Seperate `Entity` class to inherit from to use without using within `DbSession`.
 
 Clean
