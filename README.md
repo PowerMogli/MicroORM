@@ -122,6 +122,39 @@ var value = dbSession.GetValue<int>("SELECT COUNT(*) FROM Posts");
 // gets a set of values
 var titles = dbSession.GetObjectSet<string>("SELECT Title FROM Posts");
 ```
+Stored procedures:
+```csharp
+dbSession.ExecuteStoredProcedure("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
+
+// or to receive your poce with a stored procedure
+dbSession.ExecuteStoredProcedure<YourPOCO>("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
+```
+Or if you have a stored procedure with a lot of parameters:
+```csharp
+public class ExampleProcedure : SqlStoredProcedure
+{
+    public ExampleProcedure()
+        : base("yourStoredProcedureNameHere") { }
+
+    public string TicketID
+    {
+        get { return base.GetParameterValue<string>("@pTicketID"); }
+        set { base.AddParameter("@pTicketID", value, DbType.AnsiString, 255); }
+    }
+}
+
+// Any where else
+
+ExampleProcedure procedure = new ExampleProcedure();
+procedure.Execute();
+```
+Or within a `DbSession`:
+```csharp
+using (DbSession dbSession = new DbSession("YourConnectionStringHere", DbEngine.SqlServer))
+{
+    ExampleProcedure procedure = new ExampleProcedure();
+    dbSession.ExecuteStoredProcedure(procedure);
+}
 
 Clean
 -----
