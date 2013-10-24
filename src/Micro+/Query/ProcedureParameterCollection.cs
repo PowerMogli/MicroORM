@@ -1,136 +1,65 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data;
-using System.Globalization;
-using System.Linq;
-using MicroORM.Mapping;
-using MicroORM.Reflection;
-using MicroORM.Schema;
-using MicroORM.Utils;
 
 namespace MicroORM.Query
 {
-    class QueryParameterCollection : Collection<QueryParameter>
+    internal class ProcedureParameterCollection : IEnumerable<IDbDataParameter>
     {
-        private static CultureInfo _culture = CultureInfo.InvariantCulture;
-
-        internal void AddRange(object[] arguments)
+        internal ProcedureParameterCollection()
         {
-            QueryParameterCollection collection = Create(arguments);
-
-            foreach (QueryParameter queryParameter in collection)
-            {
-                this.Add(queryParameter);
-            }
+            this.Parameters = new Dictionary<string, IDbDataParameter>();
         }
 
-        internal static QueryParameterCollection Create<T>(object[] arguments)
+        internal Dictionary<string, IDbDataParameter> Parameters { get; private set; }
+
+        internal bool AddParameter<T>(string parameterName, T value, DbType dbType, int length)
         {
-            if (arguments == null) return new QueryParameterCollection();
+            if (value is string && string.IsNullOrWhiteSpace(value.ToString())) throw new ArgumentNullException("value");
+            if (string.IsNullOrWhiteSpace(parameterName)) throw new ArgumentNullException("parameterName");
 
-            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
+            string stringValue = value as string;
+            if (!string.IsNullOrWhiteSpace(stringValue)
+                && length > 0
+                && stringValue.Length > length) return false;
 
-            return Create(arguments, tableInfo);
+            return true;
         }
 
-        internal static QueryParameterCollection Create(object[] arguments, TableInfo tableInfo = null)
+        internal T GetParameterValue<T>(string parameterName)
         {
-            if (arguments == null) return new QueryParameterCollection();
+            if (string.IsNullOrWhiteSpace(parameterName)) throw new ArgumentNullException("parameterName");
 
-            QueryParameterCollection collection = CreateParameterFromAnonymous(arguments, tableInfo);
-            if (collection.Count != 0) return collection;
+            var parameter = this.Parameters[parameterName];
+            if (parameter == null) return default(T);
 
-            collection = CreateParameterFromProcedureParameterCollection(arguments);
-            if (collection.Count != 0) return collection;
-
-            return CreateParameterFromRegular(arguments);
+            return (T)parameter.Value;
         }
 
-        private static QueryParameterCollection CreateParameterFromProcedureParameterCollection(object[] arguments)
+        public IEnumerator GetEnumerator()
         {
-            if (arguments == null || arguments.Length == 0) return new QueryParameterCollection();
-            ProcedureParameterCollection procedureCollection = arguments[0] as ProcedureParameterCollection;
-            if (procedureCollection == null) return new QueryParameterCollection();
-
-            QueryParameterCollection queryParameterCollection = new QueryParameterCollection();
-            foreach (IDbDataParameter parameter in procedureCollection)
-            {
-                queryParameterCollection.Add(new QueryParameter(parameter.ParameterName, parameter.DbType, parameter.Value, parameter.Size));
-            }
-            return queryParameterCollection;
+            return this.Parameters.Values.GetEnumerator();
         }
 
-        private static QueryParameterCollection CreateParameterFromRegular(object[] arguments)
+        internal void Add(string key, IDbDataParameter parameter)
         {
-            QueryParameterCollection collection = new QueryParameterCollection();
-
-            for (int i = 0; i < arguments.Length; i++)
-            {
-                Type argumentType = arguments[i].GetType();
-                if (argumentType.IsEnum) argumentType = typeof(Int32);
-                collection.Add(new QueryParameter(i.ToString(_culture), TypeConverter.ToDbType(argumentType), arguments[i]));
-            }
-            return collection;
+            this.Parameters.Add(key, parameter);
         }
 
-        private static QueryParameterCollection CreateParameterFromAnonymous(object[] arguments, TableInfo tableInfo)
+        internal IDbDataParameter this[string key]
         {
-            QueryParameterCollection collection = new QueryParameterCollection();
-            if (arguments.Length < 1) return collection;
-
-            var argument = arguments[0];
-            if (argument != null)
-            {
-                KeyValuePair<string, object>[] namedArguments = argument as KeyValuePair<string, object>[];
-                if (namedArguments == null && !argument.IsListParam() && argument.IsCustomObject())
-                    namedArguments = ParameterTypeDescriptor.ToKeyValuePairs(arguments);
-
-                return CreateParameterFromKeyValuePairs(namedArguments, tableInfo);
-            }
-            return collection;
+            get { return this.Parameters[key]; }
         }
 
-        private static QueryParameterCollection CreateParameterFromKeyValuePairs(KeyValuePair<string, object>[] argument, TableInfo tableInfo)
+        internal bool ContainsKey(string key)
         {
-            QueryParameterCollection collection = new QueryParameterCollection();
-            if (argument == null) return collection;
-
-            foreach (KeyValuePair<string, object> kvp in argument)
-            {
-                Type argumentType = kvp.Value.GetType();
-                if (argumentType.IsEnum) argumentType = typeof(Int32);
-
-                collection.Add(new QueryParameter(
-                        kvp.Key,
-                        tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(argumentType),
-                        EvaluateParameterValue(tableInfo, kvp),
-                        tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.GetColumnSize(kvp.Key) : -1));
-            }
-
-            return collection;
+            return this.Parameters.ContainsKey(key);
         }
 
-        private static object EvaluateParameterValue(TableInfo tableInfo, KeyValuePair<string, object> kvp)
+        IEnumerator<IDbDataParameter> IEnumerable<IDbDataParameter>.GetEnumerator()
         {
-            if (tableInfo == null)
-                return kvp.Value == null ? DBNull.Value : kvp.Value;
-
-            DbColumn dbColumn = tableInfo.DbTable.DbColumns.FirstOrDefault(column => column.Name == kvp.Key && column.IsNullable);
-            if (kvp.Value == null)
-            {
-                if (dbColumn != null)
-                {
-                    if (string.IsNullOrWhiteSpace(dbColumn.DefaultValue))
-                        return DBNull.Value;
-                    else
-                        return (object)dbColumn.DefaultValue;
-                }
-                else
-                    return DBNull.Value;
-            }
-            else
-                return kvp.Value;
+            return (IEnumerator<IDbDataParameter>)this.GetEnumerator();
         }
     }
 }
