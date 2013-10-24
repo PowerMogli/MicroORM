@@ -108,8 +108,11 @@ namespace MicroORM.Base
 
         ObjectSet<TEntity> IDbSession.GetObjectSet<TEntity>(IQuery query)
         {
-            ObjectSet<TEntity> objectSet = new ObjectSet<TEntity>();
-            return objectSet.Load(this, query);
+            using (_dbProvider)
+            {
+                ObjectSet<TEntity> objectSet = new ObjectSet<TEntity>();
+                return objectSet.Load(this, query);
+            }
         }
 
         ObjectReader<TEntity> IDbSession.GetObjectReader<TEntity>(IQuery query)
@@ -157,10 +160,10 @@ namespace MicroORM.Base
             _dbEntityPersister.Insert(entity);
         }
 
-        bool IDbSession.PersistChanges<TEntity>(TEntity entity)
+        bool IDbSession.PersistChanges<TEntity>(TEntity entity, bool isToDelete = false)
         {
             DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
-            return _dbEntityPersister.PersistChanges(entity);
+            return _dbEntityPersister.PersistChanges(entity, isToDelete);
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
