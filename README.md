@@ -161,8 +161,3 @@ Clean
 -----
 
 Based on clean-code and SOLID principles.
-
-Efficient
----------
-
-I don´t know yet.
