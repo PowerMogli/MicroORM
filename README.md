@@ -1,9 +1,6 @@
 RabbitDB
 ========
 
-Data Access Layer
------------------
-
 A simple abstraction of data access. Simple, feature-rich, clean and hopefully efficent :)
 
 Simplicity
