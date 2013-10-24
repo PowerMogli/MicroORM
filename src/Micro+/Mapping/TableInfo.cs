@@ -133,9 +133,9 @@ namespace MicroORM.Mapping
 
         private IEnumerable<string> GetPrimaryKeyNames()
         {
-            if (string.IsNullOrWhiteSpace(this.TableAttribute.PrimaryKeys) == false)
+            if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs) == false)
             {
-                string[] attrPrimaryKeys = this.TableAttribute.PrimaryKeys.Split(',');
+                string[] attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
                 return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name)).Select(column => column.Name);
             }
             else
@@ -205,9 +205,9 @@ namespace MicroORM.Mapping
 
         private IEnumerable<IPropertyInfo> GetPrimaryKeyColumns()
         {
-            if (string.IsNullOrWhiteSpace(this.TableAttribute.PrimaryKeys) == false)
+            if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs) == false)
             {
-                string[] attrPrimaryKeys = this.TableAttribute.PrimaryKeys.Split(',');
+                string[] attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
                 return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
             }
             else
