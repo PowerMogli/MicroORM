@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using MicroORM.Mapping;
 using MicroORM.Reflection;
 using MicroORM.Schema;
 using MicroORM.Utils;
-using System.Data;
 
 namespace MicroORM.Query
 {
@@ -25,6 +25,15 @@ namespace MicroORM.Query
             }
         }
 
+        internal static QueryParameterCollection Create<T>(object[] arguments)
+        {
+            if (arguments == null) return new QueryParameterCollection();
+
+            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
+
+            return Create(arguments, tableInfo);
+        }
+
         internal static QueryParameterCollection Create(object[] arguments, TableInfo tableInfo = null)
         {
             if (arguments == null) return new QueryParameterCollection();
@@ -40,6 +49,7 @@ namespace MicroORM.Query
 
         private static QueryParameterCollection CreateParameterFromProcedureParameterCollection(object[] arguments)
         {
+            if (arguments == null || arguments.Length == 0) return new QueryParameterCollection();
             ProcedureParameterCollection procedureCollection = arguments[0] as ProcedureParameterCollection;
             if (procedureCollection == null) return new QueryParameterCollection();
 
@@ -49,15 +59,6 @@ namespace MicroORM.Query
                 queryParameterCollection.Add(new QueryParameter(parameter.ParameterName, parameter.DbType, parameter.Value, parameter.Size));
             }
             return queryParameterCollection;
-        }
-
-        internal static QueryParameterCollection Create<T>(object[] arguments)
-        {
-            if (arguments == null) return new QueryParameterCollection();
-
-            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
-
-            return Create(arguments, tableInfo);
         }
 
         private static QueryParameterCollection CreateParameterFromRegular(object[] arguments)
@@ -97,11 +98,14 @@ namespace MicroORM.Query
 
             foreach (KeyValuePair<string, object> kvp in argument)
             {
+                Type argumentType = kvp.Value.GetType();
+                if (argumentType.IsEnum) argumentType = typeof(Int32);
+
                 collection.Add(new QueryParameter(
                         kvp.Key,
-                        tableInfo != null ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(kvp.Value.GetType()),
+                        tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(argumentType),
                         EvaluateParameterValue(tableInfo, kvp),
-                        tableInfo != null ? tableInfo.GetColumnSize(kvp.Key) : -1));
+                        tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.GetColumnSize(kvp.Key) : -1));
             }
 
             return collection;
