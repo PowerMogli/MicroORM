@@ -42,8 +42,8 @@ class Post
 If you decide to use alternative primary keys the default primary key will be ignored!!
 And like you can see, you don´t have to use `Entity` class. You can use your own POCOs.
 
-If you name your class like your table and your properties like your columns you don´t need attributes.
-All needed information like dbtype, primarykey(s), default value, nullable is gathered by RabbitDB for you.
+If you name your class like your table and your properties like your columns you don´t need attributes *at all*.
+All needed information like name of table, name of column, dbtype, primarykey(s), default value, nullable is gathered by RabbitDB for you.
 
 Loading data for entity:
 ```csharp
