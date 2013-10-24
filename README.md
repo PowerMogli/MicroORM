@@ -14,7 +14,7 @@ Features
 
 Change tracking, identity map, multiple resultsets, custom mappings
 (all on request - soon to come).
-Seperate `Entity` class to inherit from to use without using within `DbSession`.
+Seperate `Entity` class to inherit from if you want to work with it without using within `DbSession`.
 
 ```csharp
 [Table("Posts")]
@@ -27,9 +27,15 @@ class Post : Entity
     public PostType Type { get; set; }
     public int? TopicId { get; set; }
     public bool IsActive { get; set; }
-    public string Test1 { get; set; }
-    public bool Test2 { get; set; }
 }
+```
+If you name your class like your table and your properties like your columns you don´t need attributes.
+All needed information like dbtype, primarykey(s), default value, nullable is gathered by rabbitDB for you.
+
+If you decide to inherit from `Entity` you have to register your connection string and the used DbEngine.
+```csharp
+Registrar<string>("Company.Module.*", @"YourConnectionString");
+Registrar<DbEngine>("Company.Module.*", DbEngine.SqlServer);
 ```
 
 Clean
