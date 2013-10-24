@@ -173,6 +173,11 @@ namespace MicroORM.Mapping
             return propMetaInfo.DbType ?? TypeConverter.ToDbType(propMetaInfo.PropertyType);
         }
 
+        internal bool IsColumn(string name)
+        {
+            return this.Columns.Any(column => column.Name == name);
+        }
+
         internal int GetColumnSize(string name)
         {
             IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.Name == name);
