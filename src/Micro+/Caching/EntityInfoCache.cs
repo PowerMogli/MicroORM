@@ -35,8 +35,7 @@ namespace MicroORM.Caching
             CacheItem<TEntity> item;
             if (_referenceCache.TryGetValue(entity.GetHashCode(), out item))
             {
-                if (entity.Equals(item.Target) && item.IsHashed)
-
+                if (entity.Equals(item.Target))
                     return item.EntityInfo;
             }
 
@@ -87,8 +86,7 @@ namespace MicroORM.Caching
 
         private void CleanUp()
         {
-            if (_referenceCache.IsEmpty)
-                return;
+            if (_referenceCache.IsEmpty) return;
 
             List<int> disposed = new List<int>();
 
