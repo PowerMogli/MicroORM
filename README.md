@@ -17,7 +17,7 @@ Change tracking, identity map, multiple resultsets, custom mappings
 Seperate `Entity` class to inherit from to use without using within `DbSession`.
 
 ```csharp
-[Table("Posts")]
+    [Table("Posts")]
     class Post : Entity
     {
         public int Id { get; set; }
