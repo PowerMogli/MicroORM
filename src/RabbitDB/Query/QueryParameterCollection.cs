@@ -116,21 +116,18 @@ namespace MicroORM.Query
             if (tableInfo == null)
                 return kvp.Value == null ? DBNull.Value : kvp.Value;
 
+            if (kvp.Value != null) return kvp.Value;
             DbColumn dbColumn = tableInfo.DbTable.DbColumns.FirstOrDefault(column => column.Name == kvp.Key && column.IsNullable);
-            if (kvp.Value == null)
-            {
-                if (dbColumn != null)
-                {
-                    if (string.IsNullOrWhiteSpace(dbColumn.DefaultValue))
-                        return DBNull.Value;
-                    else
-                        return (object)dbColumn.DefaultValue;
-                }
-                else
-                    return DBNull.Value;
-            }
+            if (dbColumn == null) return DBNull.Value;
+
+            if (string.IsNullOrWhiteSpace(dbColumn.DefaultValue))
+                return DBNull.Value;
+            else if (dbColumn.DefaultValue == "getdate()" || dbColumn.DefaultValue == "(getdate())")
+                return DateTime.Now.ToShortDateString();
+            else if (dbColumn.DefaultValue == "newid()")
+                return Guid.NewGuid().ToString();
             else
-                return kvp.Value;
+                return dbColumn.DefaultValue.Replace("(", "").Replace(")", "");
         }
     }
 }

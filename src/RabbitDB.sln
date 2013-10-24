@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroORM", "Micro+\MicroORM.csproj", "{4510EF0A-1632-4F90-8E58-9626FAA9E352}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitDB", "RabbitDB\RabbitDB.csproj", "{4510EF0A-1632-4F90-8E58-9626FAA9E352}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Micro.Program", "Micro.Program\Micro.Program.csproj", "{FA4E8951-1440-4052-8D8B-84DFAB611AA7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitDB.Program", "RabbitDB.Program\RabbitDB.Program.csproj", "{FA4E8951-1440-4052-8D8B-84DFAB611AA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

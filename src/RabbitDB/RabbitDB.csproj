@@ -8,8 +8,8 @@
     <ProjectGuid>{4510EF0A-1632-4F90-8E58-9626FAA9E352}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MicroORM</RootNamespace>
-    <AssemblyName>MicroORM</AssemblyName>
+    <RootNamespace>RabbitDB</RootNamespace>
+    <AssemblyName>RabbitDB</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

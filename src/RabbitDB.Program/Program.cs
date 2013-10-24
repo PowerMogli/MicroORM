@@ -32,20 +32,13 @@ namespace Micro.Program
                     //session.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); // holt alle Posts die diese Kriterien erfüllen
                     //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                     //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
-                    Post post = new Post();
-                    post.Id = 6;
-                    post.Load();
 
-                    post.Title = "In den Bergen";
-                    post.AuthorId = 29392;
-                    post.IsActive = true;
-                    post.CreatedOn = DateTime.Now.AddDays(-292);
-                    post.PersistChanges();
-
-                    post.Title = "Changed for Test";
-                    post.PersistChanges();
-
-                    var users = dbSession.GetObjectSet<Users>();
+                    while (Console.KeyAvailable == false)
+                    {
+                        var posts = dbSession.GetObjectSet<Post>();
+                    }
+                    Console.ReadKey();
+                    //var users = dbSession.GetObjectSet<Users>();
                 }
 
                 DbSchemaAllocator.FlushReader();
