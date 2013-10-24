@@ -62,6 +62,7 @@ namespace MicroORM.Storage
         private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             // Any changes made to entity?!
+
             EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
             KeyValuePair<string, object>[] valuesToUpdate = EntityHashSetManager.ComputeUpdateValues(entity, entityInfo);
 
