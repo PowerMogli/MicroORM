@@ -40,14 +40,15 @@ class Post
 }
 ```
 If you decide to use alternative primary keys the default primary key will be ignored!!
+And like you can see, you don´t have to use `Entity` class. You can use your own POCOs.
 
 If you name your class like your table and your properties like your columns you don´t need attributes.
 All needed information like dbtype, primarykey(s), default value, nullable is gathered by rabbitDB for you.
 
 If you decide to inherit from `Entity` you have to register your connection string and the used DbEngine.
 ```csharp
-Registrar<string>("Company.Module.*", @"YourConnectionString");
-Registrar<DbEngine>("Company.Module.*", DbEngine.SqlServer);
+Registrar<string>.Register("Company.Module.*", @"YourConnectionString");
+Registrar<DbEngine>.Register("Company.Module.*", DbEngine.SqlServer);
 ```
 
 Let´s start using `DbSession`
@@ -67,6 +68,11 @@ using (DbSession dbSession = new DbSession(typeof(this))) // uses registered con
     ...
 }
 ```
+Fetch scalar value:
+```charp
+var scalarValue = dbSession.GetScalarValue<int>("SELECT ProductID FROM Products WHERE Name=@name", new { name = "Herbie" });
+```
+
 
 Clean
 -----
