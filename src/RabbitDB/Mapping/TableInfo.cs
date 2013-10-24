@@ -7,6 +7,7 @@ using RabbitDB.Base;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
 using RabbitDB.Attributes;
+using RabbitDB.Query;
 
 namespace RabbitDB.Mapping
 {
@@ -230,6 +231,17 @@ namespace RabbitDB.Mapping
         public static TableInfo GetTableInfo(Type type)
         {
             return TableInfoContainer.GetTableInfo(type);
+        }
+
+        internal void SetAutoNumber<TEntity>(TEntity entity, LastInsertId insertId)
+        {
+            if (insertId.IsEmpty) return;
+
+            IEnumerable<IPropertyInfo> propertyInfos = this.Columns.Where(column => column.ColumnAttribute.AutoNumber);
+            foreach (IPropertyInfo propertyInfo in propertyInfos)
+            {
+                propertyInfo.SetValue(entity, insertId);
+            }
         }
     }
 

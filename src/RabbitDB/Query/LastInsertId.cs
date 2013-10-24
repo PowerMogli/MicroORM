@@ -9,11 +9,11 @@
             _value = value;
         }
 
-        public bool IsEmpty { get { return _value == null; } }
-
-        public T ConvertTo<T>()
+        internal static implicit operator object(LastInsertId lastInsertID)
         {
-            return (T)_value;
+            return lastInsertID._value;
         }
+
+        public bool IsEmpty { get { return _value == null; } }
     }
 }

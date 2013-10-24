@@ -97,6 +97,7 @@ namespace RabbitDB.Storage
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(entity, tableInfo));
 
             LastInsertId insertId = new LastInsertId(_dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments)));
+            tableInfo.SetAutoNumber<TEntity>(entity, insertId);
         }
     }
 }
