@@ -3,12 +3,12 @@ RabbitDB
 
 A simple abstraction of data access. Simple, feature-rich, clean and hopefully efficent :)
 
-Simplicity
+Simple
 ----------
 
 No dynamics, simple and no obscure command execution.
 
-Feature-rich
+Features
 ------------
 
 Change tracking, identity map, multiple resultsets, custom mappings
