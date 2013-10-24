@@ -126,7 +126,7 @@ var titles = dbSession.GetObjectSet<string>("SELECT Title FROM Posts");
 Clean
 -----
 
-Based on clean-code principles and SOLID principles.
+Based on clean-code and SOLID principles.
 
 Efficient
 ---------
