@@ -38,6 +38,7 @@ class Post
     public ....
 }
 ```
+If you decide to use alternative primary keys the default primary key will be ignored!!
 
 If you name your class like your table and your properties like your columns you don´t need attributes.
 All needed information like dbtype, primarykey(s), default value, nullable is gathered by rabbitDB for you.
