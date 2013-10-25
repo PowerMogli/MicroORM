@@ -96,7 +96,7 @@ namespace RabbitDB.Storage
             string insertStatement = tableInfo.CreateInsertStatement(_dbProvider);
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(entity, tableInfo));
 
-            object insertId = _dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments)));
+            object insertId = _dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments));
             tableInfo.SetAutoNumber<TEntity>(entity, insertId);
         }
     }
