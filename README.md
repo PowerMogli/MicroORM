@@ -5,13 +5,15 @@ A simple abstraction of data access. Simple, feature-rich, clean and hopefully e
 
 Simple
 ----------
-
 No dynamics, simple and no obscure command execution. 
 If used by convention - no attributes are needed.
 
+Clean
+-----
+Based on clean-code and SOLID principles.
+
 Features
 ------------
-
 Change tracking, identity map, multiple resultsets, custom mappings
 (all on request - soon to come).
 Seperate `Entity` class to inherit from if you want to work with it without using within `DbSession`.
@@ -156,8 +158,3 @@ using (DbSession dbSession = new DbSession("YourConnectionStringHere", DbEngine.
     dbSession.ExecuteStoredProcedure(procedure);
 }
 ```
-
-Clean
------
-
-Based on clean-code and SOLID principles.
