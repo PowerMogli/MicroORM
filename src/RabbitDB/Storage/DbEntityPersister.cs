@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using RabbitDB.Caching;
 using RabbitDB.Entity;
 using RabbitDB.Mapping;
 using RabbitDB.Query;
-using RabbitDB.Reflection;
-using System;
-using RabbitDB.Materialization;
-using RabbitDB.Caching;
 
 namespace RabbitDB.Storage
 {
