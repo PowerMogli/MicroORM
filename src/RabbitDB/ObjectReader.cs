@@ -6,7 +6,7 @@ using RabbitDB.Storage;
 
 namespace RabbitDB.Base
 {
-    internal class ObjectReader<T> : IDisposable
+    public class ObjectReader<T> : IDisposable
     {
         private IDataReader _dataReader;
         private EntityMaterializer _materlizer;
@@ -23,21 +23,25 @@ namespace RabbitDB.Base
             _dataReaderSchema = new DataReaderSchema(dataReader, _tableInfo);
         }
 
-        internal T Current { get; private set; }
+        public T Current { get; private set; }
 
-        internal bool Read()
+        public bool Read()
         {
             return Read(1);
         }
 
-        internal bool Read(int step)
+        public bool Read(int step)
         {
             if (step < 0)
                 throw new ArgumentException("Step is lower then 1. This is not allowed!", "step");
 
             for (int i = 0; i < step; i++)
             {
-                if (_dataReader.Read() == false) { return false; }
+                if (_dataReader.Read() == false)
+                {
+                    Dispose();
+                    return false;
+                }
             }
 
             if (_tableInfo != null)
@@ -68,12 +72,17 @@ namespace RabbitDB.Base
             return true;
         }
 
-        public void Dispose()
+        internal void Dispose()
         {
             if (_dataReader == null || _dataReader.IsClosed) return;
 
             _dataReader.Close();
             _dataReader.Dispose();
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose();
         }
     }
 }
