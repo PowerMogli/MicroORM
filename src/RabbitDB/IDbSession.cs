@@ -27,5 +27,8 @@ namespace RabbitDB.Base
         void Delete<TEntity>(TEntity entity);
         void Insert<T>(T data);
         ObjectReader<T> GetObjectReader<T>(IQuery query);
+        ObjectReader<T> GetObjectReader<T>();
+        ObjectReader<T> GetObjectReader<T>(Expression<Func<T, bool>> condition);
+        ObjectReader<T> GetObjectReader<T>(string sql, params object[] args);
     }
 }
