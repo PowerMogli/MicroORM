@@ -101,23 +101,15 @@ namespace RabbitDB.Base
             return _dbProvider.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
+        ObjectSet<TEntity> IDbSession.GetObjectSet<TEntity>(IQuery query)
+        {
+            ObjectSet<TEntity> objectSet = new ObjectSet<TEntity>();
+            return objectSet.Load(this, query);
+        }
+
         public ObjectSet<TEntity> GetObjectSet<TEntity>(string sql, params object[] arguments)
         {
             return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(sql, QueryParameterCollection.Create<TEntity>(arguments)));
-        }
-
-        ObjectSet<TEntity> IDbSession.GetObjectSet<TEntity>(IQuery query)
-        {
-            using (_dbProvider)
-            {
-                ObjectSet<TEntity> objectSet = new ObjectSet<TEntity>();
-                return objectSet.Load(this, query);
-            }
-        }
-
-        ObjectReader<TEntity> IDbSession.GetObjectReader<TEntity>(IQuery query)
-        {
-            return _dbProvider.ExecuteReader<TEntity>(query);
         }
 
         public ObjectSet<TEntity> GetObjectSet<TEntity>(Expression<Func<TEntity, bool>> condition)
@@ -129,6 +121,27 @@ namespace RabbitDB.Base
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
+        }
+
+        ObjectReader<TEntity> IDbSession.GetObjectReader<TEntity>(IQuery query)
+        {
+            return _dbProvider.ExecuteReader<TEntity>(query);
+        }
+
+        public ObjectReader<TEntity> GetObjectReader<TEntity>(string sql, params object[] arguments)
+        {
+            return ((IDbSession)this).GetObjectReader<TEntity>(new SqlQuery<TEntity>(sql, QueryParameterCollection.Create<TEntity>(arguments)));
+        }
+
+        public ObjectReader<TEntity> GetObjectReader<TEntity>(Expression<Func<TEntity, bool>> condition)
+        {
+            return ((IDbSession)this).GetObjectReader<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
+        }
+
+        public ObjectReader<TEntity> GetObjectReader<TEntity>()
+        {
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+            return ((IDbSession)this).GetObjectReader<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
         }
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
