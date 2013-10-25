@@ -1,13 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using RabbitDB.Attributes;
 using RabbitDB.Base;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
-using RabbitDB.Attributes;
-using RabbitDB.Query;
 
 namespace RabbitDB.Mapping
 {
@@ -233,9 +232,9 @@ namespace RabbitDB.Mapping
             return TableInfoContainer.GetTableInfo(type);
         }
 
-        internal void SetAutoNumber<TEntity>(TEntity entity, LastInsertId insertId)
+        internal void SetAutoNumber<TEntity>(TEntity entity, object insertId)
         {
-            if (insertId.IsEmpty) return;
+            if (insertId == null) return;
 
             IEnumerable<IPropertyInfo> propertyInfos = this.Columns.Where(column => column.ColumnAttribute.AutoNumber);
             foreach (IPropertyInfo propertyInfo in propertyInfos)
