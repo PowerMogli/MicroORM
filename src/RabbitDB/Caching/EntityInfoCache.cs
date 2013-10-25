@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +14,7 @@ namespace RabbitDB.Caching
         private List<int> _keys;
         private BackgroundWorker _cleanUpWorker;
         private TimeSpan TIMEOUT = TimeSpan.FromMilliseconds(100);
-        private const byte ROUNDS_FOR_GC = 100;
+        private const byte ROUNDS_FOR_GC = 20;
         private AutoResetEvent _waitHandle = new AutoResetEvent(false);
 
         internal EntityInfoCache()
@@ -52,8 +52,11 @@ namespace RabbitDB.Caching
                 item = new CacheItem<TEntity>(entity, entityInfo);
                 _referenceCache.TryAdd(hash, item);
             }
-            if (_keys.Contains(hash) == false)
-                _keys.Add(hash);
+            lock (_lock)
+            {
+                if (_keys.Contains(hash) == false)
+                    _keys.Add(hash);
+            }
         }
 
         internal void Update(TEntity entity, EntityInfo entityInfo)
@@ -93,6 +96,8 @@ namespace RabbitDB.Caching
             for (int i = 0; i < _referenceCache.Count; i++)
             {
                 int key;
+                if (_keys.Count - 1 < i) return;
+
                 lock (_lock) { key = _keys[i]; }
 
                 CacheItem<TEntity> item = _referenceCache[key];
