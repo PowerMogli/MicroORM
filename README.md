@@ -1,7 +1,8 @@
 RabbitDB
 ========
 
-A simple abstraction of data access. Simple, feature-rich, clean and hopefully efficent :)
+A simple abstraction of data access. Simple, feature-rich, clean and hopefully efficent. 
+Works like to conjure a white rabbit out of a hat  :)
 
 Simple
 ----------
