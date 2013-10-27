@@ -7,12 +7,12 @@ namespace RabbitDB.Schema
     {
         public DbTableCollection() { }
 
-        public DbTable GetTable(string tableName)
+        internal DbTable GetTable(string tableName)
         {
             return this.SingleOrDefault(dbTable => string.Compare(dbTable.Name, tableName, true) == 0);
         }
 
-        public DbTable this[string tableName]
+        internal DbTable this[string tableName]
         {
             get { return GetTable(tableName); }
         }
