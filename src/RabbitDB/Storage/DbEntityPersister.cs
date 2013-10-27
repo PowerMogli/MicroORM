@@ -22,10 +22,10 @@ namespace RabbitDB.Storage
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="entity"></param>
-        internal bool PersistChanges<TEntity>(TEntity entity, bool isToDelete = false) where TEntity : Entity.Entity
+        internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-            if (isToDelete)
+            if (entity.MarkedForDeletion)
             {
                 // Entity was already deleted
                 if (entityInfo.EntityState == EntityState.Deleted)
@@ -43,9 +43,7 @@ namespace RabbitDB.Storage
                 entityInfo.EntityState = EntityState.Inserted;
                 return true;
             }
-            else if (entityInfo.EntityState == EntityState.Loaded
-                || entityInfo.EntityState == EntityState.Inserted
-                || entityInfo.EntityState == EntityState.Updated)
+            else if (entityInfo.EntityState != EntityState.Deleted)
             {
                 Tuple<bool, string, QueryParameterCollection> tuple = PrepareForUpdate<TEntity>(entity, entityInfo);
                 if (tuple.Item1 == false) return false;
