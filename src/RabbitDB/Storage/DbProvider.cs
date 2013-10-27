@@ -73,13 +73,13 @@ namespace RabbitDB.Storage
             return _dbCommand.ExecuteReader();
         }
 
-        public virtual ObjectReader<T> ExecuteReader<T>(IQuery query)
+        public virtual EntityReader<T> ExecuteReader<T>(IQuery query)
         {
             CreateConnection();
             _dbCommand = query.Compile(this);
             _dbCommand.Transaction = _dbTransaction;
 
-            return new ObjectReader<T>(_dbCommand.ExecuteReader(), this);
+            return new EntityReader<T>(_dbCommand.ExecuteReader(), this);
         }
 
         public virtual T ExecuteScalar<T>(IQuery query)
