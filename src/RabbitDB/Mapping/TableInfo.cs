@@ -10,7 +10,7 @@ using RabbitDB.Storage;
 
 namespace RabbitDB.Mapping
 {
-    internal sealed class TableInfo
+    internal class TableInfo
     {
         private bool _isAnonymousType;
 
@@ -153,7 +153,8 @@ namespace RabbitDB.Mapping
             insertStatement.AppendFormat("({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.Name))));
             insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name)));
 
-            return this.InsertStatement = string.Concat(insertStatement.ToString(), dbProvider.ScopeIdentity);
+            Tuple<bool, string> result = GetIdentityType();
+            return this.InsertStatement = string.Concat(insertStatement.ToString(), result.Item1 ? string.Format(dbProvider.ScopeIdentity, result.Item2) : string.Empty);
         }
 
         internal string CreateUpdateStatement(IDbProvider dbProvider, KeyValuePair<string, object>[] arguments)
@@ -214,6 +215,38 @@ namespace RabbitDB.Mapping
                 return this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);
         }
 
+        internal void SetAutoNumber<TEntity>(TEntity entity, object insertId)
+        {
+            if (insertId == null) return;
+
+            IEnumerable<IPropertyInfo> propertyInfos = this.Columns.Where(column => column.ColumnAttribute.AutoNumber);
+            foreach (IPropertyInfo propertyInfo in propertyInfos)
+            {
+                propertyInfo.SetValue(entity, insertId);
+            }
+        }
+
+        private Tuple<bool, string> GetIdentityType()
+        {
+            IPropertyInfo propertyInfo = this.Columns.Where(column => column.ColumnAttribute.AutoNumber).FirstOrDefault();
+            if (propertyInfo == null)
+                return new Tuple<bool, string>(false, string.Empty);
+
+            string castTo = string.Empty;
+            if (propertyInfo.PropertyType == typeof(int))
+                castTo = "INT";
+            if (propertyInfo.PropertyType == typeof(decimal))
+                castTo = "NUMERIC";
+            if (propertyInfo.PropertyType == typeof(short))
+                castTo = "SMALLINT";
+            if (propertyInfo.PropertyType == typeof(byte))
+                castTo = "TINYINT";
+            if (propertyInfo.PropertyType == typeof(long))
+                castTo = "BIGINT";
+
+            return new Tuple<bool, string>(true, castTo);
+        }
+
         /// <summary>
         /// Returns the mapping for a given object.
         /// </summary>
@@ -230,17 +263,6 @@ namespace RabbitDB.Mapping
         public static TableInfo GetTableInfo(Type type)
         {
             return TableInfoContainer.GetTableInfo(type);
-        }
-
-        internal void SetAutoNumber<TEntity>(TEntity entity, object insertId)
-        {
-            if (insertId == null) return;
-
-            IEnumerable<IPropertyInfo> propertyInfos = this.Columns.Where(column => column.ColumnAttribute.AutoNumber);
-            foreach (IPropertyInfo propertyInfo in propertyInfos)
-            {
-                propertyInfo.SetValue(entity, insertId);
-            }
         }
     }
 
