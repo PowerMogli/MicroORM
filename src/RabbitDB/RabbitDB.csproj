@@ -45,7 +45,9 @@
     <Compile Include="Caching\EntityInfoCache.cs" />
     <Compile Include="Caching\EntityInfoCacheManager.cs" />
     <Compile Include="Entity\Entity.cs" />
+    <Compile Include="Entity\EntityCollection.cs" />
     <Compile Include="Entity\EntityExtensions.cs" />
+    <Compile Include="Expression\ExpressionWriter.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
@@ -64,13 +66,12 @@
     <Compile Include="Mapping\TableInfo.cs" />
     <Compile Include="Materialization\DataReaderSchema.cs" />
     <Compile Include="Materialization\EntityMaterializer.cs" />
-    <Compile Include="ObjectReader.cs" />
-    <Compile Include="ObjectSet.cs" />
+    <Compile Include="EntityReader.cs" />
+    <Compile Include="EntitySet.cs" />
     <Compile Include="Query\DbParameterExtension.cs" />
     <Compile Include="Query\EntityQuery.cs" />
     <Compile Include="Query\Generic\SimpleExpressionQuery.cs" />
     <Compile Include="Query\IArgumentQuery.cs" />
-    <Compile Include="Query\LastInsertId.cs" />
     <Compile Include="Query\ProcedureParameterCollection.cs" />
     <Compile Include="Query\QueryParameter.cs" />
     <Compile Include="Query\ProcedureExtensions.cs" />
