@@ -34,10 +34,7 @@ namespace RabbitDB.Caching
 
             CacheItem<TEntity> item;
             if (_referenceCache.TryGetValue(entity.GetHashCode(), out item))
-            {
-                if (entity.Equals(item.Target))
-                    return item.EntityInfo;
-            }
+                return item.EntityInfo;
 
             return null;
         }
@@ -61,14 +58,21 @@ namespace RabbitDB.Caching
 
         internal void Update(TEntity entity, EntityInfo entityInfo)
         {
-            int hash = entity.GetHashCode();
+            CacheItem<TEntity> item;
+            if (_referenceCache.TryGetValue(entity.GetHashCode(), out item))
+                item.EntityInfo = entityInfo;
+        }
 
-            if (_referenceCache.ContainsKey(hash))
+        internal void Remove(TEntity entity)
+        {
+            CacheItem<TEntity> cacheItem;
+            int entityHash = entity.GetHashCode();
+            if (_referenceCache.TryRemove(entityHash, out cacheItem))
             {
-                CacheItem<TEntity> item;
-                _referenceCache.TryGetValue(hash, out item);
-                if (item.Target.Equals(entity))
-                    item.EntityInfo = entityInfo;
+                lock (_lock)
+                {
+                    _keys.Remove(entityHash);
+                }
             }
         }
 
