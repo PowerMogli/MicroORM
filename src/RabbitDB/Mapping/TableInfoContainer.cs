@@ -21,7 +21,7 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// Returns the mapping for the given persistent type. If the mapping does not exist it is 
+        /// Returns the mapping for the given entity type. If the mapping does not exist it is 
         /// created by this routine.
         /// </summary>
         /// <param name="entityType">Type of object the mapping is returned.</param>
@@ -33,8 +33,8 @@ namespace RabbitDB.Mapping
                 || entityType.IsValueType
                 || entityType.IsEnum) { return null; }
 
-            // Get the real persistent type.
-            entityType = GetPersistentType(entityType);
+            // Get the real entity type.
+            entityType = GetEntityType(entityType);
 
             if (_lastMapping != null
                 && _lastMapping.EntityType == entityType) { return _lastMapping; }
@@ -53,7 +53,7 @@ namespace RabbitDB.Mapping
         /// Gets the persistent type from the given type.
         /// </summary>
         /// <param name="entityType">The type that's persistent type is returned.</param>
-        public static Type GetPersistentType(Type entityType)
+        public static Type GetEntityType(Type entityType)
         {
             if (entityType == null)
                 throw new ArgumentNullException("entityType");
@@ -66,7 +66,7 @@ namespace RabbitDB.Mapping
             if (_interfacePersistents.TryGetValue(entityType, out interfaceType)) return interfaceType;
 
             // Throw an exception if the interface is not registered with a persistent.
-            throw new TableInfoException(string.Format("There is no persistent type registered for the interface type: {0}.", entityType.FullName));
+            throw new TableInfoException(string.Format("There is no entity type registered for the interface type: {0}.", entityType.FullName));
         }
     }
 }
