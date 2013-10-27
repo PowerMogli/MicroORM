@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 //using LinFu.DynamicProxy;
 using RabbitDB.Mapping;
@@ -14,6 +15,11 @@ namespace RabbitDB.Materialization
         internal EntityMaterializer(IDbProvider provider)
         {
             _dbProvider = provider;
+        }
+
+        internal IEnumerable<TEntity> Materialize<TEntity>(Func<IDataReader, IEnumerable<TEntity>> materializer, IDataReader dataReader)
+        {
+            return materializer(dataReader);
         }
 
         internal T Materialize<T>(T entity, DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
