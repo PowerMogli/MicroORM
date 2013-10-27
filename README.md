@@ -183,3 +183,13 @@ static void CustomMap(Post entity, IDataReader dataReader)
     }
 }
 ```
+Use of `EntityCollection`:
+```csharp
+EntityCollection<Post> postCollection = new EntityCollection<Post>();
+postCollection.LoadAll();
+Post post = postCollection.FindByKey(16);
+post.MarkForDeletion();
+Post post2 = postCollection.FindByKey(1);
+post.Title = "New Title";
+postCollection.PersistChanges();
+```
