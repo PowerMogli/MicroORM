@@ -159,3 +159,27 @@ using (DbSession dbSession = new DbSession("YourConnectionStringHere", DbEngine.
     dbSession.ExecuteStoredProcedure(procedure);
 }
 ```
+Custom mappings for `Entity`:
+```csharp
+
+Registrar<DbEngine>.Register("RabbitDB.Program.*", DbEngine.SqlServer);
+Registrar<string>.Register("RabbitDB.Program.*", @"YourConnectionStringHere");
+
+var post = new Post();
+post.Id = 16;
+post.Load(CustomMap);
+
+static void CustomMap(Post entity, IDataReader dataReader)
+{
+    while (dataReader.Read())
+    {
+        entity.Id = (int)dataReader["Id"];
+        entity.Title = (string)dataReader["Title"];
+        entity.AuthorId = (int)dataReader["AuthorId"];
+        entity.CreatedOn = (DateTime)dataReader["CreatedOn"];
+        entity.IsActive = (bool)dataReader["IsActive"];
+        entity.TopicId = (int)dataReader["TopicId"];
+        entity.Type = (PostType)dataReader["Type"];
+    }
+}
+```
