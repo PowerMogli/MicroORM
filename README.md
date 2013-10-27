@@ -190,6 +190,6 @@ postCollection.LoadAll();
 Post post = postCollection.FindByKey(16);
 post.MarkForDeletion();
 Post post2 = postCollection.FindByKey(1);
-post.Title = "New Title";
+post2.Title = "New Title";
 postCollection.PersistChanges();
 ```
