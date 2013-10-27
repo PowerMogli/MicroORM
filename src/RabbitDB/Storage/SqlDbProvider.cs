@@ -12,7 +12,7 @@ namespace RabbitDB.Storage
 
         public override string ScopeIdentity
         {
-            get { return "; Select SCOPE_IDENTITY() as id"; }
+            get { return "; Select CAST(SCOPE_IDENTITY() AS {0}) as id"; }
         }
 
         internal SqlDbProvider(string connectionString)
