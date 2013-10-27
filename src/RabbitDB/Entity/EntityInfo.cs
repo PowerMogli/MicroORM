@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RabbitDB.Mapping;
 using RabbitDB.Materialization;
 using RabbitDB.Reflection;
-using RabbitDB.Mapping;
 
 namespace RabbitDB.Entity
 {
