@@ -50,7 +50,6 @@ All needed information like name of table, name of column, dbtype, primarykey(s)
 
 Loading data for entity:
 ```csharp
-var post = new Post();
 post.Id = 6;
 post.Load();
 ```
@@ -192,4 +191,7 @@ post.MarkForDeletion();
 Post post2 = postCollection.FindByKey(1);
 post2.Title = "New Title";
 postCollection.PersistChanges();
+
+// Or for faster deletion of all entities in collection
+postCollection.DeleteAll();
 ```
