@@ -15,7 +15,7 @@ namespace RabbitDB.Storage
         IDbCommand CreateCommand();
         void ExecuteCommand(IQuery query);
         IDataReader ExecuteReader(IQuery query);
-        ObjectReader<T> ExecuteReader<T>(IQuery query);
+        EntityReader<T> ExecuteReader<T>(IQuery query);
         T ExecuteScalar<T>(IQuery query);
     }
 }
