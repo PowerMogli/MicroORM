@@ -50,7 +50,6 @@ All needed information like name of table, name of column, dbtype, primarykey(s)
 
 Loading data for entity:
 ```csharp
-var post = new Post();
 post.Id = 6;
 post.Load();
 ```
@@ -158,4 +157,41 @@ using (DbSession dbSession = new DbSession("YourConnectionStringHere", DbEngine.
     ExampleProcedure procedure = new ExampleProcedure();
     dbSession.ExecuteStoredProcedure(procedure);
 }
+```
+Custom mappings for `Entity`:
+```csharp
+
+Registrar<DbEngine>.Register("RabbitDB.Program.*", DbEngine.SqlServer);
+Registrar<string>.Register("RabbitDB.Program.*", @"YourConnectionStringHere");
+
+var post = new Post();
+post.Id = 16;
+post.Load(CustomMap);
+
+static void CustomMap(Post entity, IDataReader dataReader)
+{
+    while (dataReader.Read())
+    {
+        entity.Id = (int)dataReader["Id"];
+        entity.Title = (string)dataReader["Title"];
+        entity.AuthorId = (int)dataReader["AuthorId"];
+        entity.CreatedOn = (DateTime)dataReader["CreatedOn"];
+        entity.IsActive = (bool)dataReader["IsActive"];
+        entity.TopicId = (int)dataReader["TopicId"];
+        entity.Type = (PostType)dataReader["Type"];
+    }
+}
+```
+Use of `EntityCollection`:
+```csharp
+EntityCollection<Post> postCollection = new EntityCollection<Post>();
+postCollection.LoadAll();
+Post post = postCollection.FindByKey(16);
+post.MarkForDeletion();
+Post post2 = postCollection.FindByKey(1);
+post2.Title = "New Title";
+postCollection.PersistChanges();
+
+// Or for faster deletion of all entities in collection
+postCollection.DeleteAll();
 ```
