@@ -56,7 +56,7 @@ namespace RabbitDB.Base
 
         public TEntity ExecuteStoredProcedure<TEntity>(StoredProcedure procedureObject)
         {
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(procedureObject));
+            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new StoredProcedureQuery(procedureObject));
             return objectSet.SingleOrDefault();
         }
 
@@ -67,27 +67,27 @@ namespace RabbitDB.Base
 
         public TEntity ExecuteStoredProcedure<TEntity>(string storedProcedureName, params object[] arguments)
         {
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create<TEntity>(arguments)));
+            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create<TEntity>(arguments)));
             return objectSet.SingleOrDefault();
         }
 
-        public TEntity GetObject<TEntity>(Expression<Func<TEntity, bool>> condition)
+        public TEntity GetEntity<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
+            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
             return objectSet.SingleOrDefault();
         }
 
-        public TEntity GetObject<TEntity>(object primaryKey, string additionalPredicate = null)
+        public TEntity GetEntity<TEntity>(object primaryKey, string additionalPredicate = null)
         {
-            return this.GetObject<TEntity>(new object[] { primaryKey }, additionalPredicate);
+            return this.GetEntity<TEntity>(new object[] { primaryKey }, additionalPredicate);
         }
 
-        public TEntity GetObject<TEntity>(object[] primaryKeys, string additionalPredicate = null)
+        public TEntity GetEntity<TEntity>(object[] primaryKeys, string additionalPredicate = null)
         {
             if (primaryKeys == null || primaryKeys.Length == 0)
                 throw new PrimaryKeyException("No primary Keys provided!");
 
-            ObjectSet<TEntity> objectSet = ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(primaryKeys, additionalPredicate, null));
+            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new SqlQuery<TEntity>(primaryKeys, additionalPredicate, null));
             return objectSet.SingleOrDefault();
         }
 
@@ -101,47 +101,47 @@ namespace RabbitDB.Base
             return _dbProvider.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
-        ObjectSet<TEntity> IDbSession.GetObjectSet<TEntity>(IQuery query)
+        EntitySet<TEntity> IDbSession.GetEntitySet<TEntity>(IQuery query)
         {
-            ObjectSet<TEntity> objectSet = new ObjectSet<TEntity>();
+            EntitySet<TEntity> objectSet = new EntitySet<TEntity>();
             return objectSet.Load(this, query);
         }
 
-        public ObjectSet<TEntity> GetObjectSet<TEntity>(string sql, params object[] arguments)
+        public EntitySet<TEntity> GetEntitySet<TEntity>(string sql, params object[] arguments)
         {
-            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery<TEntity>(sql, QueryParameterCollection.Create<TEntity>(arguments)));
+            return ((IDbSession)this).GetEntitySet<TEntity>(new SqlQuery<TEntity>(sql, QueryParameterCollection.Create<TEntity>(arguments)));
         }
 
-        public ObjectSet<TEntity> GetObjectSet<TEntity>(Expression<Func<TEntity, bool>> condition)
+        public EntitySet<TEntity> GetEntitySet<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            return ((IDbSession)this).GetObjectSet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
+            return ((IDbSession)this).GetEntitySet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
         }
 
-        public ObjectSet<TEntity> GetObjectSet<TEntity>()
+        public EntitySet<TEntity> GetEntitySet<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IDbSession)this).GetObjectSet<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
+            return ((IDbSession)this).GetEntitySet<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
         }
 
-        ObjectReader<TEntity> IDbSession.GetObjectReader<TEntity>(IQuery query)
+        EntityReader<TEntity> IDbSession.GetEntityReader<TEntity>(IQuery query)
         {
             return _dbProvider.ExecuteReader<TEntity>(query);
         }
 
-        public ObjectReader<TEntity> GetObjectReader<TEntity>(string sql, params object[] arguments)
+        public EntityReader<TEntity> GetEntityReader<TEntity>(string sql, params object[] arguments)
         {
-            return ((IDbSession)this).GetObjectReader<TEntity>(new SqlQuery<TEntity>(sql, QueryParameterCollection.Create<TEntity>(arguments)));
+            return ((IDbSession)this).GetEntityReader<TEntity>(new SqlQuery<TEntity>(sql, QueryParameterCollection.Create<TEntity>(arguments)));
         }
 
-        public ObjectReader<TEntity> GetObjectReader<TEntity>(Expression<Func<TEntity, bool>> condition)
+        public EntityReader<TEntity> GetEntityReader<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            return ((IDbSession)this).GetObjectReader<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
+            return ((IDbSession)this).GetEntityReader<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
         }
 
-        public ObjectReader<TEntity> GetObjectReader<TEntity>()
+        public EntityReader<TEntity> GetEntityReader<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IDbSession)this).GetObjectReader<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
+            return ((IDbSession)this).GetEntityReader<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
         }
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
@@ -157,7 +157,7 @@ namespace RabbitDB.Base
 
         void IDbSession.Load<TEntity>(TEntity entity)
         {
-            ObjectReader<TEntity> objectReader = _dbProvider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
+            EntityReader<TEntity> objectReader = _dbProvider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
             if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
         }
 
@@ -173,10 +173,10 @@ namespace RabbitDB.Base
             _dbEntityPersister.Insert(entity);
         }
 
-        bool IDbSession.PersistChanges<TEntity>(TEntity entity, bool isToDelete = false)
+        bool IDbSession.PersistChanges<TEntity>(TEntity entity)
         {
             DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
-            return _dbEntityPersister.PersistChanges(entity, isToDelete);
+            return _dbEntityPersister.PersistChanges(entity);
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
