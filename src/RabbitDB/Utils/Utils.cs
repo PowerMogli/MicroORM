@@ -19,7 +19,9 @@ namespace RabbitDB.Utils
             List<KeyValuePair<string, object>> arguments = new List<KeyValuePair<string, object>>();
             for (int i = 0; i < count; i++)
             {
-                IPropertyInfo memberInfo = tableInfo.Columns.Where(member => member.ColumnAttribute.ColumnName == properties[i].Key).First();
+                IPropertyInfo memberInfo = tableInfo.Columns.Where(member => member.ColumnAttribute.ColumnName == properties[i].Key).FirstOrDefault();
+                if (memberInfo == null) continue;
+
                 if (tableInfo.Columns.Contains(memberInfo.ColumnAttribute.ColumnName)
                     && memberInfo.ColumnAttribute.AutoNumber) { continue; }
 
