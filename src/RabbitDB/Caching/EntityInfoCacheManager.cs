@@ -43,6 +43,11 @@ namespace RabbitDB.Caching
             return entityInfo;
         }
 
+        internal static void RemoveFor<TEntity>(TEntity entity)
+        {
+            _referenceCache.Remove(entity);
+        }
+
         internal static void Dispose()
         {
             lock (_lock) { _referenceCache.Dispose(); }
