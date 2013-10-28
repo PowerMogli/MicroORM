@@ -129,7 +129,7 @@ Stored procedures:
 dbSession.ExecuteStoredProcedure("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
 
 // or to receive your poce with a stored procedure
-dbSession.ExecuteStoredProcedure<YourPOCO>("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
+YourPOCO poco = dbSession.ExecuteStoredProcedure<YourPOCO>("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
 ```
 Or if you have a stored procedure with a lot of parameters:
 ```csharp
