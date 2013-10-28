@@ -148,6 +148,7 @@ public class ExampleProcedure : SqlStoredProcedure
 // Any where else
 
 ExampleProcedure procedure = new ExampleProcedure();
+procedure.TicketID = "TicketID_To_Work_With";
 procedure.Execute();
 ```
 Or within a `DbSession`:
@@ -155,6 +156,7 @@ Or within a `DbSession`:
 using (DbSession dbSession = new DbSession("YourConnectionStringHere", DbEngine.SqlServer))
 {
     ExampleProcedure procedure = new ExampleProcedure();
+    procedure.TicketID = "TicketID_To_Work_With";
     dbSession.ExecuteStoredProcedure(procedure);
 }
 ```
