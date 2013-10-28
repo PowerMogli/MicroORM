@@ -39,7 +39,8 @@ Let´s assume you want to use an other primary key then `ID`:
 class Post
 {
     public int Id { get; set; }
-    public ....
+    public string FirstID { get; set; }
+    public int SecondID { get; set; }
 }
 ```
 If you decide to use alternative primary keys the default primary key will be ignored!!
