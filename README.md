@@ -17,7 +17,7 @@ Features
 ------------
 Change tracking, identity map, multiple resultsets, custom mappings
 (all on request - soon to come).
-Seperate `Entity` class to inherit from if you want to work with it without using within `DbSession`.
+Seperate `Entity` class to inherit from. This way you are not forced to work with `DbSession`.
 
 ```csharp
 [Table("Posts")]
@@ -77,6 +77,19 @@ If you decide to inherit from `Entity` you have to register your connection stri
 ```csharp
 Registrar<string>.Register("Company.Module.*", @"YourConnectionString");
 Registrar<DbEngine>.Register("Company.Module.*", DbEngine.SqlServer);
+```
+You can of cource work with a `EntityCollection` and do what whatever you can do with `Entity`:
+```csharp
+EntityCollection<Post> postCollection = new EntityCollection<Post>();
+postCollection.LoadAll();
+Post post = postCollection.FindByKey(16);
+post.MarkForDeletion();
+Post post2 = postCollection.FindByKey(1);
+post2.Title = "New Title";
+postCollection.PersistChanges();
+
+// Or for faster deletion of all entities in collection
+postCollection.DeleteAll();
 ```
 
 Let´s start using `DbSession`
@@ -184,17 +197,4 @@ static void CustomMap(Post entity, IDataReader dataReader)
         entity.Type = (PostType)dataReader["Type"];
     }
 }
-```
-Use of `EntityCollection`:
-```csharp
-EntityCollection<Post> postCollection = new EntityCollection<Post>();
-postCollection.LoadAll();
-Post post = postCollection.FindByKey(16);
-post.MarkForDeletion();
-Post post2 = postCollection.FindByKey(1);
-post2.Title = "New Title";
-postCollection.PersistChanges();
-
-// Or for faster deletion of all entities in collection
-postCollection.DeleteAll();
 ```
