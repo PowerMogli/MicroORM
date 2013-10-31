@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Text;
@@ -87,7 +87,7 @@ namespace RabbitDB.Expressions
         internal void CreateSelect(Expression<Func<T, bool>> criteria)
         {
             WriteSelectAllColumns();
-            Write(criteria);
+            Where(criteria);
         }
 
         private void WriteSelectAllColumns()
