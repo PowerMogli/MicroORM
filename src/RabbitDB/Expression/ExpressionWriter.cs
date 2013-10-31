@@ -1,3 +1,18 @@
+/*
+ * Parts of the code used in this class 
+ * originate from the OS project SqlFu:
+ * https://github.com/sapiens/SqlFu
+ * Licence used: Apache Licence v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * and CavemanTools
+ * https://bitbucket.org/sapiensworks/caveman-tools/wiki/CTools
+ * BSD Licence
+ * 
+ * If anyone feels offended by the use of this code
+ * please feel free to send me an e-Mail: albix@gmx.net
+ */
+
 using System;
 using System.Collections;
 using System.Linq;
@@ -257,64 +272,6 @@ namespace RabbitDB.Expressions
         {
             return Expression.Equal(node.Operand, Expression.Constant(node.NodeType != ExpressionType.Not));
         }
-
-        //protected bool IsNullConstant(Expression exp)
-        //{
-        //    return (exp.NodeType == ExpressionType.Constant && ((ConstantExpression)exp).Value == null);
-        //}
-
-        //private bool ParseOrderByExpression(MethodCallExpression expression, string order)
-        //{
-        //    UnaryExpression unary = (UnaryExpression)expression.Arguments[1];
-        //    LambdaExpression lambdaExpression = (LambdaExpression)unary.Operand;
-
-        //    lambdaExpression = (LambdaExpression)Evaluator.PartialEval(lambdaExpression);
-
-        //    MemberExpression body = lambdaExpression.Body as MemberExpression;
-        //    if (body != null)
-        //    {
-        //        if (string.IsNullOrEmpty(_orderBy))
-        //        {
-        //            _orderBy = string.Format("{0} {1}", body.Member.Name, order);
-        //        }
-        //        else
-        //        {
-        //            _orderBy = string.Format("{0}, {1} {2}", _orderBy, body.Member.Name, order);
-        //        }
-
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool ParseTakeExpression(MethodCallExpression expression)
-        //{
-        //    ConstantExpression sizeExpression = (ConstantExpression)expression.Arguments[1];
-
-        //    int size;
-        //    if (int.TryParse(sizeExpression.Value.ToString(), out size))
-        //    {
-        //        _take = size;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-        //private bool ParseSkipExpression(MethodCallExpression expression)
-        //{
-        //    ConstantExpression sizeExpression = (ConstantExpression)expression.Arguments[1];
-
-        //    int size;
-        //    if (int.TryParse(sizeExpression.Value.ToString(), out size))
-        //    {
-        //        _skip = size;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
 
         protected override Expression VisitBinary(BinaryExpression node)
         {
