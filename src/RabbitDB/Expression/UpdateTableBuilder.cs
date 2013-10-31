@@ -1,3 +1,14 @@
+/*
+ * Parts of the code used in this class 
+ * originate from the OS project SqlFu:
+ * https://github.com/sapiens/SqlFu
+ * Licence used: Apache Licence v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * If anyone feels offended by the use of this code
+ * please feel free to send me an e-Mail: albix@gmx.net
+ */
+
 using System;
 using System.Linq.Expressions;
 using RabbitDB.Mapping;
@@ -49,6 +60,7 @@ namespace RabbitDB.Expressions
 
         public void Where(Expression<Func<T, bool>> criteria)
         {
+            _builder.EndEnumeration();
             _builder.Where(criteria);
         }
 
