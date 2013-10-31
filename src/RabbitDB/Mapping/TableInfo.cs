@@ -200,7 +200,7 @@ namespace RabbitDB.Mapping
         {
             IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.Name == name);
             if (propertyInfo == null)
-                throw new ArgumentException("The column with the name - '{0}' - doesn´t exist.", "name");
+                throw new ArgumentException(string.Format("The column with the name - '{0}' - doesn´t exist.", name), "name");
 
             return propertyInfo.ColumnAttribute.ColumnName;
         }
