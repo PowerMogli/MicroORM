@@ -1,32 +1,38 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using RabbitDB.Mapping;
-using System.Collections;
 
 namespace RabbitDB.Expressions
 {
     internal class ExpressionWriter<T> : ExpressionVisitor
     {
-        StringBuilder sqlBuilder = new StringBuilder();
-        IDbProviderExpressionBuildHelper _expressionBuildHelper;
-        TableInfo tableInfo;
-        ExpressionParameterCollection _parameterCollection;
+        private StringBuilder sqlBuilder = new StringBuilder();
+        private IDbProviderExpressionBuildHelper _expressionBuildHelper;
+        private TableInfo _tableInfo;
+        private ExpressionParameterCollection _parameterCollection;
 
         internal object[] Parameters
         { get { return _parameterCollection.ToArray(); } }
 
-        internal ExpressionWriter(IDbProviderExpressionBuildHelper expressionBuildHelper)
+        internal ExpressionWriter(IDbProviderExpressionBuildHelper expressionBuildHelper, ExpressionParameterCollection parameterCollection)
         {
             _expressionBuildHelper = expressionBuildHelper;
-            tableInfo = TableInfo<T>.GetTableInfo;
-            _parameterCollection = new ExpressionParameterCollection();
+            _tableInfo = TableInfo<T>.GetTableInfo;
+            _parameterCollection = parameterCollection ?? new ExpressionParameterCollection();
         }
 
         internal string Write(Expression<Func<T, bool>> expression)
         {
             Visit(expression);
+            return sqlBuilder.ToString();
+        }
+
+        public string Write<T>(Expression<Func<T, object>> criteria)
+        {
+            Visit(criteria);
             return sqlBuilder.ToString();
         }
 
@@ -209,7 +215,7 @@ namespace RabbitDB.Expressions
                 {
                     if (node.Expression.NodeType == ExpressionType.Parameter)
                     {
-                        IPropertyInfo propertyInfo = tableInfo.Columns.FirstOrDefault(column => column.Name == node.Member.Name);
+                        IPropertyInfo propertyInfo = _tableInfo.Columns.FirstOrDefault(column => column.Name == node.Member.Name);
                         sqlBuilder.Append(_expressionBuildHelper.EscapeName(propertyInfo.ColumnAttribute.ColumnName));
                     }
                     else
