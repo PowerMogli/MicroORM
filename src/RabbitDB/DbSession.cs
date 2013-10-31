@@ -7,7 +7,6 @@ using RabbitDB.Query;
 using RabbitDB.Query.Generic;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
-using RabbitDB.Expressions;
 
 namespace RabbitDB.Base
 {
@@ -74,14 +73,8 @@ namespace RabbitDB.Base
 
         public TEntity GetEntity<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            SqlExpressionBuilder<TEntity> sqlExpressionBuilder = new SqlExpressionBuilder<TEntity>(_dbProvider);
-            sqlExpressionBuilder.CreateSelect(condition);
-            string query = sqlExpressionBuilder.ToString();
-            QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(sqlExpressionBuilder.Parameters.ToArray());
-
-            SqlQuery sqlQuery = new SqlQuery(query, queryParameterCollection);
-            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(sqlQuery);
-            return objectSet.SingleOrDefault();
+            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new ExpressionQuery<TEntity>(condition));
+            return objectSet.FirstOrDefault();
         }
 
         public TEntity GetEntity<TEntity>(object primaryKey, string additionalPredicate = null)
@@ -153,10 +146,8 @@ namespace RabbitDB.Base
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
-            UpdateTableBuilder<TEntity> updateTableBuilder = new UpdateTableBuilder<TEntity>(_dbProvider);
-            updateTableBuilder.Where(criteria);
             DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            dbEntityPersister.Update<TEntity>(new SqlQuery(updateTableBuilder.GetSql(), QueryParameterCollection.Create(setArguments)));
+            dbEntityPersister.Update<TEntity>(new UpdateQuery<TEntity>(criteria, setArguments));
         }
 
         //public void Update<TEntity>(TEntity entity)
