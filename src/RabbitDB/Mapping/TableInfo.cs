@@ -68,7 +68,7 @@ namespace RabbitDB.Mapping
         {
             foreach (DbColumn dbColumn in this.DbTable.DbColumns)
             {
-                IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.Name == dbColumn.Name);
+                IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.ColumnAttribute.ColumnName == dbColumn.Name);
                 if (propertyInfo == null) continue;
 
                 propertyInfo.DbType = dbColumn.DbType;
@@ -84,7 +84,7 @@ namespace RabbitDB.Mapping
             List<string> indexToRemove = new List<string>();
             for (int index = 0; index < this.Columns.Count; index++)
             {
-                if (this.DbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name == this.Columns[index].Name) != null)
+                if (this.DbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name == this.Columns[index].ColumnAttribute.ColumnName) != null)
                     continue;
 
                 indexToRemove.Add(this.Columns[index].Name);
@@ -98,13 +98,24 @@ namespace RabbitDB.Mapping
                 return this.SelectStatement;
 
             StringBuilder selectStatement = new StringBuilder();
-            selectStatement.Append("SELECT ");
-
-            selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.Select(member => dbProvider.EscapeName(member.Name))));
-            selectStatement.AppendFormat(" FROM {0}", dbProvider.EscapeName(this.Name));
+            selectStatement.Append(GetBaseSelect(dbProvider));
 
             selectStatement.Append(AppendPrimaryKeys(dbProvider));
             return this.SelectStatement = selectStatement.ToString();
+        }
+
+        internal string GetBaseSelect(IDbProvider dbProvider)
+        {
+            StringBuilder selectStatement = new StringBuilder();
+            selectStatement.Append("SELECT ");
+
+            selectStatement.AppendFormat("{0}", string.Join(", ",
+                this.Columns
+                .Where(column => this.DbTable.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
+                .Select(member => dbProvider.EscapeName(member.ColumnAttribute.ColumnName))));
+            selectStatement.AppendFormat(" FROM {0}", dbProvider.EscapeName(this.Name));
+
+            return selectStatement.ToString();
         }
 
         internal string CreateDeleteStatement(IDbProvider provider)
@@ -136,10 +147,10 @@ namespace RabbitDB.Mapping
             if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs) == false)
             {
                 string[] attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
-                return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name)).Select(column => column.Name);
+                return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name)).Select(column => column.ColumnAttribute.ColumnName);
             }
             else
-                return this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.Name);
+                return this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.ColumnAttribute.ColumnName);
         }
 
         internal string CreateInsertStatement(IDbProvider dbProvider)
@@ -150,7 +161,8 @@ namespace RabbitDB.Mapping
             StringBuilder insertStatement = new StringBuilder();
             insertStatement.AppendFormat("INSERT INTO {0} ", dbProvider.EscapeName(this.Name));
 
-            insertStatement.AppendFormat("({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.Name))));
+            insertStatement.AppendFormat("({0})",
+                string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.ColumnAttribute.ColumnName))));
             insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name)));
 
             Tuple<bool, string> result = GetIdentityType();
@@ -159,13 +171,18 @@ namespace RabbitDB.Mapping
 
         internal string CreateUpdateStatement(IDbProvider dbProvider, KeyValuePair<string, object>[] arguments)
         {
-            string updateStatement = string.Format("UPDATE {0} SET ", dbProvider.EscapeName(this.Name));
+            string updateStatement = GetBaseUpdate(dbProvider);
             updateStatement += string.Join(", ",
-                arguments.SkipWhile(kvp => this.DbTable.DbColumns.Find(column => column.Name == kvp.Key && (column.IsPrimaryKey || column.IsAutoIncrement)) != null)
+                arguments.SkipWhile(kvp => this.DbTable.DbColumns.Find(dbColumn => dbColumn.Name == ResolveColumnName(kvp.Key) && (dbColumn.IsPrimaryKey || dbColumn.IsAutoIncrement)) != null)
                 .Select(kvp2 => string.Format("{0} = @{0}", kvp2.Key)));
             updateStatement += AppendPrimaryKeys(dbProvider);
 
             return updateStatement;
+        }
+
+        internal string GetBaseUpdate(IDbProvider dbProvider)
+        {
+            return string.Format("UPDATE {0} SET ", dbProvider.EscapeName(this.Name));
         }
 
         internal DbType ConvertToDbType(string name)
@@ -177,6 +194,15 @@ namespace RabbitDB.Mapping
         internal bool IsColumn(string name)
         {
             return this.Columns.Any(column => column.Name == name);
+        }
+
+        internal string ResolveColumnName(string name)
+        {
+            IPropertyInfo propertyInfo = this.Columns.FirstOrDefault(column => column.Name == name);
+            if (propertyInfo == null)
+                throw new ArgumentException("The column with the name - '{0}' - doesn´t exist.", "name");
+
+            return propertyInfo.ColumnAttribute.ColumnName;
         }
 
         internal int GetColumnSize(string name)
