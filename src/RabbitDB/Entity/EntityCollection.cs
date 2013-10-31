@@ -83,11 +83,7 @@ namespace RabbitDB.Entity
 
         private void SetEntity(EntitySet<TEntity> entitySet)
         {
-            if (_trackChanges == false)
-            {
-                _entityCollection.AddRange(entitySet);
-                return;
-            }
+            if (SavedNoTrackingEntities(entitySet)) return;
 
             foreach (TEntity entity in entitySet)
             {
@@ -98,6 +94,19 @@ namespace RabbitDB.Entity
                 entityInfo.EntityState = EntityState.Loaded;
                 entityInfo.ComputeSnapshot(entity);
             }
+        }
+
+        private bool SavedNoTrackingEntities(EntitySet<TEntity> entitySet)
+        {
+            if (_trackChanges) return false;
+
+            foreach (TEntity entity in entitySet)
+            {
+                entity.ChangeTrackingEnabled = false;
+                _entityCollection.Add(entity);
+            }
+
+            return true;
         }
 
         public void LoadAll(Func<IDataReader, IEnumerable<TEntity>> materializer)
@@ -119,6 +128,7 @@ namespace RabbitDB.Entity
                         entityInfo.ComputeSnapshot(entity);
                     }
                     _entityCollection.Add(entity);
+                    entity.ChangeTrackingEnabled = _trackChanges;
                 }
             }
             _loaded = true;
