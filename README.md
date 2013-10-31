@@ -17,7 +17,7 @@ Features
 ------------
 Change tracking, identity map, multiple resultsets, custom mappings
 (all on request - soon to come).
-Seperate `Entity` class to inherit from if you want to work with it without using within `DbSession`.
+Seperate `Entity` class to inherit from. This way you are not forced to work with `DbSession`.
 
 ```csharp
 [Table("Posts")]
@@ -39,7 +39,8 @@ Let´s assume you want to use an other primary key then `ID`:
 class Post
 {
     public int Id { get; set; }
-    public ....
+    public string FirstID { get; set; }
+    public int SecondID { get; set; }
 }
 ```
 If you decide to use alternative primary keys the default primary key will be ignored!!
@@ -76,6 +77,19 @@ If you decide to inherit from `Entity` you have to register your connection stri
 ```csharp
 Registrar<string>.Register("Company.Module.*", @"YourConnectionString");
 Registrar<DbEngine>.Register("Company.Module.*", DbEngine.SqlServer);
+```
+You can of cource work with a `EntityCollection` and do what whatever you can do with `Entity`:
+```csharp
+EntityCollection<Post> postCollection = new EntityCollection<Post>();
+postCollection.LoadAll();
+Post post = postCollection.FindByKey(16);
+post.MarkForDeletion();
+Post post2 = postCollection.FindByKey(1);
+post2.Title = "New Title";
+postCollection.PersistChanges();
+
+// Or for faster deletion of all entities in collection
+postCollection.DeleteAll();
 ```
 
 Let´s start using `DbSession`
@@ -129,7 +143,7 @@ Stored procedures:
 dbSession.ExecuteStoredProcedure("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
 
 // or to receive your poce with a stored procedure
-dbSession.ExecuteStoredProcedure<YourPOCO>("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
+YourPOCO poco = dbSession.ExecuteStoredProcedure<YourPOCO>("yourStoredProcedureName", new { pParam1 = "Fred", pParam2 = PostType.Page });
 ```
 Or if you have a stored procedure with a lot of parameters:
 ```csharp
@@ -148,6 +162,7 @@ public class ExampleProcedure : SqlStoredProcedure
 // Any where else
 
 ExampleProcedure procedure = new ExampleProcedure();
+procedure.TicketID = "TicketID_To_Work_With";
 procedure.Execute();
 ```
 Or within a `DbSession`:
@@ -155,6 +170,7 @@ Or within a `DbSession`:
 using (DbSession dbSession = new DbSession("YourConnectionStringHere", DbEngine.SqlServer))
 {
     ExampleProcedure procedure = new ExampleProcedure();
+    procedure.TicketID = "TicketID_To_Work_With";
     dbSession.ExecuteStoredProcedure(procedure);
 }
 ```
@@ -181,17 +197,4 @@ static void CustomMap(Post entity, IDataReader dataReader)
         entity.Type = (PostType)dataReader["Type"];
     }
 }
-```
-Use of `EntityCollection`:
-```csharp
-EntityCollection<Post> postCollection = new EntityCollection<Post>();
-postCollection.LoadAll();
-Post post = postCollection.FindByKey(16);
-post.MarkForDeletion();
-Post post2 = postCollection.FindByKey(1);
-post2.Title = "New Title";
-postCollection.PersistChanges();
-
-// Or for faster deletion of all entities in collection
-postCollection.DeleteAll();
 ```
