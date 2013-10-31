@@ -1,4 +1,19 @@
-﻿using System;
+﻿/*
+ * Parts of this code used in this class 
+ * originate from the OS project SqlFu:
+ * https://github.com/sapiens/SqlFu
+ * Licence used: Apache Licence v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * and CavemanTools
+ * https://bitbucket.org/sapiensworks/caveman-tools/wiki/CTools
+ * BSD Licence
+ * 
+ * If anyone feels offended by the use of this code
+ * please feel free to send me an e-Mail: albix@gmx.net
+ */
+
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -136,7 +151,7 @@ namespace RabbitDB.Expressions
 
         internal static object GetValue(this MemberExpression memberExpression)
         {
-            object parentValue=null;
+            object parentValue = null;
 
             if (memberExpression.Expression != null) //not static
             {
