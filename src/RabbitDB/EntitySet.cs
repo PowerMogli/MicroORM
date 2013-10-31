@@ -1,4 +1,5 @@
-﻿using System.Collections;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using RabbitDB.Query;
 
@@ -19,6 +20,11 @@ namespace RabbitDB.Base
             }
 
             return this;
+        }
+
+        internal void ForEach(Action<T> action)
+        {
+            _list.ForEach(action);
         }
 
         public T this[int index]
