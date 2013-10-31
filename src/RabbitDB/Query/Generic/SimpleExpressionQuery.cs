@@ -6,19 +6,30 @@ using RabbitDB.Storage;
 
 namespace RabbitDB.Query.Generic
 {
-    class SimpleExpressionQuery<T> : IQuery
+    internal class ExpressionQuery<T> : IQuery, IArgumentQuery
     {
-        private Expression<Func<T, bool>> _condition;
-        private ExpressionSqlBuilder<T> _expressionBuilder;
+        protected Expression<Func<T, bool>> _expression;
 
-        internal SimpleExpressionQuery(Expression<Func<T, bool>> condition)
+        public QueryParameterCollection Arguments { get; set; }
+        public string SqlStatement { get; private set; }
+
+        internal ExpressionQuery(Expression<Func<T, bool>> expression)
         {
-            _condition = condition;
+            _expression = expression;
         }
 
-        public IDbCommand Compile(IDbProvider provider)
+        public IDbCommand Compile(IDbProvider dbProvider)
         {
-            return null;
+            SqlExpressionBuilder<T> sqlExpressionBuilder = new SqlExpressionBuilder<T>(dbProvider);
+            sqlExpressionBuilder.CreateSelect(_expression);
+            string query = sqlExpressionBuilder.ToString();
+            QueryParameterCollection queryParameterCollection =
+                sqlExpressionBuilder.Parameters != null
+                ? QueryParameterCollection.Create<T>(sqlExpressionBuilder.Parameters.ToArray())
+                : new QueryParameterCollection();
+
+            SqlQuery sqlQuery = new SqlQuery(query, queryParameterCollection);
+            return sqlQuery.Compile(dbProvider);
         }
     }
 }
