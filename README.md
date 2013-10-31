@@ -70,7 +70,8 @@ Deletion:
 ```csharp
 var post = new Post();
 post.Id = 6;
-post.PersistChanges(true); // true for executing delete command
+post.MarkForDeletion();
+post.PersistChanges();
 ```
 
 If you decide to inherit from `Entity` you have to register your connection string and the used DbEngine.
