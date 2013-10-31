@@ -74,11 +74,12 @@ namespace RabbitDB.Base
 
         public TEntity GetEntity<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            ExpressionWriter<TEntity> expressionWriter = new ExpressionWriter<TEntity>(_dbProvider.BuilderHelper);
-            string query = expressionWriter.Write(condition);
-            QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(expressionWriter.Parameters);
-            SqlQuery sqlQuery = new SqlQuery(query, queryParameterCollection);
+            SqlExpressionBuilder<TEntity> sqlExpressionBuilder = new SqlExpressionBuilder<TEntity>(_dbProvider);
+            sqlExpressionBuilder.CreateSelect(condition);
+            string query = sqlExpressionBuilder.ToString();
+            QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(sqlExpressionBuilder.Parameters.ToArray());
 
+            SqlQuery sqlQuery = new SqlQuery(query, queryParameterCollection);
             EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(sqlQuery);
             return objectSet.SingleOrDefault();
         }
@@ -120,7 +121,7 @@ namespace RabbitDB.Base
 
         public EntitySet<TEntity> GetEntitySet<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            return ((IDbSession)this).GetEntitySet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
+            return ((IDbSession)this).GetEntitySet<TEntity>(new ExpressionQuery<TEntity>(condition));
         }
 
         public EntitySet<TEntity> GetEntitySet<TEntity>()
@@ -141,7 +142,7 @@ namespace RabbitDB.Base
 
         public EntityReader<TEntity> GetEntityReader<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            return ((IDbSession)this).GetEntityReader<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
+            return ((IDbSession)this).GetEntityReader<TEntity>(new ExpressionQuery<TEntity>(condition));
         }
 
         public EntityReader<TEntity> GetEntityReader<TEntity>()
@@ -152,9 +153,10 @@ namespace RabbitDB.Base
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
-            ExpressionWriter<TEntity> expressionWriter = new ExpressionWriter<TEntity>(_dbProvider.BuilderHelper);
+            UpdateTableBuilder<TEntity> updateTableBuilder = new UpdateTableBuilder<TEntity>(_dbProvider);
+            updateTableBuilder.Where(criteria);
             DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            dbEntityPersister.Update<TEntity>(new SqlQuery(expressionWriter.Write(criteria), QueryParameterCollection.Create(setArguments)));
+            dbEntityPersister.Update<TEntity>(new SqlQuery(updateTableBuilder.GetSql(), QueryParameterCollection.Create(setArguments)));
         }
 
         //public void Update<TEntity>(TEntity entity)
