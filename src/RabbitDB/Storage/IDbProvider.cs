@@ -3,6 +3,7 @@ using System.Data;
 using RabbitDB.Base;
 using RabbitDB.Query;
 using RabbitDB.Schema;
+using RabbitDB.Expressions;
 
 namespace RabbitDB.Storage
 {
@@ -11,6 +12,7 @@ namespace RabbitDB.Storage
         string ParameterPrefix { get; }
         string ProviderName { get; }
         string ScopeIdentity { get; }
+        IDbProviderExpressionBuildHelper BuilderHelper { get; }
         object ResolveNullValue(object value, Type type);
         IDbCommand CreateCommand();
         void ExecuteCommand(IQuery query);

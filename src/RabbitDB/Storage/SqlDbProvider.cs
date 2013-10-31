@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using RabbitDB.Schema;
+using RabbitDB.Expressions;
 
 namespace RabbitDB.Storage
 {
@@ -9,6 +10,12 @@ namespace RabbitDB.Storage
 
         public override string ParameterPrefix { get { return "@"; } }
         public override string ProviderName { get { return _providerName; } }
+
+        private IDbProviderExpressionBuildHelper _builderHelper;
+        public override IDbProviderExpressionBuildHelper BuilderHelper
+        {
+            get { return _builderHelper ?? (_builderHelper = new ExpressionBuildHelper(this)); }
+        }
 
         public override string ScopeIdentity
         {

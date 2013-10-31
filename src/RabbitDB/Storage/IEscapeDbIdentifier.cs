@@ -2,6 +2,6 @@
 {
     internal interface IEscapeDbIdentifier
     {
-        string EscapeName(string s);
+        string EscapeName(string value);
     }
 }

@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.Common;
 using RabbitDB.Base;
+using RabbitDB.Expressions;
 using RabbitDB.Query;
 
 namespace RabbitDB.Storage
@@ -17,6 +18,7 @@ namespace RabbitDB.Storage
         public abstract string ParameterPrefix { get; }
         public abstract string ProviderName { get; }
         public abstract string ScopeIdentity { get; }
+        public abstract IDbProviderExpressionBuildHelper BuilderHelper { get; }
 
         public DbProvider(string connectionString)
         {

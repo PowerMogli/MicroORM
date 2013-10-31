@@ -7,6 +7,7 @@ using RabbitDB.Query;
 using RabbitDB.Query.Generic;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
+using RabbitDB.Expressions;
 
 namespace RabbitDB.Base
 {
@@ -73,7 +74,12 @@ namespace RabbitDB.Base
 
         public TEntity GetEntity<TEntity>(Expression<Func<TEntity, bool>> condition)
         {
-            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new SimpleExpressionQuery<TEntity>(condition));
+            ExpressionWriter<TEntity> expressionWriter = new ExpressionWriter<TEntity>(_dbProvider.BuilderHelper);
+            string query = expressionWriter.Write(condition);
+            QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(expressionWriter.Parameters);
+            SqlQuery sqlQuery = new SqlQuery(query, queryParameterCollection);
+
+            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(sqlQuery);
             return objectSet.SingleOrDefault();
         }
 
@@ -146,7 +152,9 @@ namespace RabbitDB.Base
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
-
+            ExpressionWriter<TEntity> expressionWriter = new ExpressionWriter<TEntity>(_dbProvider.BuilderHelper);
+            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
+            dbEntityPersister.Update<TEntity>(new SqlQuery(expressionWriter.Write(criteria), QueryParameterCollection.Create(setArguments)));
         }
 
         //public void Update<TEntity>(TEntity entity)
@@ -163,20 +171,20 @@ namespace RabbitDB.Base
 
         public void Delete<TEntity>(TEntity entity)
         {
-            DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
-            _dbEntityPersister.Delete(entity);
+            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
+            dbEntityPersister.Delete(entity);
         }
 
         public void Insert<TEntity>(TEntity entity)
         {
-            DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
-            _dbEntityPersister.Insert(entity);
+            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
+            dbEntityPersister.Insert(entity);
         }
 
         bool IDbSession.PersistChanges<TEntity>(TEntity entity)
         {
-            DbEntityPersister _dbEntityPersister = new DbEntityPersister(_dbProvider);
-            return _dbEntityPersister.PersistChanges(entity);
+            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
+            return dbEntityPersister.PersistChanges(entity);
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)

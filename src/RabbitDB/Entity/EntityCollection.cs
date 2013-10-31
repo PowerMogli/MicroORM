@@ -20,7 +20,9 @@ namespace RabbitDB.Entity
         /// </summary>
         public void Flush()
         {
-            foreach(TEntity entity in _entityCollection)
+            if (_entityCollection.Count <= 0) return;
+
+            foreach (TEntity entity in _entityCollection)
             {
                 EntityInfoCacheManager.RemoveFor(entity);
             }

@@ -47,7 +47,11 @@
     <Compile Include="Entity\Entity.cs" />
     <Compile Include="Entity\EntityCollection.cs" />
     <Compile Include="Entity\EntityExtensions.cs" />
+    <Compile Include="Expression\ExpressionBuildHelper.cs" />
+    <Compile Include="Expression\ExpressionExtensions.cs" />
+    <Compile Include="Expression\ExpressionParameterCollection.cs" />
     <Compile Include="Expression\ExpressionWriter.cs" />
+    <Compile Include="Expression\IDbProviderExpressionBuildHelper.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
@@ -106,7 +110,7 @@
     <Compile Include="Schema\SqlDbSchemaReader.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\DbEntityPersister.cs" />
-    <Compile Include="Storage\IEscapeIdentifier.cs" />
+    <Compile Include="Storage\IEscapeDbIdentifier.cs" />
     <Compile Include="Storage\IDbProvider.cs" />
     <Compile Include="Storage\ITransactionalDbProvider.cs" />
     <Compile Include="Storage\DbProvider.cs" />

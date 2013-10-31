@@ -26,7 +26,7 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// Returns the name of the element of the persistent object type that is mapped to the field in the storage.
+        /// Returns the name of the element of the entity object type that is mapped to the field in the storage.
         /// </summary>
         public override string Name { get { return _propertyInfo.Name; } }
 

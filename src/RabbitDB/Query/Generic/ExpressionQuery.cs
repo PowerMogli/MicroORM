@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq.Expressions;
-using RabbitDB.Expression;
+using RabbitDB.Expressions;
 using RabbitDB.Storage;
 
 namespace RabbitDB.Query
