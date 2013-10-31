@@ -14,6 +14,15 @@ namespace RabbitDB.Entity
     {
         List<TEntity> _entityCollection = new List<TEntity>();
         private bool _loaded;
+        private bool _trackChanges;
+
+        public EntityCollection(bool trackChanges)
+        {
+            _trackChanges = trackChanges;
+        }
+
+        public EntityCollection()
+            : this(true) { }
 
         /// <summary>
         /// Removes all entities from the collection
@@ -74,6 +83,12 @@ namespace RabbitDB.Entity
 
         private void SetEntity(EntitySet<TEntity> entitySet)
         {
+            if (_trackChanges == false)
+            {
+                _entityCollection.AddRange(entitySet);
+                return;
+            }
+
             foreach (TEntity entity in entitySet)
             {
                 EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
@@ -116,7 +131,7 @@ namespace RabbitDB.Entity
 
         public void PersistChanges()
         {
-            if (_entityCollection.Count <= 0) return;
+            if (_entityCollection.Count <= 0 || _trackChanges == false) return;
 
             _entityCollection.ForEach(entity => EntityExtensions.PersistChanges(entity));
         }
