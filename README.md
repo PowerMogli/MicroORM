@@ -93,6 +93,11 @@ postCollection.PersistChanges();
 postCollection.DeleteAll();
 ```
 
+To avoid change tracking in `EntityCollection` (just for data loading):
+```csharp
+EntityCollection<Post> postCollection = new EntityCollection(true); // true for disabling change tracking
+```
+
 Let´s start using `DbSession`
 ```csharp
 using (DbSession dbSession = new DbSession(@"YourConnectionString", DbEngine.MySql))
