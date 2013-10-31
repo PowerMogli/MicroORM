@@ -1,3 +1,15 @@
+/*
+ * Parts of the code used in this class 
+ * originate from the OS project SqlFu:
+ * https://github.com/sapiens/SqlFu
+ * Licence used: Apache Licence v2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * If anyone feels offended by the use of this code
+ * please feel free to send me an e-Mail: albix@gmx.net
+ */
+
+
 using System;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
@@ -11,7 +23,7 @@ namespace RabbitDB.Expressions
     {
         private readonly IDbProvider _dbProvider;
         private readonly TableInfo _tableInfo;
-        private readonly StringBuilder _sqlBuilder = new StringBuilder();
+        private StringBuilder _sqlBuilder = new StringBuilder();
         private readonly ExpressionWriter<T> _expressionWriter;
 
         internal SqlExpressionBuilder(IDbProvider dbProvider)
@@ -23,7 +35,7 @@ namespace RabbitDB.Expressions
 
         private static string SortToString(SortOrder sort)
         {
-            return sort == SortOrder.Descending ? "desc" : "asc";
+            return sort == SortOrder.Descending ? "DESC" : "ASC";
         }
 
         internal SqlExpressionBuilder<T> OrderBy(Expression<Func<T, object>> selector, SortOrder sort = SortOrder.Ascending)
@@ -34,12 +46,22 @@ namespace RabbitDB.Expressions
             }
             else
             {
-                _sqlBuilder.Append(" order by ");
+                _sqlBuilder.Append(" ORDER BY ");
             }
 
             var column = selector.Body.GetPropertyName();
             _sqlBuilder.AppendFormat("{0} {1}", _dbProvider.EscapeName(column), SortToString(sort));
             _order = true;
+            return this;
+        }
+
+        internal SqlExpressionBuilder<T> EndEnumeration()
+        {
+            string query = _sqlBuilder.ToString();
+            int commaIndex = query.LastIndexOf(',');
+            if (commaIndex < 0) return this;
+
+            _sqlBuilder = new StringBuilder(query.Substring(0, commaIndex));
             return this;
         }
 
@@ -59,7 +81,7 @@ namespace RabbitDB.Expressions
             _hasColumn = true;
             if (alias != null)
             {
-                _sqlBuilder.AppendFormat(" as {0}", alias);
+                _sqlBuilder.AppendFormat(" AS {0}", alias);
             }
 
             return this;
@@ -73,12 +95,12 @@ namespace RabbitDB.Expressions
         {
             if (!_where)
             {
-                _sqlBuilder.Append(" where ");
+                _sqlBuilder.Append(" WHERE ");
                 _where = true;
             }
             else
             {
-                _sqlBuilder.Append(" and ");
+                _sqlBuilder.Append(" AND ");
             }
             Write(criteria);
             return this;
@@ -105,7 +127,11 @@ namespace RabbitDB.Expressions
             _sqlBuilder.Append(_expressionWriter.Write(statement));
         }
 
-        internal ExpressionParameterCollection Parameters { get; private set; }
+        private ExpressionParameterCollection _parameterCollection;
+        internal ExpressionParameterCollection Parameters
+        {
+            get { return _parameterCollection ?? (_parameterCollection = new ExpressionParameterCollection()); }
+        }
 
         public override string ToString()
         {
