@@ -57,6 +57,8 @@ namespace RabbitDB.Entity
 
         public static bool PersistChanges<TEntity>(this TEntity entity) where TEntity : Entity
         {
+            if (entity.ChangeTrackingEnabled == false) return false;
+
             Tuple<string, DbEngine> result = InitializeSession<TEntity>();
             EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
 
@@ -82,4 +84,3 @@ namespace RabbitDB.Entity
         }
     }
 }
-
