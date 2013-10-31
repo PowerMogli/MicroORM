@@ -7,6 +7,26 @@ namespace RabbitDB.Expressions
 {
     internal static class ExpressionExtensions
     {
+        public static string GetPropertyName(this Expression node)
+        {
+            var member = node as MemberExpression;
+            if (member == null)
+            {
+                var unary = node as UnaryExpression;
+                if (unary == null)
+                {
+                    throw new ArgumentException("Expression must be MemberExpression or UnaryExpression");
+                }
+                member = unary.Operand as MemberExpression;
+            }
+            if (member == null)
+            {
+                throw new ArgumentException("Expression isn't a member access");
+            }
+
+            return member.Member.Name;
+        }
+
         internal static bool IsNullOrEmpty(this Expression expression)
         {
             ConstantExpression constantExression = expression as ConstantExpression;
