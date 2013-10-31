@@ -129,11 +129,14 @@ namespace RabbitDB.Entity
             LoadAll();
         }
 
-        public void PersistChanges()
+        public bool PersistChanges()
         {
-            if (_entityCollection.Count <= 0 || _trackChanges == false) return;
+            if (_entityCollection.Count <= 0 || _trackChanges == false) return false;
 
-            _entityCollection.ForEach(entity => EntityExtensions.PersistChanges(entity));
+            bool persistResult = true;
+            _entityCollection.ForEach(entity => persistResult &= EntityExtensions.PersistChanges(entity));
+
+            return persistResult;
         }
 
         public void DeleteAll()
