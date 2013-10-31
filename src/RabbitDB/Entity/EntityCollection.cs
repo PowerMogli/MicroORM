@@ -100,11 +100,8 @@ namespace RabbitDB.Entity
         {
             if (_trackChanges) return false;
 
-            foreach (TEntity entity in entitySet)
-            {
-                entity.ChangeTrackingEnabled = false;
-                _entityCollection.Add(entity);
-            }
+            entitySet.ForEach(entity => entity.ChangeTrackingEnabled = false);
+            _entityCollection.AddRange(entitySet);
 
             return true;
         }
