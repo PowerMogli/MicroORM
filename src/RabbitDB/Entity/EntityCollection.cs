@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using RabbitDB.Base;
 using RabbitDB.Caching;
 using RabbitDB.Mapping;
@@ -38,17 +39,50 @@ namespace RabbitDB.Entity
             using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
             {
                 EntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>();
-                foreach (TEntity entity in entitySet)
-                {
-                    EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-                    if (entityInfo.EntityState == EntityState.Loaded) continue;
-
-                    _entityCollection.Add(entity);
-                    entityInfo.EntityState = EntityState.Loaded;
-                    entityInfo.ComputeSnapshot(entity);
-                }
+                SetEntity(entitySet);
             }
             _loaded = true;
+        }
+
+        public void LoadBy(string sql, params object[] arguments)
+        {
+            if (_loaded) return;
+
+            Tuple<string, DbEngine> result = EntityExtensions.InitializeSession<TEntity>();
+
+            using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
+            {
+                EntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>(sql, arguments);
+                SetEntity(entitySet);
+            }
+            _loaded = true;
+        }
+
+        public void LoadBy(Expression<Func<TEntity, bool>> criteria)
+        {
+            if (_loaded) return;
+
+            Tuple<string, DbEngine> result = EntityExtensions.InitializeSession<TEntity>();
+
+            using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
+            {
+                EntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>(criteria);
+                SetEntity(entitySet);
+            }
+            _loaded = true;
+        }
+
+        private void SetEntity(EntitySet<TEntity> entitySet)
+        {
+            foreach (TEntity entity in entitySet)
+            {
+                EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+                if (entityInfo.EntityState == EntityState.Loaded) continue;
+
+                _entityCollection.Add(entity);
+                entityInfo.EntityState = EntityState.Loaded;
+                entityInfo.ComputeSnapshot(entity);
+            }
         }
 
         public void LoadAll(Func<IDataReader, IEnumerable<TEntity>> materializer)
