@@ -1,5 +1,5 @@
 ﻿/*
- * Parts of this code used in this class 
+ * Parts of the code used in this class 
  * originate from the OS project SqlFu:
  * https://github.com/sapiens/SqlFu
  * Licence used: Apache Licence v2.0
