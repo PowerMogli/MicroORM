@@ -111,12 +111,14 @@ namespace RabbitDB.Entity
                 EntityReader<TEntity> entityReader = dbSession.GetEntityReader<TEntity>();
                 foreach (TEntity entity in entityReader.Load(materializer))
                 {
-                    EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-                    if (entityInfo.EntityState == EntityState.Loaded) continue;
-
+                    if (_trackChanges)
+                    {
+                        EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+                        if (entityInfo.EntityState == EntityState.Loaded) continue;
+                        entityInfo.EntityState = EntityState.Loaded;
+                        entityInfo.ComputeSnapshot(entity);
+                    }
                     _entityCollection.Add(entity);
-                    entityInfo.EntityState = EntityState.Loaded;
-                    entityInfo.ComputeSnapshot(entity);
                 }
             }
             _loaded = true;
@@ -139,15 +141,17 @@ namespace RabbitDB.Entity
             return persistResult;
         }
 
-        public void DeleteAll()
+        public bool DeleteAll()
         {
-            if (_entityCollection.Count <= 0) return;
+            if (_entityCollection.Count <= 0 || _trackChanges == false) return false;
 
+            bool persistResult = true;
             _entityCollection.ForEach(entity =>
             {
                 entity.MarkedForDeletion = true;
-                EntityExtensions.PersistChanges(entity);
+                persistResult &= EntityExtensions.PersistChanges(entity);
             });
+            return persistResult;
         }
 
         public TEntity FindByKey<TKey>(TKey key)
