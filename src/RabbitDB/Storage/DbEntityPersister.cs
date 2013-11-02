@@ -31,29 +31,47 @@ namespace RabbitDB.Storage
                 if (entityInfo.EntityState == EntityState.Deleted)
                     return false;
 
-                Delete(entity);
-                entityInfo.EntityState = EntityState.Deleted;
-                return true;
+                return Delete(entity, entityInfo);
             }
             // Entity was already deleted
             // or is not yet loaded!!
             else if (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None)
             {
-                Insert(entity);
-                entityInfo.EntityState = EntityState.Inserted;
-                return true;
+                return Insert(entity, entityInfo);
             }
             else if (entityInfo.EntityState != EntityState.Deleted)
             {
                 Tuple<bool, string, QueryParameterCollection> tuple = PrepareForUpdate<TEntity>(entity, entityInfo);
                 if (tuple.Item1 == false) return false;
 
-                Update<TEntity>(new SqlQuery(tuple.Item2, tuple.Item3));
-                entityInfo.EntityState = EntityState.Updated;
-                return true;
+                return Update<TEntity>(entity, entityInfo, new SqlQuery(tuple.Item2, tuple.Item3));
             }
 
             return false;
+        }
+
+        private bool Update<TEntity>(TEntity entity, EntityInfo entityInfo, SqlQuery sqlQuery) where TEntity : Entity.Entity
+        {
+            Update<TEntity>(sqlQuery);
+            entity.RaiseEntityUpdated();
+            entityInfo.EntityState = EntityState.Updated;
+            return true;
+        }
+
+        private bool Insert<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
+        {
+            Insert(entity);
+            entity.RaiseEntityInserted();
+            entityInfo.EntityState = EntityState.Inserted;
+            return true;
+        }
+
+        private bool Delete<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
+        {
+            Delete(entity);
+            entity.RaiseEntityDeleted();
+            entityInfo.EntityState = EntityState.Deleted;
+            return true;
         }
 
         private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
