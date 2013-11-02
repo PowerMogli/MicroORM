@@ -57,7 +57,8 @@ namespace RabbitDB.Entity
 
         public static bool PersistChanges<TEntity>(this TEntity entity) where TEntity : Entity
         {
-            if (entity.ChangeTrackingEnabled == false) return false;
+            if (DbSession.Configuration.AutoDetectChangesEnabled == false)
+                throw new InvalidOperationException("This operation is not allowed because change tracking has been disabled.");
 
             Tuple<string, DbEngine> result = InitializeSession<TEntity>();
             EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
