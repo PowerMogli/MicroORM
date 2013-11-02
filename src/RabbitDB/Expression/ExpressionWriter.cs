@@ -45,7 +45,7 @@ namespace RabbitDB.Expressions
             return sqlBuilder.ToString();
         }
 
-        public string Write<T>(Expression<Func<T, object>> criteria)
+        public string Write(Expression<Func<T, object>> criteria)
         {
             Visit(criteria);
             return sqlBuilder.ToString();
