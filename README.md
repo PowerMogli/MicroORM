@@ -160,6 +160,14 @@ var value = dbSession.GetValue<int>("SELECT COUNT(*) FROM Posts");
 
 // gets a set of values
 var titles = dbSession.GetEntitySet<string>("SELECT Title FROM Posts");
+
+// Multiple results - no problem
+var sql = @"SELECT * FROM Posts;
+            SELECT * FROM Users;";
+
+var multiSet = dbSession.ExecuteMultiple(sql);
+var posts = multiSet.Read<Post>();
+var users = multiSet.Read<Users>();
 ```
 Stored procedures:
 ```csharp
