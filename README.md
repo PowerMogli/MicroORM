@@ -34,7 +34,7 @@ class Post : Entity
 }
 ```
 Let´s assume you want to use an other primary key then `ID`:
-```charp
+```csharp
 [Table("Posts", AlternativePKs="FirstID, SecondID")]
 class Post
 {
@@ -93,9 +93,24 @@ postCollection.PersistChanges();
 postCollection.DeleteAll();
 ```
 
-To avoid change tracking in `EntityCollection` (just for data loading):
+To avoid change tracking in `EntityCollection` and `Entity` (just for data loading):
 ```csharp
-EntityCollection<Post> postCollection = new EntityCollection<Post>(true); // true for disabling change tracking
+DbSession.Configuration.AutoDetectChangesEnabled = false; // for disabling change tracking
+```
+What if you want to be notified if an entity has been inserted, deleted or updated:
+```csharp
+EntityCollection<Post> collection = new EntityCollection<Post>();
+collection.LoadAll();
+foreach (Post post in collection)
+{
+    post.EntityUpdated += (s, e) => { ... ; };
+    post.EntityDeleted += (s, e) => { ... ; };
+    post.EntityInserted += (s, e) => { ... ; };
+}
+
+Post post1 = collection.FindByKey(4);
+post1.Title = "Design Patterns";
+post1.PersistChanges(); // will raise EntityUpdated event
 ```
 
 Let´s start using `DbSession`
@@ -116,33 +131,35 @@ using (DbSession dbSession = new DbSession(typeof(this))) // uses registered con
 }
 ```
 Self-explanatory command executions:
-```charp
+```csharp
 var scalarValue = dbSession.GetScalarValue<int>("SELECT ProductID FROM Products WHERE Name=@name", new { name = "Herbie" });
 
 dbSsession.ExecuteCommand("UPDATE Posts SET IsActive=@0 WHERE Title=@1 and Id=@2", true, "Mark", 3);
 
 // gets all table entries.
-var objectSet = dbSession.GetObjectSet<Post>();
+var entitySet = dbSession.GetEntitySet<Post>();
 
-var objectSet = dbSession.GetObjectSet<Post>("SELECT * FROM Posts WHERE Title=@title OR Id=@id", new { title = "Mark", id = 5 });
+var entitySet = dbSession.GetEntitySet<Post>("SELECT * FROM Posts WHERE Title=@title OR Id=@id", new { title = "Mark", id = 5 });
 
 // the same but without anonymous arguments
-var objectSet = dbSession.GetObjectSet<Post>("SELECT * FROM Posts WHERE Title=@0 OR Id=@1", "Mark", 5);
+var entitySet = dbSession.GetEntitySet<Post>("SELECT * FROM Posts WHERE Title=@0 OR Id=@1", "Mark", 5);
 
 // select your data by using lambda expressions.
-var objectSet = dbSsession.GetObjectSet<Post>(post => post.Id == 4 || post.IsActive);
+var entitySet = dbSsession.GetEntitySet<Post>(post => post.Id == 4 || post.IsActive);
  
 // gets the post with primary key '6'
-var singleObject = dbSession.GetObject<Post>(6);
+var entity = dbSession.GetEntity<Post>(6);
 
 // gets all posts which fulfill this lambda expression criteria
-var singleObject = dbSession.GetObject<Post>(post => post.Title == "Mark" && post.Id == 6); 
+var entity = dbSession.GetEntity<Post>(post => post.Title == "Mark" && post.Id == 6); 
+// Custom specific constants (DateTime, etc.)
+var entity = dbSession.GetEntity<Post>(post => post.CreatedOn >= DateTime.Now);
 
 // gets a single value
 var value = dbSession.GetValue<int>("SELECT COUNT(*) FROM Posts");
 
 // gets a set of values
-var titles = dbSession.GetObjectSet<string>("SELECT Title FROM Posts");
+var titles = dbSession.GetEntitySet<string>("SELECT Title FROM Posts");
 ```
 Stored procedures:
 ```csharp
