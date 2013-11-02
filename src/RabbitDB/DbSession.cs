@@ -44,6 +44,8 @@ namespace RabbitDB.Base
             Dispose();
         }
 
+        public static Configuration Configuration { get { return Configuration.Instance; } }
+
         public void ExecuteCommand(string sql, params object[] arguments)
         {
             _dbProvider.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
