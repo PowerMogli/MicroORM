@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
@@ -10,19 +11,12 @@ using RabbitDB.Storage;
 
 namespace RabbitDB.Entity
 {
-    public class EntityCollection<TEntity> where TEntity : Entity
+    public class EntityCollection<TEntity> : Collection<TEntity> where TEntity : Entity
     {
-        List<TEntity> _entityCollection = new List<TEntity>();
         private bool _loaded;
-        private bool _trackChanges;
-
-        public EntityCollection(bool trackChanges)
-        {
-            _trackChanges = trackChanges;
-        }
 
         public EntityCollection()
-            : this(true) { }
+            : base(new List<TEntity>()) { }
 
         /// <summary>
         /// Removes all entities from the collection
@@ -30,13 +24,13 @@ namespace RabbitDB.Entity
         /// </summary>
         public void Flush()
         {
-            if (_entityCollection.Count <= 0) return;
+            if (base.Count <= 0) return;
 
-            foreach (TEntity entity in _entityCollection)
+            foreach (TEntity entity in this)
             {
                 EntityInfoCacheManager.RemoveFor(entity);
             }
-            _entityCollection.Clear();
+            base.Clear();
         }
 
         public void LoadAll()
@@ -90,7 +84,7 @@ namespace RabbitDB.Entity
                 EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
                 if (entityInfo.EntityState == EntityState.Loaded) continue;
 
-                _entityCollection.Add(entity);
+                base.Add(entity);
                 entityInfo.EntityState = EntityState.Loaded;
                 entityInfo.ComputeSnapshot(entity);
             }
@@ -98,10 +92,9 @@ namespace RabbitDB.Entity
 
         private bool SavedNoTrackingEntities(EntitySet<TEntity> entitySet)
         {
-            if (_trackChanges) return false;
+            if (DbSession.Configuration.AutoDetectChangesEnabled) return false;
 
-            entitySet.ForEach(entity => entity.ChangeTrackingEnabled = false);
-            _entityCollection.AddRange(entitySet);
+            ((List<TEntity>)base.Items).AddRange(entitySet);
 
             return true;
         }
@@ -117,15 +110,14 @@ namespace RabbitDB.Entity
                 EntityReader<TEntity> entityReader = dbSession.GetEntityReader<TEntity>();
                 foreach (TEntity entity in entityReader.Load(materializer))
                 {
-                    if (_trackChanges)
+                    if (DbSession.Configuration.AutoDetectChangesEnabled)
                     {
                         EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
                         if (entityInfo.EntityState == EntityState.Loaded) continue;
                         entityInfo.EntityState = EntityState.Loaded;
                         entityInfo.ComputeSnapshot(entity);
                     }
-                    _entityCollection.Add(entity);
-                    entity.ChangeTrackingEnabled = _trackChanges;
+                    base.Add(entity);
                 }
             }
             _loaded = true;
@@ -140,20 +132,20 @@ namespace RabbitDB.Entity
 
         public bool PersistChanges()
         {
-            if (_entityCollection.Count <= 0 || _trackChanges == false) return false;
+            if (base.Count <= 0) return false;
 
             bool persistResult = true;
-            _entityCollection.ForEach(entity => persistResult &= EntityExtensions.PersistChanges(entity));
+            ((List<TEntity>)base.Items).ForEach(entity => persistResult &= EntityExtensions.PersistChanges(entity));
 
             return persistResult;
         }
 
         public bool DeleteAll()
         {
-            if (_entityCollection.Count <= 0 || _trackChanges == false) return false;
+            if (base.Count <= 0) return false;
 
             bool persistResult = true;
-            _entityCollection.ForEach(entity =>
+            ((List<TEntity>)base.Items).ForEach(entity =>
             {
                 entity.MarkedForDeletion = true;
                 persistResult &= EntityExtensions.PersistChanges(entity);
@@ -163,13 +155,13 @@ namespace RabbitDB.Entity
 
         public TEntity FindByKey<TKey>(TKey key)
         {
-            if (_entityCollection.Count <= 0) return default(TEntity);
+            if (base.Count <= 0) return default(TEntity);
 
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
 
             try
             {
-                return _entityCollection.FirstOrDefault(entity =>
+                return ((List<TEntity>)base.Items).FirstOrDefault(entity =>
                 {
                     object[] primaryKeyValues = tableInfo.GetPrimaryKeyValues<TEntity>(entity);
                     return primaryKeyValues.Any(keyValue => keyValue.Equals(key));
