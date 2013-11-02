@@ -34,7 +34,7 @@ class Post : Entity
 }
 ```
 Let´s assume you want to use an other primary key then `ID`:
-```charp
+```csharp
 [Table("Posts", AlternativePKs="FirstID, SecondID")]
 class Post
 {
@@ -131,7 +131,7 @@ using (DbSession dbSession = new DbSession(typeof(this))) // uses registered con
 }
 ```
 Self-explanatory command executions:
-```charp
+```csharp
 var scalarValue = dbSession.GetScalarValue<int>("SELECT ProductID FROM Products WHERE Name=@name", new { name = "Herbie" });
 
 dbSsession.ExecuteCommand("UPDATE Posts SET IsActive=@0 WHERE Title=@1 and Id=@2", true, "Mark", 3);
