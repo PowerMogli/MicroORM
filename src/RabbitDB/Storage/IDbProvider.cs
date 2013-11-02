@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Data;
-using RabbitDB.Base;
-using RabbitDB.Query;
-using RabbitDB.Schema;
 using RabbitDB.Expressions;
+using RabbitDB.Query;
+using RabbitDB.Reader;
 
 namespace RabbitDB.Storage
 {

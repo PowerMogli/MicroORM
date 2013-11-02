@@ -3,6 +3,7 @@ using System.Data;
 using RabbitDB.Base;
 using RabbitDB.Caching;
 using RabbitDB.Query;
+using RabbitDB.Reader;
 using RabbitDB.Storage;
 
 namespace RabbitDB.Entity
@@ -34,7 +35,7 @@ namespace RabbitDB.Entity
 
             using (IDbSession entitySession = new DbSession(result.Item1, result.Item2))
             {
-                EntityReader<TEntity> entityReader = entitySession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
+                EntityReader<TEntity> entityReader = (EntityReader<TEntity>)entitySession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
                 entityReader.Load(entity, customMapper);
 
                 entityInfo.EntityState = EntityState.Loaded;

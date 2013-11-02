@@ -5,7 +5,7 @@ using RabbitDB.Mapping;
 using RabbitDB.Materialization;
 using RabbitDB.Storage;
 
-namespace RabbitDB.Base
+namespace RabbitDB.Reader
 {
     public class EntityReader<TEntity> : IDisposable
     {
@@ -54,11 +54,14 @@ namespace RabbitDB.Base
             }
 
             if (_tableInfo != null)
-            {
                 return ReadInternal();
-            }
 
             return GetListOfPrimitivValues();
+        }
+
+        internal bool NextResult()
+        {
+            return _dataReader.NextResult();
         }
 
         private bool GetListOfPrimitivValues()
@@ -67,7 +70,7 @@ namespace RabbitDB.Base
             return true;
         }
 
-        private bool ReadInternal()
+        internal bool ReadInternal()
         {
             this.Current = _materlizer.Materialize<TEntity>(_dataReaderSchema, _dataReader);
             return true;
@@ -95,7 +98,8 @@ namespace RabbitDB.Base
         {
             if (_disposed
                 || _dataReader == null
-                || _dataReader.IsClosed) return;
+                || _dataReader.IsClosed
+                || _dataReader.NextResult()) return;
 
             _dataReader.Close();
             _dataReader.Dispose();

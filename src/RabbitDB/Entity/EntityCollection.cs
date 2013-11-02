@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using RabbitDB.Base;
 using RabbitDB.Caching;
 using RabbitDB.Mapping;
+using RabbitDB.Reader;
 using RabbitDB.Storage;
 
 namespace RabbitDB.Entity

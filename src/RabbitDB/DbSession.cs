@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using RabbitDB.Mapping;
 using RabbitDB.Query;
 using RabbitDB.Query.Generic;
+using RabbitDB.Reader;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
 
@@ -127,7 +128,7 @@ namespace RabbitDB.Base
 
         EntityReader<TEntity> IDbSession.GetEntityReader<TEntity>(IQuery query)
         {
-            return _dbProvider.ExecuteReader<TEntity>(query);
+            return (EntityReader<TEntity>)_dbProvider.ExecuteReader<TEntity>(query);
         }
 
         public EntityReader<TEntity> GetEntityReader<TEntity>(string sql, params object[] arguments)
@@ -146,6 +147,12 @@ namespace RabbitDB.Base
             return ((IDbSession)this).GetEntityReader<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
         }
 
+        public MultiEntitySet ExecuteMultiple(string sql, params object[] arguments)
+        {
+            IDataReader dataReader = _dbProvider.ExecuteReader(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
+            return new MultiEntitySet(new MultiEntityReader(dataReader, _dbProvider));
+        }
+
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
             DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
@@ -160,7 +167,7 @@ namespace RabbitDB.Base
 
         void IDbSession.Load<TEntity>(TEntity entity)
         {
-            EntityReader<TEntity> objectReader = _dbProvider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
+            EntityReader<TEntity> objectReader = (EntityReader<TEntity>)_dbProvider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
             if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
         }
 

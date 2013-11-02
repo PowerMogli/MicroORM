@@ -4,6 +4,7 @@ using System.Data.Common;
 using RabbitDB.Base;
 using RabbitDB.Expressions;
 using RabbitDB.Query;
+using RabbitDB.Reader;
 
 namespace RabbitDB.Storage
 {
