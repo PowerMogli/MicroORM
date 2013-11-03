@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using RabbitDB.Base;
+using System.Linq;
 using RabbitDB.Expressions;
+using RabbitDB.Mapping;
 using RabbitDB.Query;
 using RabbitDB.Reader;
 
@@ -16,7 +17,8 @@ namespace RabbitDB.Storage
         protected IDbTransaction _dbTransaction;
         protected IDbCommand _dbCommand;
 
-        public abstract string ParameterPrefix { get; }
+        public virtual string ParameterPrefix { get { return "@"; } }
+
         public abstract string ProviderName { get; }
         public abstract string ScopeIdentity { get; }
         public abstract IDbProviderExpressionBuildHelper BuilderHelper { get; }
@@ -26,6 +28,8 @@ namespace RabbitDB.Storage
             _dbFactory = DbProviderFactories.GetFactory(this.ProviderName);
             _connectionString = connectionString;
         }
+
+        public abstract string ResolveScopeIdentity(TableInfo tableInfo);
 
         public IDbCommand CreateCommand()
         {
@@ -103,7 +107,10 @@ namespace RabbitDB.Storage
 
         public virtual string EscapeName(string value)
         {
-            return "\"" + value + "\"";
+            if (value.Contains("\"")) return value;
+
+            if (!value.Contains(".")) return "\"" + value + "\"";
+            return string.Join(".", value.Split('.').Select(d => "\"" + d + "\""));
         }
 
         public virtual object ResolveNullValue(object value, Type type)

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using RabbitDB.Mapping;
 using RabbitDB.Storage;
 
@@ -34,7 +36,20 @@ namespace RabbitDB.Schema
             return dbTable;
         }
 
-        protected abstract void SetPrimaryKeys(DbTable dbTable);
+        private void SetPrimaryKeys(DbTable dbTable)
+        {
+            List<string> primaryKeys = GetPrimaryKeys(dbTable.Name);
+
+            foreach (string primaryKey in primaryKeys)
+            {
+                DbColumn primaryKeyColumn = dbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
+                if (primaryKeyColumn == null)
+                    throw new MissingPrimaryKeyException("Not all primaryKeys were provided.");
+
+                primaryKeyColumn.IsPrimaryKey = true;
+            }
+        }
+
         protected abstract List<DbColumn> GetColumns(DbTable dbTable);
         protected abstract DbTable GetTable(string tableName);
         protected abstract List<string> GetPrimaryKeys(string table);

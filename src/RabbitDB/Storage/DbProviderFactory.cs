@@ -1,4 +1,5 @@
 ﻿using RabbitDB.Schema;
+
 namespace RabbitDB.Storage
 {
     internal class DbProviderFactory
@@ -15,8 +16,10 @@ namespace RabbitDB.Storage
                 //    return new SqlServerCEProvider();
                 //case DbEngine.MySql:
                 //    return new MySqlProvider();
-                //case DbEngine.PostgreSQL:
-                //    return new PostgresProvider();
+                case DbEngine.PostgreSQL:
+                    if (DbSchemaAllocator.SchemaReader == null)
+                        DbSchemaAllocator.SchemaReader = new PostgreSqlDbSchemaReader(connectionString);
+                    return new PostgresDbProvider(connectionString);
                 ////case DbEngine.Oracle:
                 ////    return new OracleProvider();
                 //case DbEngine.SQLite:

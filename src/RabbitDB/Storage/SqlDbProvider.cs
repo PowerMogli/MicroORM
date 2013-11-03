@@ -1,14 +1,17 @@
-﻿using System.Data;
-using RabbitDB.Schema;
+﻿using System;
+using System.Linq;
 using RabbitDB.Expressions;
+using RabbitDB.Mapping;
 
 namespace RabbitDB.Storage
 {
-    internal class SqlDbProvider : DbProvider, ITransactionalDbProvider, IDbProvider
+    internal class SqlDbProvider : TransactionalDbProvider, ITransactionalDbProvider, IDbProvider
     {
         private const string _providerName = "System.Data.SqlClient";
 
-        public override string ParameterPrefix { get { return "@"; } }
+        internal SqlDbProvider(string connectionString)
+            : base(connectionString) { }
+
         public override string ProviderName { get { return _providerName; } }
 
         private IDbProviderExpressionBuildHelper _builderHelper;
@@ -19,33 +22,26 @@ namespace RabbitDB.Storage
 
         public override string ScopeIdentity
         {
-            get { return "; Select CAST(SCOPE_IDENTITY() AS {0}) as id"; }
+            get { return "; SELECT CAST(SCOPE_IDENTITY() AS {0}) AS ID"; }
         }
 
-        internal SqlDbProvider(string connectionString)
-            : base(connectionString) { }
-
-        public IDbTransaction BeginTransaction(IsolationLevel isolationLevel)
+        public override string ResolveScopeIdentity(TableInfo tableInfo)
         {
-            if (base._dbTransaction != null) return base._dbTransaction;
-            if (base._dbConnection != null) return base._dbTransaction = base._dbConnection.BeginTransaction(isolationLevel);
-
-            base.CreateConnection();
-            return base._dbTransaction = base._dbConnection.BeginTransaction(isolationLevel);
-        }
-
-        public IDbTransaction BeginTransaction()
-        {
-            if (base._dbTransaction != null) return base._dbTransaction;
-            if (base._dbConnection != null) return base._dbTransaction = base._dbConnection.BeginTransaction();
-
-            base.CreateConnection();
-            return base._dbTransaction = base._dbConnection.BeginTransaction();
+            Tuple<bool, string> result = tableInfo.GetIdentityType();
+            return result.Item1 ? string.Format(this.ScopeIdentity, result.Item2) : string.Empty;
         }
 
         public override string EscapeName(string value)
         {
-            return "[" + value + "]";
+            if (value.Contains("[") && value.Contains("]"))
+                return value;
+            if (value.Contains("\""))
+                return value;
+
+            if (!value.Contains("."))
+                return "[" + value + "]";
+
+            return string.Join(".", value.Split('.').Select(d => "[" + d + "]"));
         }
     }
 }

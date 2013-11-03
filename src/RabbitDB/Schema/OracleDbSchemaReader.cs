@@ -25,12 +25,7 @@ data_type DataType,
 where uc.constraint_type = 'P'
 and uc.table_name = upper(:tableName)
 and ucc.position = 1";
-
-        protected override void SetPrimaryKeys(DbTable dbTable)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         protected override List<DbColumn> GetColumns(DbTable dbTable)
         {
             throw new NotImplementedException();

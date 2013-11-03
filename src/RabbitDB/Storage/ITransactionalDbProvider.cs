@@ -2,7 +2,7 @@
 
 namespace RabbitDB.Storage
 {
-    interface ITransactionalDbProvider : IDbProvider
+    interface ITransactionalDbProvider
     {
         IDbTransaction BeginTransaction(IsolationLevel isolationLevel);
         IDbTransaction BeginTransaction();

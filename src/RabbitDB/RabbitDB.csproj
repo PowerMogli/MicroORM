@@ -53,6 +53,7 @@
     <Compile Include="Expression\ExpressionParameterCollection.cs" />
     <Compile Include="Expression\ExpressionWriter.cs" />
     <Compile Include="Expression\IDbProviderExpressionBuildHelper.cs" />
+    <Compile Include="Expression\PostgresExpressionBuilderHelper.cs" />
     <Compile Include="Expression\SqlExpressionBuilder.cs" />
     <Compile Include="Expression\UpdateTableBuilder.cs" />
     <Compile Include="IDbSession.cs" />
@@ -121,7 +122,9 @@
     <Compile Include="Storage\DbProvider.cs" />
     <Compile Include="Storage\DbProviderFactory.cs" />
     <Compile Include="Storage\NotSupportedProviderException.cs" />
+    <Compile Include="Storage\PostgresDbProvider.cs" />
     <Compile Include="Storage\SqlDbProvider.cs" />
+    <Compile Include="Storage\TransactionalDbProvider.cs" />
     <Compile Include="Utils\SqlTools.cs" />
     <Compile Include="Utils\Utils.cs" />
   </ItemGroup>

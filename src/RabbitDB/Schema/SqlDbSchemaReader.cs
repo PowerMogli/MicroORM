@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using RabbitDB.Mapping;
 using RabbitDB.Query;
 using RabbitDB.Storage;
@@ -43,20 +42,6 @@ namespace RabbitDB.Schema
             base.DbProvider = new SqlDbProvider(connectionString);
         }
 
-        protected override void SetPrimaryKeys(DbTable dbTable)
-        {
-            List<string> primaryKeys = GetPrimaryKeys(dbTable.Name);
-
-            foreach (string primaryKey in primaryKeys)
-            {
-                DbColumn primaryKeyColumn = dbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
-                if (primaryKeyColumn == null)
-                    throw new MissingPrimaryKeyException("Not all primaryKeys were provided.");
-
-                primaryKeyColumn.IsPrimaryKey = true;
-            }
-        }
-
         protected override List<DbColumn> GetColumns(DbTable dbTable)
         {
             List<DbColumn> columns = new List<DbColumn>();
@@ -73,6 +58,7 @@ namespace RabbitDB.Schema
                         try { dbColumn.DbType = TypeConverter.ToDbType(SqlTools.GetDbValue<string>(dataReader["DataType"])); }
                         catch { }
                         dbColumn.Size = SqlTools.GetDbValue<int>(dataReader["MaxLength"]);
+                        dbColumn.DefaultValue = SqlTools.GetDbValue<string>(dataReader["DefaultSetting"]);
                         try { dbColumn.Precision = SqlTools.GetDbValue<int>(dataReader["DatePrecision"]); }
                         catch { dbColumn.Precision = SqlTools.GetDbValue<short>(dataReader["DatePrecision"]); }
                         dbColumn.IsNullable = SqlTools.GetDbValue<string>(dataReader["IsNullable"]) == "YES";

@@ -5,7 +5,7 @@ namespace RabbitDB.Expressions
 {
     internal class ExpressionBuildHelper : IDbProviderExpressionBuildHelper
     {
-        private IDbProvider _dbProvider;
+        protected IDbProvider _dbProvider;
 
         internal ExpressionBuildHelper(IDbProvider dbProvider)
         {

@@ -165,8 +165,7 @@ namespace RabbitDB.Mapping
                 string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.ColumnAttribute.ColumnName))));
             insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name)));
 
-            Tuple<bool, string> result = GetIdentityType();
-            return this.InsertStatement = string.Concat(insertStatement.ToString(), result.Item1 ? string.Format(dbProvider.ScopeIdentity, result.Item2) : string.Empty);
+            return this.InsertStatement = string.Concat(insertStatement.ToString(), dbProvider.ResolveScopeIdentity(this));
         }
 
         internal string CreateUpdateStatement(IDbProvider dbProvider, KeyValuePair<string, object>[] arguments)
@@ -252,7 +251,7 @@ namespace RabbitDB.Mapping
             }
         }
 
-        private Tuple<bool, string> GetIdentityType()
+        internal Tuple<bool, string> GetIdentityType()
         {
             IPropertyInfo propertyInfo = this.Columns.Where(column => column.ColumnAttribute.AutoNumber).FirstOrDefault();
             if (propertyInfo == null)
