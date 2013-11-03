@@ -25,6 +25,14 @@ namespace RabbitDB.Query
             }
         }
 
+        private void AddRange(QueryParameterCollection collection)
+        {
+            foreach (QueryParameter queryParamter in collection)
+            {
+                this.Add(queryParamter);
+            }
+        }
+
         internal static QueryParameterCollection Create<T>(object[] arguments)
         {
             if (arguments == null) return new QueryParameterCollection();
@@ -79,14 +87,17 @@ namespace RabbitDB.Query
             QueryParameterCollection collection = new QueryParameterCollection();
             if (arguments.Length < 1) return collection;
 
-            var argument = arguments[0];
-            if (argument != null)
+            for (int index = 0; index < arguments.Length; index++)
             {
-                KeyValuePair<string, object>[] namedArguments = argument as KeyValuePair<string, object>[];
-                if (namedArguments == null && !argument.IsListParam() && argument.IsCustomObject())
-                    namedArguments = ParameterTypeDescriptor.ToKeyValuePairs(arguments);
+                var argument = arguments[index];
+                if (argument != null)
+                {
+                    KeyValuePair<string, object>[] namedArguments = argument as KeyValuePair<string, object>[];
+                    if (namedArguments == null && !argument.IsListParam() && argument.IsCustomObject())
+                        namedArguments = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { argument });
 
-                return CreateParameterFromKeyValuePairs(namedArguments, tableInfo);
+                    collection.AddRange(CreateParameterFromKeyValuePairs(namedArguments, tableInfo));
+                }
             }
             return collection;
         }

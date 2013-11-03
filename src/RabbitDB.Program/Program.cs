@@ -36,10 +36,10 @@ namespace RabbitDB.Program
                     //    //session.GetValue<int>("select COUNT(*) from Posts"); // holt einen Wert
                     //    //var post2 = dbSession.GetObjectSet<string>("select Title from Posts");
 
-                    var sql = @"SELECT * FROM Posts;
-                                SELECT * FROM Users;";
+                    var sql = @"SELECT * FROM Posts WHERE Type=@Type AND IsActive=@Active;
+                                SELECT * FROM Users WHERE Id=@Id;";
 
-                    var multiSet = dbSession.ExecuteMultiple(sql);
+                    var multiSet = dbSession.ExecuteMultiple(sql, new { Id = 1, Type = PostType.Post, Active = true });
                     var posts = multiSet.Read<Post>();
                     var users = multiSet.Read<Users>();
                 }
