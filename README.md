@@ -162,10 +162,10 @@ var value = dbSession.GetValue<int>("SELECT COUNT(*) FROM Posts");
 var titles = dbSession.GetEntitySet<string>("SELECT Title FROM Posts");
 
 // Multiple results - no problem
-var sql = @"SELECT * FROM Posts;
-            SELECT * FROM Users;";
+var sql = @"SELECT * FROM Posts WHERE Type=@Type;
+            SELECT * FROM Users WHERE Id=@Id;";
 
-var multiSet = dbSession.ExecuteMultiple(sql);
+var multiSet = dbSession.ExecuteMultiple(sql, new { Id = 1, Type = PostType.Post });
 var posts = multiSet.Read<Post>();
 var users = multiSet.Read<Users>();
 ```
