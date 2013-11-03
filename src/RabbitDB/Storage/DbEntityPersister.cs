@@ -4,6 +4,7 @@ using RabbitDB.Caching;
 using RabbitDB.Entity;
 using RabbitDB.Mapping;
 using RabbitDB.Query;
+using RabbitDB.Materialization;
 
 namespace RabbitDB.Storage
 {
@@ -77,7 +78,7 @@ namespace RabbitDB.Storage
         private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
         {
             // Any changes made to entity?!
-            KeyValuePair<string, object>[] valuesToUpdate = entityInfo.ComputeUpdateValues(entity);
+            KeyValuePair<string, object>[] valuesToUpdate = EntityHashSetManager.ComputeUpdateValues(entity, entityInfo);
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
