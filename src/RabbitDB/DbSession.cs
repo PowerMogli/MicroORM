@@ -147,10 +147,10 @@ namespace RabbitDB.Base
             return ((IDbSession)this).GetEntityReader<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
         }
 
-        public MultiEntitySet ExecuteMultiple(string sql, params object[] arguments)
+        public MultiEntityReader ExecuteMultiple(string sql, params object[] arguments)
         {
             IDataReader dataReader = _dbProvider.ExecuteReader(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
-            return new MultiEntitySet(new MultiEntityReader(dataReader, _dbProvider));
+            return new MultiEntityReader(dataReader, _dbProvider);
         }
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)

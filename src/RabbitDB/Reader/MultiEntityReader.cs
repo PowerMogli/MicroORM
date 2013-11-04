@@ -4,7 +4,7 @@ using RabbitDB.Storage;
 
 namespace RabbitDB.Reader
 {
-    internal class MultiEntityReader
+    public class MultiEntityReader
     {
         private IDataReader _dataReader;
         private IDbProvider _dbProvider;
@@ -15,7 +15,7 @@ namespace RabbitDB.Reader
             _dataReader = dataReader;
         }
 
-        internal EntitySet<TEntity> Read<TEntity>()
+        public EntitySet<TEntity> Read<TEntity>()
         {
             EntityReader<TEntity> entityReader = new EntityReader<TEntity>(_dataReader, _dbProvider);
             EntitySet<TEntity> entitySet = new EntitySet<TEntity>();

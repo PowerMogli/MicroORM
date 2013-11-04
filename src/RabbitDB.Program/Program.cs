@@ -19,7 +19,12 @@ namespace RabbitDB.Program
 
                 using (DbSession dbSession = new DbSession(typeof(Program)))
                 {
+                    string sql = @"select * from Posts;
+                                   select * from Users;";
 
+                    var multiset = dbSession.ExecuteMultiple(sql);
+                    var posts = multiset.Read<Post>();
+                    var users = multiset.Read<Users>();
                 }
                 DbSchemaAllocator.Flush();
             }

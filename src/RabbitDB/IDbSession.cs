@@ -20,7 +20,7 @@ namespace RabbitDB.Base
         EntitySet<T> GetEntitySet<T>(Expression<Func<T, bool>> condition);
         EntitySet<T> GetEntitySet<T>(string sql, params object[] args);
         EntitySet<T> GetEntitySet<T>(IQuery query);
-        MultiEntitySet ExecuteMultiple(string sql, params object[] arguments);
+        MultiEntityReader ExecuteMultiple(string sql, params object[] arguments);
         T GetScalarValue<T>(string sql, params object[] args);
         bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity;
         void Update<T>(Expression<Func<T, bool>> criteria, params object[] setArguments);
