@@ -26,6 +26,15 @@ namespace RabbitDB.Mapping
         private string SelectStatement { get; set; }
         private string InsertStatement { get; set; }
         private string DeleteStatement { get; set; }
+        private string WithNolock
+        {
+            get
+            {
+                return this.TableAttribute.ReadWithNolock
+                    ? " WITH (NOLOCK) "
+                    : string.Empty;
+            }
+        }
         private TableAttribute TableAttribute { get; set; }
 
         private int _numberOfPrimaryKeys = -1;
@@ -113,7 +122,7 @@ namespace RabbitDB.Mapping
                 this.Columns
                 .Where(column => this.DbTable.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
                 .Select(member => dbProvider.EscapeName(member.ColumnAttribute.ColumnName))));
-            selectStatement.AppendFormat(" FROM {0}", dbProvider.EscapeName(this.Name));
+            selectStatement.AppendFormat(" FROM {0}{1}", dbProvider.EscapeName(this.Name), this.WithNolock);
 
             return selectStatement.ToString();
         }
