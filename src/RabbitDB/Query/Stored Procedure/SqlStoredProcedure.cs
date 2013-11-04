@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
 
-namespace RabbitDB.Query
+namespace RabbitDB.Query.StoredProcedure
 {
     public class SqlStoredProcedure : StoredProcedure
     {
@@ -9,6 +9,11 @@ namespace RabbitDB.Query
             : base(storedProcedureName) { }
 
         protected override bool AddParameter<T>(string parameterName, T value, DbType dbType, int length = -1)
+        {
+            return AddParameter<T>(parameterName, value, dbType, length, ParameterDirection.Input);
+        }
+
+        protected bool AddParameter<T>(string parameterName, T value, DbType dbType, int length = -1, ParameterDirection parameterDirection = default(ParameterDirection))
         {
             if (base.Parameters.AddParameter(parameterName, value, dbType, length) == false) return false;
 

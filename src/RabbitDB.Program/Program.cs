@@ -3,8 +3,7 @@ using System.Data;
 using RabbitDB.Attributes;
 using RabbitDB.Base;
 using RabbitDB.Entity;
-using RabbitDB.Query;
-using RabbitDB.Schema;
+using RabbitDB.Query.StoredProcedure;
 using RabbitDB.Storage;
 
 namespace RabbitDB.Program

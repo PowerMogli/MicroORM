@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using RabbitDB.Query;
+using RabbitDB.Query.StoredProcedure;
 using RabbitDB.Reader;
 
 namespace RabbitDB.Base

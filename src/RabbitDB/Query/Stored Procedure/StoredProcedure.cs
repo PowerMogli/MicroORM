@@ -1,5 +1,6 @@
 ﻿using System.Data;
-namespace RabbitDB.Query
+
+namespace RabbitDB.Query.StoredProcedure
 {
     public abstract class StoredProcedure
     {

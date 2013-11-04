@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using RabbitDB.Storage;
 
-namespace RabbitDB.Query
+namespace RabbitDB.Query.StoredProcedure
 {
     internal class StoredProcedureQuery : IQuery, IArgumentQuery
     {

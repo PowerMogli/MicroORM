@@ -2,7 +2,7 @@
 using RabbitDB.Base;
 using RabbitDB.Storage;
 
-namespace RabbitDB.Query
+namespace RabbitDB.Query.StoredProcedure
 {
     public static class ProcedureExtensions
     {

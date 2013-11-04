@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using RabbitDB.Mapping;
 using RabbitDB.Query;
 using RabbitDB.Query.Generic;
+using RabbitDB.Query.StoredProcedure;
 using RabbitDB.Reader;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
