@@ -13,6 +13,6 @@ Clean
 -----
 Based on clean-code and SOLID principles.
 
-Wiki
+[Wiki](https://github.com/PowerMogli/RabbitDB/wiki)
 ------------
-For all information about RabbitDB and how you can use it, see the Wiki of this project.
+For all information about RabbitDB and how you can use it.
