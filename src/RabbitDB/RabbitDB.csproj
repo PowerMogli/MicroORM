@@ -107,8 +107,6 @@
     <Compile Include="Schema\DbSchemaReader.cs" />
     <Compile Include="Schema\DbTable.cs" />
     <Compile Include="Schema\DbTableCollection.cs" />
-    <Compile Include="Schema\DbTableIndex.cs" />
-    <Compile Include="Schema\DbIndexColumn.cs" />
     <Compile Include="Schema\MySqlDbSchemaReader.cs" />
     <Compile Include="Schema\OracleDbSchemaReader.cs" />
     <Compile Include="Schema\PostgreSqlDbSchemaReader.cs" />

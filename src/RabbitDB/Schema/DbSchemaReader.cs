@@ -58,17 +58,5 @@ namespace RabbitDB.Schema
         {
             this.DbProvider.Dispose();
         }
-
-        internal void Flush()
-        {
-            this.Tables.Clear();
-        }
-
-        internal void Flush(string tableName)
-        {
-            DbTable dbTable = this.Tables[tableName];
-            if (dbTable != null)
-                this.Tables.Remove(dbTable);
-        }
     }
 }

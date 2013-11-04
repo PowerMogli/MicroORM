@@ -2,21 +2,21 @@
 
 namespace RabbitDB.Expressions
 {
-    public class ExpressionParameterCollection
+    internal class ExpressionParameterCollection
     {
         private readonly List<object> _params = new List<object>();
 
-        public object[] ToArray()
+        internal object[] ToArray()
         {
             return _params.ToArray();
         }
 
-        public int NextIndex
+        internal int NextIndex
         {
             get { return _params.Count; }
         }
 
-        public void Add(object value)
+        internal void Add(object value)
         {
             _params.Add(value);
         }

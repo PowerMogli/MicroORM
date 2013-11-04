@@ -2,6 +2,7 @@
 using System.Data;
 using RabbitDB.Attributes;
 using RabbitDB.Base;
+using RabbitDB.Entity;
 using RabbitDB.Query;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
@@ -19,6 +20,8 @@ namespace RabbitDB.Program
 
                 using (DbSession dbSession = new DbSession(typeof(Program)))
                 {
+                    var post = new Post();
+                    post.Load();
                     string sql = @"select * from Posts;
                                    select * from Users;";
 
@@ -26,7 +29,6 @@ namespace RabbitDB.Program
                     var posts = multiset.Read<Post>();
                     var users = multiset.Read<Users>();
                 }
-                DbSchemaAllocator.Flush();
             }
             catch (Exception ex)
             {
@@ -60,10 +62,16 @@ namespace RabbitDB.Program
         }
     }
 
-    [Table("Posts")]
+    [Table("Posts", AlternativePKs = "")]
     class Post : Entity.Entity
     {
-        public int Id { get; set; }
+        [Column("NameOfYourColumn",
+            AutoNumber = true,
+            DbType = DbType.AnsiString,
+            IsNullable = true,
+            IsPrimaryKey = true,
+            Size = 30)]
+        public string Id { get; set; }
         public int AuthorId { get; set; }
         public string Title { get; set; }
         public DateTime CreatedOn { get; set; }

@@ -16,7 +16,7 @@ using RabbitDB.Storage;
 
 namespace RabbitDB.Expressions
 {
-    public interface IBuildUpdateTable<T>
+    internal interface IBuildUpdateTable<T>
     {
         IBuildUpdateTable<T> Set(Expression<Func<T, object>> column, Expression<Func<T, object>> statement);
         IBuildUpdateTable<T> Set(Expression<Func<T, object>> column, object value);
