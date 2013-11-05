@@ -8,37 +8,25 @@ namespace RabbitDB.Entity
 
         public Entity() { }
 
-        public event EventHandler EntityDeleted;
+        public event EventHandler EntityDeleted = delegate { };
 
-        public event EventHandler EntityInserted;
+        public event EventHandler EntityInserted = delegate { };
 
-        public event EventHandler EntityUpdated;
+        public event EventHandler EntityUpdated = delegate { };
 
         internal void RaiseEntityDeleted()
         {
-            EventHandler handler = this.EntityDeleted;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            this.EntityDeleted(this, EventArgs.Empty);
         }
 
         internal void RaiseEntityInserted()
         {
-            EventHandler handler = this.EntityInserted;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            this.EntityInserted(this, EventArgs.Empty);
         }
 
         internal void RaiseEntityUpdated()
         {
-            EventHandler handler = this.EntityUpdated;
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            this.EntityUpdated(this, EventArgs.Empty);
         }
     }
 }
