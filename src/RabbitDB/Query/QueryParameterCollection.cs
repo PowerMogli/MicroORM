@@ -5,6 +5,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using RabbitDB.Mapping;
+using RabbitDB.Query.StoredProcedure;
 using RabbitDB.Reflection;
 using RabbitDB.Schema;
 using RabbitDB.Utils;

@@ -13,7 +13,7 @@ namespace RabbitDB.Schema
         }
 
         public List<DbColumn> DbColumns { get; set; }
-        public List<DbTableIndex> Indices { get; set; }
+        //public List<DbTableIndex> Indices { get; set; }
         public List<DbForeignKey> ForeignKeys { get; set; }
         public string Name { get; set; }
         public string Schema { get; set; }
@@ -47,9 +47,9 @@ namespace RabbitDB.Schema
             get { return PrimaryKeys != null && this.PrimaryKeys.Count > 0; }
         }
 
-        public DbTableIndex GetIndex(string indexName)
-        {
-            return Indices.Single(tableIndex => string.Compare(tableIndex.Name, indexName, true) == 0);
-        }
+        //public DbTableIndex GetIndex(string indexName)
+        //{
+        //    return Indices.Single(tableIndex => string.Compare(tableIndex.Name, indexName, true) == 0);
+        //}
     }
 }
