@@ -110,14 +110,20 @@ namespace RabbitDB.Query
 
             foreach (KeyValuePair<string, object> kvp in argument)
             {
-                Type argumentType = kvp.Value.GetType();
-                if (argumentType.IsEnum) argumentType = typeof(Int32);
+                Type argumentType = null;
+                if (kvp.Value != null)
+                {
+                    argumentType = kvp.Value.GetType();
+                    if (argumentType.IsEnum) argumentType = typeof(Int32);
+                }
 
                 collection.Add(new QueryParameter(
                         kvp.Key,
                         tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(argumentType),
                         EvaluateParameterValue(tableInfo, kvp),
                         tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.GetColumnSize(kvp.Key) : -1));
+
+                argumentType = null;
             }
 
             return collection;
