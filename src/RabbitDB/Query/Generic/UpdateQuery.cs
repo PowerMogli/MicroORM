@@ -1,34 +1,30 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq.Expressions;
 using RabbitDB.Expressions;
-using RabbitDB.Reflection;
+using RabbitDB.Mapping;
 using RabbitDB.Storage;
 
 namespace RabbitDB.Query.Generic
 {
     internal class UpdateQuery<TEntity> : IQuery
     {
-        private readonly Expression<Func<TEntity, bool>> _expression;
-        private readonly object[] _arguments;
+        private TEntity _entity;
 
-        internal UpdateQuery(Expression<Func<TEntity, bool>> condition, params object[] arguments)
+        internal UpdateQuery(TEntity entity)
         {
-            _expression = condition;
-            _arguments = arguments;
+            _entity = entity;
         }
 
         public IDbCommand Compile(IDbProvider dbProvider)
         {
-            UpdateTableBuilder<TEntity> updateTableBuilder = new UpdateTableBuilder<TEntity>(dbProvider);
-            foreach (KeyValuePair<string, object> parameter in ParameterTypeDescriptor.ToKeyValuePairs(_arguments))
-            {
-                updateTableBuilder.Set(parameter.Key, parameter.Value);
-            }
-            updateTableBuilder.Where(_expression);
+            var valuesToUpdate = Utils.Utils.GetEntityArguments(_entity, TableInfo<TEntity>.GetTableInfo);
+            if (valuesToUpdate == null || valuesToUpdate.Length <= 0)
+                throw new InvalidOperationException("Entity had no properties provided!");
 
-            SqlQuery sqlQuery = new SqlQuery(updateTableBuilder.GetSql(), QueryParameterCollection.Create<TEntity>(updateTableBuilder.GetParameters()));
+            Tuple<string, QueryParameterCollection> result = UpdateTableBuilder<TEntity>.PrepareForUpdate(_entity, dbProvider, valuesToUpdate[0] as KeyValuePair<string, object>[]);
+
+            SqlQuery sqlQuery = new SqlQuery(result.Item1, result.Item2);
             return sqlQuery.Compile(dbProvider);
         }
     }
