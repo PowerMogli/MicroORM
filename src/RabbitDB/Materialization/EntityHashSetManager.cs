@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using RabbitDB.Entity;
-using RabbitDB.Mapping;
 using RabbitDB.Reflection;
 
 namespace RabbitDB.Materialization
@@ -43,7 +42,7 @@ namespace RabbitDB.Materialization
         internal static KeyValuePair<string, object>[] ComputeUpdateValues<TEntity>(TEntity entity, EntityInfo entityInfo)
         {
             var entityHashSet = EntityHashSetManager.ComputeEntityHashSet(entity);
-            var entityValues = RemoveUnusedPropertyValues<TEntity>(entity);
+            var entityValues = Utils.Utils.RemoveUnusedPropertyValues<TEntity>(entity);
 
             var valuesToUpdate = new Dictionary<string, object>();
             foreach (var kvp in entityHashSet)
@@ -57,14 +56,6 @@ namespace RabbitDB.Materialization
             }
 
             return valuesToUpdate.ToArray();
-        }
-
-        private static IEnumerable<KeyValuePair<string, object>> RemoveUnusedPropertyValues<TEntity>(TEntity entity)
-        {
-            var entityValues = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
-
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return entityValues.Where(kvp => tableInfo.DbTable.DbColumns.Any(column => column.Name == tableInfo.ResolveColumnName(kvp.Key)));
         }
     }
 }
