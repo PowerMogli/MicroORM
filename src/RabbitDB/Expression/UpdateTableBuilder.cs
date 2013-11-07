@@ -10,10 +10,8 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using RabbitDB.Mapping;
-using RabbitDB.Query;
 using RabbitDB.Storage;
 
 namespace RabbitDB.Expressions
@@ -64,16 +62,6 @@ namespace RabbitDB.Expressions
         {
             _builder.EndEnumeration();
             _builder.Where(criteria);
-        }
-
-        internal static Tuple<string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, IDbProvider dbProvider, KeyValuePair<string, object>[] valuesToUpdate)
-        {
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string updateStatement = tableInfo.CreateUpdateStatement(dbProvider, valuesToUpdate);
-            QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
-            queryParameterCollection.AddRange(tableInfo.GetPrimaryKeyValues<TEntity>(entity));
-
-            return new Tuple<string, QueryParameterCollection>(updateStatement, queryParameterCollection);
         }
 
         public string GetSql()
