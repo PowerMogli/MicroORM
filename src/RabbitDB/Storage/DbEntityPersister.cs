@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using RabbitDB.Caching;
 using RabbitDB.Entity;
+using RabbitDB.Expressions;
 using RabbitDB.Mapping;
-using RabbitDB.Query;
 using RabbitDB.Materialization;
+using RabbitDB.Query;
 
 namespace RabbitDB.Storage
 {
@@ -75,7 +76,7 @@ namespace RabbitDB.Storage
             return true;
         }
 
-        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
+        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo)
         {
             // Any changes made to entity?!
             KeyValuePair<string, object>[] valuesToUpdate = EntityHashSetManager.ComputeUpdateValues(entity, entityInfo);
@@ -83,12 +84,8 @@ namespace RabbitDB.Storage
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
 
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string updateStatement = tableInfo.CreateUpdateStatement(_dbProvider, valuesToUpdate);
-            QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
-            queryParameterCollection.AddRange(tableInfo.GetPrimaryKeyValues<TEntity>(entity));
-
-            return new Tuple<bool, string, QueryParameterCollection>(true, updateStatement, queryParameterCollection);
+            Tuple<string, QueryParameterCollection> result = UpdateTableBuilder<TEntity>.PrepareForUpdate<TEntity>(entity, _dbProvider, valuesToUpdate);
+            return new Tuple<bool, string, QueryParameterCollection>(true, result.Item1, result.Item2);
         }
 
         internal void Update<TEntity>(IQuery query)
