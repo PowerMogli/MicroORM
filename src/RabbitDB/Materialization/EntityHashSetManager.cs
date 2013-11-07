@@ -1,30 +1,51 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using RabbitDB.Entity;
 using RabbitDB.Mapping;
 using RabbitDB.Reflection;
 
 namespace RabbitDB.Materialization
 {
-    internal class EntityHashSetManager
+    internal static class EntityHashSetManager
     {
         internal static Dictionary<string, int> ComputeEntityHashSet<TEntity>(TEntity entity)
         {
-            Dictionary<string, int> _entityHashSet = new Dictionary<string, int>();
+            var keyValuePairs = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
+            //if (keyValuePairs.Length >= 30)
+            //return ComputeParallelEntityHashSet(keyValuePairs);
 
-            foreach (KeyValuePair<string, object> kvp in ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity }))
+            return ComputeEntityHashSet(keyValuePairs);
+        }
+
+        private static Dictionary<string, int> ComputeEntityHashSet(KeyValuePair<string, object>[] keyValuePairs)
+        {
+            var entityHashSet = new Dictionary<string, int>();
+
+            foreach (var kvp in keyValuePairs)
             {
-                _entityHashSet.Add(kvp.Key, kvp.Value != null ? kvp.Value.GetHashCode() : -1);
+                entityHashSet.Add(kvp.Key, kvp.Value != null ? kvp.Value.GetHashCode() : -1);
             }
-            return _entityHashSet;
+            return entityHashSet;
+        }
+
+        internal static Dictionary<string, int> ComputeParallelEntityHashSet(KeyValuePair<string, object>[] keyValuePairs)
+        {
+            var processedKeyValuePairs = new KeyValuePair<string, int>[keyValuePairs.Length];
+
+            Parallel.ForEach(keyValuePairs, (kvp, loopState, elementIndex) =>
+            {
+                processedKeyValuePairs[elementIndex] = new KeyValuePair<string, int>(kvp.Key, kvp.Value != null ? kvp.Value.GetHashCode() : -1);
+            });
+            return processedKeyValuePairs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
         internal static KeyValuePair<string, object>[] ComputeUpdateValues<TEntity>(TEntity entity, EntityInfo entityInfo)
         {
-            Dictionary<string, int> entityHashSet = EntityHashSetManager.ComputeEntityHashSet(entity);
-            KeyValuePair<string, object>[] entityValues = RemoveUnusedPropertyValues<TEntity>(entity);
+            var entityHashSet = EntityHashSetManager.ComputeEntityHashSet(entity);
+            var entityValues = RemoveUnusedPropertyValues<TEntity>(entity);
 
-            Dictionary<string, object> valuesToUpdate = new Dictionary<string, object>();
+            var valuesToUpdate = new Dictionary<string, object>();
             foreach (var kvp in entityHashSet)
             {
                 var oldHash = entityInfo.ValueSnapshot[kvp.Key];
@@ -38,12 +59,12 @@ namespace RabbitDB.Materialization
             return valuesToUpdate.ToArray();
         }
 
-        private static KeyValuePair<string, object>[] RemoveUnusedPropertyValues<TEntity>(TEntity entity)
+        private static IEnumerable<KeyValuePair<string, object>> RemoveUnusedPropertyValues<TEntity>(TEntity entity)
         {
-            KeyValuePair<string, object>[] entityValues = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
+            var entityValues = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
 
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return entityValues.Where(kvp => tableInfo.DbTable.DbColumns.Any(column => column.Name == kvp.Key)).ToArray();
+            return entityValues.Where(kvp => tableInfo.DbTable.DbColumns.Any(column => column.Name == tableInfo.ResolveColumnName(kvp.Key)));
         }
     }
 }
