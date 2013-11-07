@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using RabbitDB.Caching;
 using RabbitDB.Entity;
-using RabbitDB.Expressions;
 using RabbitDB.Mapping;
 using RabbitDB.Materialization;
 using RabbitDB.Query;
@@ -84,7 +83,7 @@ namespace RabbitDB.Storage
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
 
-            Tuple<string, QueryParameterCollection> result = UpdateTableBuilder<TEntity>.PrepareForUpdate<TEntity>(entity, _dbProvider, valuesToUpdate);
+            Tuple<string, QueryParameterCollection> result = entity.PrepareForUpdate(_dbProvider, valuesToUpdate);
             return new Tuple<bool, string, QueryParameterCollection>(true, result.Item1, result.Item2);
         }
 
