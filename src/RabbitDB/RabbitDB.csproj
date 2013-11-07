@@ -59,6 +59,7 @@
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
     <Compile Include="Materialization\EntityHashSetManager.cs" />
+    <Compile Include="Query\Generic\UpdateQuery.cs" />
     <Compile Include="Reader\MultiEntityReader.cs" />
     <Compile Include="PrimaryKeyException.cs" />
     <Compile Include="InvalidTypeException.cs" />
@@ -79,7 +80,7 @@
     <Compile Include="Query\DbParameterExtension.cs" />
     <Compile Include="Query\EntityQuery.cs" />
     <Compile Include="Query\Generic\ExpressionQuery2.cs" />
-    <Compile Include="Query\Generic\UpdateQuery.cs" />
+    <Compile Include="Query\Generic\UpdateExpressionQuery.cs" />
     <Compile Include="Query\IArgumentQuery.cs" />
     <Compile Include="Query\Stored Procedure\ProcedureParameterCollection.cs" />
     <Compile Include="Query\QueryParameter.cs" />
