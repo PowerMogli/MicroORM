@@ -26,6 +26,10 @@ namespace RabbitDB.Program
                     post.CreatedOn = DateTime.Now.AddDays(-1);
                     post.Title = "I wanna fuck you";
                     dbSession.Update(post);
+
+                    var user = new Users();
+                    user.Name = "Pep Guardiola";
+                    dbSession.Update(user);
                 }
             }
             catch (Exception ex)
