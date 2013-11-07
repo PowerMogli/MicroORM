@@ -66,9 +66,23 @@ namespace RabbitDB.Mapping
             }
         }
 
-        internal bool IsAnonymousType
+        private bool IsAnonymousType
         {
             get { return _isAnonymousType; }
+        }
+
+        private IEnumerable<IPropertyInfo> PrimaryKeyColumns
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs) == false)
+                {
+                    string[] attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
+                    return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
+                }
+
+                return this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);
+            }
         }
 
         internal PropertyInfoCollection Columns { get; private set; }
@@ -137,7 +151,7 @@ namespace RabbitDB.Mapping
 
         private string AppendPrimaryKeys(IDbProvider dbProvider)
         {
-            var primaryKeys = GetPrimaryKeyNames();
+            var primaryKeys = this.PrimaryKeyColumns.Select(column => column.ColumnAttribute.ColumnName);
             int count = primaryKeys.Count();
 
             StringBuilder whereClause = new StringBuilder(" WHERE ");
@@ -149,17 +163,6 @@ namespace RabbitDB.Mapping
                 whereClause.AppendFormat("{0}=@{1}{2}", dbProvider.EscapeName(primaryKey), i++, seperator);
             }
             return whereClause.ToString();
-        }
-
-        private IEnumerable<string> GetPrimaryKeyNames()
-        {
-            if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs) == false)
-            {
-                string[] attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
-                return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name)).Select(column => column.ColumnAttribute.ColumnName);
-            }
-            else
-                return this.Columns.Where(member => member.ColumnAttribute.IsPrimaryKey).Select(column => column.ColumnAttribute.ColumnName);
         }
 
         internal string CreateInsertStatement(IDbProvider dbProvider)
@@ -222,7 +225,7 @@ namespace RabbitDB.Mapping
         internal object[] GetPrimaryKeyValues<TEntity>(TEntity entity)
         {
             int index = 0;
-            var primaryKeyColumns = GetPrimaryKeyColumns();
+            var primaryKeyColumns = this.PrimaryKeyColumns;
             object[] primaryKeys = new object[primaryKeyColumns.Count()];
 
             foreach (IPropertyInfo propertyInfo in primaryKeyColumns)
@@ -236,17 +239,6 @@ namespace RabbitDB.Mapping
                 throw new PrimaryKeyException("It was no valid primaryKey available!");
 
             return primaryKeys;
-        }
-
-        private IEnumerable<IPropertyInfo> GetPrimaryKeyColumns()
-        {
-            if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs) == false)
-            {
-                string[] attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
-                return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
-            }
-            else
-                return this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);
         }
 
         internal void SetAutoNumber<TEntity>(TEntity entity, object insertId)
