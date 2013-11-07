@@ -132,7 +132,7 @@ namespace RabbitDB.Query
         private static object EvaluateParameterValue(TableInfo tableInfo, KeyValuePair<string, object> kvp)
         {
             if (tableInfo == null)
-                return kvp.Value == null ? DBNull.Value : kvp.Value;
+                return kvp.Value ?? DBNull.Value;
 
             if (kvp.Value != null) return kvp.Value;
             DbColumn dbColumn = tableInfo.DbTable.DbColumns.FirstOrDefault(column => column.Name == kvp.Key && column.IsNullable);
