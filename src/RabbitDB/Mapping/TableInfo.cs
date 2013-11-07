@@ -182,7 +182,7 @@ namespace RabbitDB.Mapping
             string updateStatement = GetBaseUpdate(dbProvider);
             updateStatement += string.Join(", ",
                 arguments.SkipWhile(kvp => this.DbTable.DbColumns.Find(dbColumn => dbColumn.Name == ResolveColumnName(kvp.Key) && (dbColumn.IsPrimaryKey || dbColumn.IsAutoIncrement)) != null)
-                .Select(kvp2 => string.Format("{0} = @{0}", kvp2.Key)));
+                .Select(kvp2 => string.Format("{0} = @{1}", dbProvider.EscapeName(kvp2.Key), kvp2.Key)));
             updateStatement += AppendPrimaryKeys(dbProvider);
 
             return updateStatement;
@@ -222,10 +222,10 @@ namespace RabbitDB.Mapping
         internal object[] GetPrimaryKeyValues<TEntity>(TEntity entity)
         {
             int index = 0;
-            var columnPrimaryKeys = GetPrimaryKeyColumns();
-            object[] primaryKeys = new object[columnPrimaryKeys.Count()];
+            var primaryKeyColumns = GetPrimaryKeyColumns();
+            object[] primaryKeys = new object[primaryKeyColumns.Count()];
 
-            foreach (IPropertyInfo propertyInfo in columnPrimaryKeys)
+            foreach (IPropertyInfo propertyInfo in primaryKeyColumns)
             {
                 object primaryKey = null;
                 if ((primaryKey = propertyInfo.GetValue(entity)) == null)
