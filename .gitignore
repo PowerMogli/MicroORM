@@ -214,4 +214,5 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-src/RabbitDB.Program/Program.cs
+src/RabbitDB.Program/
+src/RabbitDB.Test/
