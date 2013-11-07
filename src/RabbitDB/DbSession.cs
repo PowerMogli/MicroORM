@@ -157,14 +157,14 @@ namespace RabbitDB.Base
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
             DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            dbEntityPersister.Update<TEntity>(new UpdateQuery<TEntity>(criteria, setArguments));
+            dbEntityPersister.Update<TEntity>(new UpdateExpressionQuery<TEntity>(criteria, setArguments));
         }
 
-        //public void Update<TEntity>(TEntity entity)
-        //{
-        //    Tuple<bool, string, QueryParameterCollection> result = _dbEntityPersister.PrepareForUpdate(entity);
-        //    _dbEntityPersister.Update<TEntity>(new SqlQuery(result.Item2, result.Item3));
-        //}
+        public void Update<TEntity>(TEntity entity)
+        {
+            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
+            dbEntityPersister.Update<TEntity>(new UpdateQuery<TEntity>(entity));
+        }
 
         void IDbSession.Load<TEntity>(TEntity entity)
         {
