@@ -12,6 +12,14 @@ namespace RabbitDB.Utils
 {
     internal static class Utils
     {
+        internal static IEnumerable<KeyValuePair<string, object>> RemoveUnusedPropertyValues<TEntity>(TEntity entity)
+        {
+            var entityValues = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
+
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+            return entityValues.Where(kvp => tableInfo.DbTable.DbColumns.Any(column => column.Name == tableInfo.ResolveColumnName(kvp.Key)));
+        }
+
         internal static object[] GetEntityArguments<TEntity>(TEntity entity, TableInfo tableInfo)
         {
             KeyValuePair<string, object>[] properties = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
@@ -19,11 +27,11 @@ namespace RabbitDB.Utils
             List<KeyValuePair<string, object>> arguments = new List<KeyValuePair<string, object>>();
             for (int i = 0; i < count; i++)
             {
-                IPropertyInfo memberInfo = tableInfo.Columns.Where(member => member.ColumnAttribute.ColumnName == properties[i].Key).FirstOrDefault();
-                if (memberInfo == null) continue;
+                IPropertyInfo propertyInfo = tableInfo.Columns.Where(column => column.ColumnAttribute.ColumnName == properties[i].Key).FirstOrDefault();
+                if (propertyInfo == null) continue;
 
-                if (tableInfo.Columns.Contains(memberInfo.ColumnAttribute.ColumnName)
-                    && memberInfo.ColumnAttribute.AutoNumber) { continue; }
+                if (tableInfo.Columns.Contains(propertyInfo.ColumnAttribute.ColumnName)
+                    && (propertyInfo.ColumnAttribute.AutoNumber || propertyInfo.ColumnAttribute.IsPrimaryKey)) { continue; }
 
                 arguments.Add(properties[i]);
             }
