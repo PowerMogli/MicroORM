@@ -124,7 +124,8 @@ namespace RabbitDB.Base
         public EntitySet<TEntity> GetEntitySet<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IDbSession)this).GetEntitySet<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
+            return ((IDbSession)this).GetEntitySet<TEntity>(new SqlQuery(
+                string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(string.Format("{0}.{1}", tableInfo.DbTable.Schema, tableInfo.Name)))));
         }
 
         EntityReader<TEntity> IDbSession.GetEntityReader<TEntity>(IQuery query)
@@ -145,7 +146,8 @@ namespace RabbitDB.Base
         public EntityReader<TEntity> GetEntityReader<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IDbSession)this).GetEntityReader<TEntity>(new SqlQuery(string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(tableInfo.Name))));
+            return ((IDbSession)this).GetEntityReader<TEntity>(new SqlQuery(
+                string.Format("SELECT * FROM {0}", _dbProvider.EscapeName(string.Format("{0}.{1}", tableInfo.DbTable.Schema, tableInfo.Name)))));
         }
 
         public MultiEntityReader ExecuteMultiple(string sql, params object[] arguments)

@@ -122,17 +122,17 @@ namespace RabbitDB.Mapping
                 this.Columns
                 .Where(column => this.DbTable.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
                 .Select(member => dbProvider.EscapeName(member.ColumnAttribute.ColumnName))));
-            selectStatement.AppendFormat(" FROM {0}{1}", dbProvider.EscapeName(this.Name), this.WithNolock);
+            selectStatement.AppendFormat(" FROM {0}{1}", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)), this.WithNolock);
 
             return selectStatement.ToString();
         }
 
-        internal string CreateDeleteStatement(IDbProvider provider)
+        internal string CreateDeleteStatement(IDbProvider dbProvider)
         {
             if (string.IsNullOrWhiteSpace(this.DeleteStatement) == false)
                 return this.DeleteStatement;
 
-            return this.DeleteStatement = string.Format("DELETE FROM {0} {1}", provider.EscapeName(this.Name), AppendPrimaryKeys(provider));
+            return this.DeleteStatement = string.Format("DELETE FROM {0} {1}", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)), AppendPrimaryKeys(dbProvider));
         }
 
         private string AppendPrimaryKeys(IDbProvider dbProvider)
@@ -168,7 +168,7 @@ namespace RabbitDB.Mapping
                 return this.InsertStatement;
 
             StringBuilder insertStatement = new StringBuilder();
-            insertStatement.AppendFormat("INSERT INTO {0} ", dbProvider.EscapeName(this.Name));
+            insertStatement.AppendFormat("INSERT INTO {0} ", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)));
 
             insertStatement.AppendFormat("({0})",
                 string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.ColumnAttribute.ColumnName))));
@@ -190,7 +190,7 @@ namespace RabbitDB.Mapping
 
         internal string GetBaseUpdate(IDbProvider dbProvider)
         {
-            return string.Format("UPDATE {0} SET ", dbProvider.EscapeName(this.Name));
+            return string.Format("UPDATE {0} SET ", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)));
         }
 
         internal DbType ConvertToDbType(string name)
