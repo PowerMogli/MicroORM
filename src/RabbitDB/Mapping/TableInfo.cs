@@ -12,15 +12,11 @@ namespace RabbitDB.Mapping
 {
     internal class TableInfo
     {
-        private bool _isAnonymousType;
-
         internal TableInfo(Type type, TableAttribute tableAttribute)
         {
             this.EntityType = type;
             this.TableAttribute = tableAttribute;
             this.Columns = new PropertyInfoCollection();
-
-            _isAnonymousType = Utils.Utils.CheckIfAnonymousType(type);
         }
 
         private string SelectStatement { get; set; }
@@ -64,11 +60,6 @@ namespace RabbitDB.Mapping
                 CleanUpColumns();
                 ReconfigureWith();
             }
-        }
-
-        private bool IsAnonymousType
-        {
-            get { return _isAnonymousType; }
         }
 
         private IEnumerable<IPropertyInfo> PrimaryKeyColumns
