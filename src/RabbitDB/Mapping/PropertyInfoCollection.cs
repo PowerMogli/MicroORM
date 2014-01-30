@@ -1,4 +1,6 @@
-﻿using System;
+﻿using RabbitDB.Schema;
+using RabbitDB.Storage;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +51,22 @@ namespace RabbitDB.Mapping
         public bool Contains(string columnName)
         {
             return _propertyInfos.Any(propertyInfo => propertyInfo.ColumnAttribute.ColumnName == columnName);
+        }
+
+        internal IEnumerable<string> SelectValidColumnNames(DbTable table, IDbProvider dbProvider)
+        {
+            return this.Where(column => table.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
+                .Select(member => dbProvider.EscapeName(member.ColumnAttribute.ColumnName));
+        }
+
+        internal IEnumerable<string> SelectValidNonAutoNumberColumnNames(IDbProvider dbProvider)
+        {
+            return this.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.ColumnAttribute.ColumnName));
+        }
+
+        internal IEnumerable<string> SelectValidNonAutoNumberPrefixedColumnNames()
+        {
+            return this.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name);
         }
     }
 }

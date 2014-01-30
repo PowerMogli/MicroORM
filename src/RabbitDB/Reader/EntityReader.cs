@@ -10,25 +10,30 @@ namespace RabbitDB.Reader
     public class EntityReader<TEntity> : IDisposable
     {
         private IDataReader _dataReader;
-        private EntityMaterializer _materlizer;
-        private DataReaderSchema _dataReaderSchema;
+        private IEntityMaterializer _materializer;
+        private IDataSchemaCreator _dataReaderSchema;
         private IDbProvider _dbProvider;
         private TableInfo _tableInfo;
         private bool _disposed;
 
-        internal EntityReader(IDataReader dataReader, IDbProvider dbProvider)
+        internal EntityReader(IDataReader dataReader, IDbProvider dbProvider, IEntityMaterializer materializer)
         {
             _tableInfo = TableInfo<TEntity>.GetTableInfo;
             _dbProvider = dbProvider;
             _dataReader = dataReader;
-            _materlizer = new EntityMaterializer(dbProvider);
-            _dataReaderSchema = new DataReaderSchema(dataReader, _tableInfo);
+            _materializer = materializer;
+            _dataReaderSchema = CreateDataSchemaCreator();
         }
 
         /// <summary>
         /// Returns the current materialized entity object.
         /// </summary>
         public TEntity Current { get; private set; }
+
+        internal virtual IDataSchemaCreator CreateDataSchemaCreator()
+        {
+            return new DataSchemaCreator(_dataReader, _tableInfo);
+        }
 
         /// <summary>
         /// Moves the reader to the next position in data stream.
@@ -53,15 +58,9 @@ namespace RabbitDB.Reader
                 }
             }
 
-            if (_tableInfo != null)
-                return ReadInternal();
-
-            return GetListOfPrimitivValues();
-        }
-
-        internal bool NextResult()
-        {
-            return _dataReader.NextResult();
+            return _tableInfo != null ?
+                ReadInternal() :
+                GetListOfPrimitivValues();
         }
 
         private bool GetListOfPrimitivValues()
@@ -72,7 +71,7 @@ namespace RabbitDB.Reader
 
         internal bool ReadInternal()
         {
-            this.Current = _materlizer.Materialize<TEntity>(_dataReaderSchema, _dataReader);
+            this.Current = _materializer.Materialize<TEntity>(_dataReaderSchema, _dataReader);
             return true;
         }
 
@@ -80,7 +79,7 @@ namespace RabbitDB.Reader
         {
             if (_dataReader.Read() == false) return false;
 
-            this.Current = _materlizer.Materialize<TEntity>(entity, _dataReaderSchema, _dataReader);
+            this.Current = _materializer.Materialize<TEntity>(entity, _dataReaderSchema, _dataReader);
             return true;
         }
 
@@ -91,7 +90,7 @@ namespace RabbitDB.Reader
 
         internal IEnumerable<TEntity> Load(Func<IDataReader, IEnumerable<TEntity>> materializer)
         {
-            return _materlizer.Materialize<TEntity>(materializer, _dataReader);
+            return _materializer.Materialize<TEntity>(materializer, _dataReader);
         }
 
         internal void Dispose()

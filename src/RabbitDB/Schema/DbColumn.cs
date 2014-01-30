@@ -15,5 +15,10 @@ namespace RabbitDB.Schema
         public int Size { get; set; }
         public int Precision { get; set; }
         public string DefaultValue { get; set; }
+
+        internal bool IsToSkip(string resolvedColumnName)
+        {
+            return this.Name == resolvedColumnName && (this.IsPrimaryKey || this.IsAutoIncrement);
+        }
     }
 }

@@ -5,7 +5,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitDB", "RabbitDB\Rabbit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitDB.Program", "RabbitDB.Program\RabbitDB.Program.csproj", "{FA4E8951-1440-4052-8D8B-84DFAB611AA7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitDB.Test", "RabbitDB.Test\RabbitDB.Test.csproj", "{73AC7225-2CCB-471B-B56B-0DF4149701D3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{48227C5F-18F4-448B-9F95-542B6662D8CB}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		RabbitDB.vsmdi = RabbitDB.vsmdi
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = RabbitDB.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -35,6 +47,16 @@ Global
 		{FA4E8951-1440-4052-8D8B-84DFAB611AA7}.Release|Mixed Platforms.Build.0 = Release|x86
 		{FA4E8951-1440-4052-8D8B-84DFAB611AA7}.Release|x86.ActiveCfg = Release|x86
 		{FA4E8951-1440-4052-8D8B-84DFAB611AA7}.Release|x86.Build.0 = Release|x86
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{73AC7225-2CCB-471B-B56B-0DF4149701D3}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

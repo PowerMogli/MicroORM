@@ -6,6 +6,7 @@ using RabbitDB.Expressions;
 using RabbitDB.Mapping;
 using RabbitDB.Query;
 using RabbitDB.Reader;
+using RabbitDB.Materialization;
 
 namespace RabbitDB.Storage
 {
@@ -86,7 +87,7 @@ namespace RabbitDB.Storage
             _dbCommand = query.Compile(this);
             _dbCommand.Transaction = _dbTransaction;
 
-            return new EntityReader<T>(_dbCommand.ExecuteReader(), this);
+            return new EntityReader<T>(_dbCommand.ExecuteReader(), this, new EntityMaterializer(this));
         }
 
         public virtual T ExecuteScalar<T>(IQuery query)

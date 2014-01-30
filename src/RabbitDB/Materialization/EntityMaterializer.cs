@@ -7,7 +7,7 @@ using RabbitDB.Storage;
 
 namespace RabbitDB.Materialization
 {
-    class EntityMaterializer
+    class EntityMaterializer : IEntityMaterializer
     {
         //private ProxyFactory _proxyFactory = new ProxyFactory();
         private IDbProvider _dbProvider;
@@ -17,14 +17,14 @@ namespace RabbitDB.Materialization
             _dbProvider = provider;
         }
 
-        internal IEnumerable<TEntity> Materialize<TEntity>(Func<IDataReader, IEnumerable<TEntity>> materializer, IDataReader dataReader)
+        public IEnumerable<TEntity> Materialize<TEntity>(Func<IDataReader, IEnumerable<TEntity>> materializer, IDataReader dataReader)
         {
             return materializer(dataReader);
         }
 
-        internal T Materialize<T>(T entity, DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
+        public TEntity Materialize<TEntity>(TEntity entity, IDataSchemaCreator dataReaderSchema, IDataRecord dataRecord)
         {
-            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
 
             for (int index = 0; index < tableInfo.Columns.Count; index++)
             {
@@ -38,10 +38,10 @@ namespace RabbitDB.Materialization
             return entity;
         }
 
-        internal T Materialize<T>(DataReaderSchema dataReaderSchema, IDataRecord dataRecord)
+        public TEntity Materialize<TEntity>(IDataSchemaCreator dataReaderSchema, IDataRecord dataRecord)
         {
-            T entity = Activator.CreateInstance<T>();
-            return Materialize<T>(entity, dataReaderSchema, dataRecord);
+            TEntity entity = Activator.CreateInstance<TEntity>();
+            return Materialize<TEntity>(entity, dataReaderSchema, dataRecord);
         }
 
         private void MaterializeEntity(object entity, IPropertyInfo propertyInfo, object value)

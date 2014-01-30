@@ -31,6 +31,12 @@ namespace RabbitDB.Mapping
                     : string.Empty;
             }
         }
+
+        private string SchemedTableName
+        {
+            get { return string.Format("{0}.{1}", this.DbTable.Schema, this.Name); }
+        }
+
         private TableAttribute TableAttribute { get; set; }
 
         private int _numberOfPrimaryKeys = -1;
@@ -57,11 +63,12 @@ namespace RabbitDB.Mapping
                     return;
 
                 _dbTable = value;
-                CleanUpColumns();
-                ReconfigureWith();
+                CleanUpUnusedColumns();
+                ReconfigureByTableColumns();
             }
         }
 
+        private IEnumerable<IPropertyInfo> _primaryKeyColumns;
         private IEnumerable<IPropertyInfo> PrimaryKeyColumns
         {
             get
@@ -69,16 +76,17 @@ namespace RabbitDB.Mapping
                 if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs) == false)
                 {
                     string[] attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
-                    return this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
+                    _primaryKeyColumns = this.Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
+                    return _primaryKeyColumns;
                 }
 
-                return this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey);
+                return _primaryKeyColumns ?? (_primaryKeyColumns = this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey));
             }
         }
 
         internal PropertyInfoCollection Columns { get; private set; }
 
-        private void ReconfigureWith()
+        private void ReconfigureByTableColumns()
         {
             foreach (DbColumn dbColumn in this.DbTable.DbColumns)
             {
@@ -93,17 +101,17 @@ namespace RabbitDB.Mapping
             }
         }
 
-        private void CleanUpColumns()
+        private void CleanUpUnusedColumns()
         {
-            List<string> indexToRemove = new List<string>();
-            for (int index = 0; index < this.Columns.Count; index++)
+            var columnNames = new List<string>();
+            for (var index = 0; index < this.Columns.Count; index++)
             {
                 if (this.DbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name == this.Columns[index].ColumnAttribute.ColumnName) != null)
                     continue;
 
-                indexToRemove.Add(this.Columns[index].Name);
+                columnNames.Add(this.Columns[index].Name);
             }
-            indexToRemove.ForEach(name => this.Columns.Remove(name));
+            columnNames.ForEach(name => this.Columns.Remove(name));
         }
 
         internal string CreateSelectStatement(IDbProvider dbProvider)
@@ -111,7 +119,7 @@ namespace RabbitDB.Mapping
             if (string.IsNullOrEmpty(this.SelectStatement) == false)
                 return this.SelectStatement;
 
-            StringBuilder selectStatement = new StringBuilder();
+            var selectStatement = new StringBuilder();
             selectStatement.Append(GetBaseSelect(dbProvider));
 
             selectStatement.Append(AppendPrimaryKeys(dbProvider));
@@ -120,14 +128,11 @@ namespace RabbitDB.Mapping
 
         internal string GetBaseSelect(IDbProvider dbProvider)
         {
-            StringBuilder selectStatement = new StringBuilder();
+            var selectStatement = new StringBuilder();
             selectStatement.Append("SELECT ");
 
-            selectStatement.AppendFormat("{0}", string.Join(", ",
-                this.Columns
-                .Where(column => this.DbTable.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
-                .Select(member => dbProvider.EscapeName(member.ColumnAttribute.ColumnName))));
-            selectStatement.AppendFormat(" FROM {0}{1}", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)), this.WithNolock);
+            selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.SelectValidColumnNames(this.DbTable, dbProvider)));
+            selectStatement.AppendFormat(" FROM {0}{1}", dbProvider.EscapeName(this.SchemedTableName), this.WithNolock);
 
             return selectStatement.ToString();
         }
@@ -137,18 +142,19 @@ namespace RabbitDB.Mapping
             if (string.IsNullOrWhiteSpace(this.DeleteStatement) == false)
                 return this.DeleteStatement;
 
-            return this.DeleteStatement = string.Format("DELETE FROM {0} {1}", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)), AppendPrimaryKeys(dbProvider));
+            return this.DeleteStatement =
+                string.Format("DELETE FROM {0} {1}", dbProvider.EscapeName(this.SchemedTableName), AppendPrimaryKeys(dbProvider));
         }
 
         private string AppendPrimaryKeys(IDbProvider dbProvider)
         {
             var primaryKeys = this.PrimaryKeyColumns.Select(column => column.ColumnAttribute.ColumnName);
-            int count = primaryKeys.Count();
+            var count = primaryKeys.Count();
 
-            StringBuilder whereClause = new StringBuilder(" WHERE ");
-            int i = 0;
-            string seperator = " AND ";
-            foreach (string primaryKey in primaryKeys)
+            var whereClause = new StringBuilder(" WHERE ");
+            var i = 0;
+            var seperator = " AND ";
+            foreach (var primaryKey in primaryKeys)
             {
                 if (i >= count - 1) seperator = string.Empty;
                 whereClause.AppendFormat("{0}=@{1}{2}", dbProvider.EscapeName(primaryKey), i++, seperator);
@@ -161,12 +167,11 @@ namespace RabbitDB.Mapping
             if (string.IsNullOrEmpty(this.InsertStatement) == false)
                 return this.InsertStatement;
 
-            StringBuilder insertStatement = new StringBuilder();
-            insertStatement.AppendFormat("INSERT INTO {0} ", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)));
+            var insertStatement = new StringBuilder();
+            insertStatement.AppendFormat("INSERT INTO {0} ", dbProvider.EscapeName(this.SchemedTableName));
 
-            insertStatement.AppendFormat("({0})",
-                string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.ColumnAttribute.ColumnName))));
-            insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name)));
+            insertStatement.AppendFormat("({0})", string.Join(", ", this.Columns.SelectValidNonAutoNumberColumnNames(dbProvider)));
+            insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.SelectValidNonAutoNumberPrefixedColumnNames()));
 
             return this.InsertStatement = string.Concat(insertStatement.ToString(), dbProvider.ResolveScopeIdentity(this));
         }
@@ -175,7 +180,8 @@ namespace RabbitDB.Mapping
         {
             string updateStatement = GetBaseUpdate(dbProvider);
             updateStatement += string.Join(", ",
-                arguments.SkipWhile(kvp => this.DbTable.DbColumns.Find(dbColumn => dbColumn.Name == ResolveColumnName(kvp.Key) && (dbColumn.IsPrimaryKey || dbColumn.IsAutoIncrement)) != null)
+                arguments
+                .SkipWhile(kvp => this.DbTable.SkipWhile(ResolveColumnName(kvp.Key)))
                 .Select(kvp2 => string.Format("{0} = @{1}", dbProvider.EscapeName(kvp2.Key), kvp2.Key)));
             updateStatement += AppendPrimaryKeys(dbProvider);
 
@@ -184,7 +190,7 @@ namespace RabbitDB.Mapping
 
         internal string GetBaseUpdate(IDbProvider dbProvider)
         {
-            return string.Format("UPDATE {0} SET ", dbProvider.EscapeName(string.Format("{0}.{1}", this.DbTable.Schema, this.Name)));
+            return string.Format("UPDATE {0} SET ", dbProvider.EscapeName(this.SchemedTableName));
         }
 
         internal DbType ConvertToDbType(string name)
@@ -216,10 +222,9 @@ namespace RabbitDB.Mapping
         internal object[] GetPrimaryKeyValues<TEntity>(TEntity entity)
         {
             int index = 0;
-            var primaryKeyColumns = this.PrimaryKeyColumns;
-            object[] primaryKeys = new object[primaryKeyColumns.Count()];
+            object[] primaryKeys = new object[this.PrimaryKeyColumns.Count()];
 
-            foreach (IPropertyInfo propertyInfo in primaryKeyColumns)
+            foreach (IPropertyInfo propertyInfo in this.PrimaryKeyColumns)
             {
                 object primaryKey = null;
                 if ((primaryKey = propertyInfo.GetValue(entity)) == null)

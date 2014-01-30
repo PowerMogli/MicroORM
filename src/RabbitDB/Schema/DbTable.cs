@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RabbitDB.Mapping;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RabbitDB.Schema
@@ -51,5 +52,10 @@ namespace RabbitDB.Schema
         //{
         //    return Indices.Single(tableIndex => string.Compare(tableIndex.Name, indexName, true) == 0);
         //}
+
+        internal bool SkipWhile(string resolvedColumnName)
+        {
+            return DbColumns.Find(dbColumn => dbColumn.IsToSkip(resolvedColumnName)) != null;
+        }
     }
 }

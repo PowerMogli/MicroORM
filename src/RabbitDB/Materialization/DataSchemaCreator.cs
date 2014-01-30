@@ -3,18 +3,18 @@ using RabbitDB.Mapping;
 
 namespace RabbitDB.Materialization
 {
-    class DataReaderSchema
+    class DataSchemaCreator : IDataSchemaCreator
     {
         private int[] _columnIndexes;
 
-        internal DataReaderSchema(IDataReader dataReader, TableInfo tableInfo)
+        internal DataSchemaCreator(IDataReader dataReader, TableInfo tableInfo)
         {
             if (tableInfo == null) return;
 
             CreateFromType(dataReader, tableInfo);
         }
 
-        private void CreateFromType(IDataReader dataReader, TableInfo tableInfo)
+        public void CreateFromType(IDataReader dataReader, TableInfo tableInfo)
         {
             int membersCount = tableInfo.Columns.Count;
 
@@ -35,7 +35,7 @@ namespace RabbitDB.Materialization
             }
         }
 
-        string[] MemberFieldNameToLowers(TableInfo tableInfo, int membersCount)
+        private string[] MemberFieldNameToLowers(TableInfo tableInfo, int membersCount)
         {
             string[] lowerNames = new string[membersCount];
             for (int i = 0; i < membersCount; i++)
@@ -45,7 +45,7 @@ namespace RabbitDB.Materialization
             return lowerNames;
         }
 
-        internal int ColumnIndex(int index)
+        public int ColumnIndex(int index)
         {
             return _columnIndexes[index] - 1;
         }

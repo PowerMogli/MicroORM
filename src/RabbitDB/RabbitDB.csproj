@@ -60,6 +60,8 @@
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
     <Compile Include="Materialization\EntityHashSetManager.cs" />
+    <Compile Include="Materialization\IDataSchemaCreator.cs" />
+    <Compile Include="Materialization\IEntityMaterializer.cs" />
     <Compile Include="Query\Generic\UpdateQuery.cs" />
     <Compile Include="Reader\MultiEntityReader.cs" />
     <Compile Include="PrimaryKeyException.cs" />
@@ -74,7 +76,7 @@
     <Compile Include="Mapping\TableInfoContainer.cs" />
     <Compile Include="Mapping\TableInfoException.cs" />
     <Compile Include="Mapping\TableInfo.cs" />
-    <Compile Include="Materialization\DataReaderSchema.cs" />
+    <Compile Include="Materialization\DataSchemaCreator.cs" />
     <Compile Include="Materialization\EntityMaterializer.cs" />
     <Compile Include="Reader\EntityReader.cs" />
     <Compile Include="EntitySet.cs" />
