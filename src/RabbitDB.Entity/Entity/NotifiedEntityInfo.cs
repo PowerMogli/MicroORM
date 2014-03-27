@@ -25,7 +25,10 @@ namespace RabbitDB.Entity
 
             if (this.NotifiedValues.ContainsKey(args.PropertyName))
             {
-                this.NotifiedValues[args.PropertyName] = args.NewValue;
+                if (args.IsDirty)
+                    this.NotifiedValues[args.PropertyName] = args.NewValue;
+                else
+                    this.NotifiedValues.Remove(args.PropertyName);
             }
             else
             {
