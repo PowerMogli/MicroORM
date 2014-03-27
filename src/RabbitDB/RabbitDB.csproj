@@ -117,6 +117,8 @@
     <Compile Include="Schema\SqlDbSchemaReader.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\DbEntityPersister.cs" />
+    <Compile Include="Storage\DbPersister.cs" />
+    <Compile Include="Storage\IDbPersister.cs" />
     <Compile Include="Storage\IEscapeDbIdentifier.cs" />
     <Compile Include="Storage\IDbProvider.cs" />
     <Compile Include="Storage\ITransactionalDbProvider.cs" />

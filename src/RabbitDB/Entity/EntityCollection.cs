@@ -1,15 +1,12 @@
+using RabbitDB.Base;
+using RabbitDB.Caching;
+using RabbitDB.Mapping;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using RabbitDB.Base;
-using RabbitDB.Caching;
-using RabbitDB.Mapping;
-using RabbitDB.Reader;
-using RabbitDB.Storage;
-using RabbitDB.Utils;
 
 namespace RabbitDB.Entity
 {
@@ -119,7 +116,7 @@ namespace RabbitDB.Entity
             bool persistResult = true;
             ((List<TEntity>)base.Items).ForEach(entity =>
             {
-                if (HasChanges(entity))
+                if (entity.HasChanges())
                 {
                     persistResult &= EntityExtensions.PersistChanges(entity);
                 }
@@ -136,20 +133,14 @@ namespace RabbitDB.Entity
             ((List<TEntity>)base.Items).ForEach(entity =>
             {
                 entity.MarkedForDeletion = true;
-                if (HasChanges(entity))
+                if (entity.HasChanges())
                 {
                     persistResult &= EntityExtensions.PersistChanges(entity);
                 }
             });
             return persistResult;
         }
-
-        private bool HasChanges(TEntity entity)
-        {
-            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-            return entity.MarkedForDeletion || entityInfo.HasChanges();
-        }
-
+        
         public TEntity FindByKey<TKey>(TKey key)
         {
             if (base.Count <= 0) return default(TEntity);

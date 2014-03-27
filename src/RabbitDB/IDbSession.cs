@@ -1,8 +1,9 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using RabbitDB.Entity;
 using RabbitDB.Query;
 using RabbitDB.Query.StoredProcedure;
 using RabbitDB.Reader;
+using System;
+using System.Linq.Expressions;
 
 namespace RabbitDB.Base
 {

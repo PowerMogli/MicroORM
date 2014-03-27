@@ -12,8 +12,7 @@ namespace RabbitDB.Entity
     {
         public static void Load<TEntity>(this TEntity entity) where TEntity : Entity, new()
         {
-            EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-            if (entityInfo.EntityState == EntityState.Loaded) return;
+            if (entity.IsLoaded()) return;
 
             var sessionConfig = InitializeSession<TEntity>();
 
@@ -21,14 +20,13 @@ namespace RabbitDB.Entity
             {
                 dbSession.Load(entity);
 
-                FinishLoad(entity, entityInfo);
+                FinishLoad(entity);
             }
         }
 
         public static void Load<TEntity>(this TEntity entity, Action<TEntity, IDataReader> customMapper) where TEntity : Entity, new()
         {
-            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-            if (entityInfo.EntityState == EntityState.Loaded) return;
+            if (entity.IsLoaded()) return;
 
             var sessionConfig = InitializeSession<TEntity>();
 
@@ -37,20 +35,20 @@ namespace RabbitDB.Entity
                 var entityReader = dbSession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
                 entityReader.Load(entity, customMapper);
 
-                FinishLoad(entity, entityInfo);
+                FinishLoad(entity);
             }
         }
 
-        internal static void FinishLoad<TEntity>(TEntity entity, EntityInfo entityInfo = null)
+        internal static void FinishLoad<TEntity>(TEntity entity) where TEntity : Entity
         {
-            if (entityInfo == null)
+            if (entity.EntityInfo == null)
             {
-                entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+                entity.EntityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
             }
-            if (entityInfo.EntityState == EntityState.Loaded) return;
+            if (entity.EntityInfo.EntityState == EntityState.Loaded) return;
 
-            entityInfo.EntityState = EntityState.Loaded;
-            entityInfo.ComputeSnapshot(entity);
+            entity.EntityInfo.EntityState = EntityState.Loaded;
+            entity.EntityInfo.ComputeSnapshot(entity);
         }
 
         internal static Tuple<string, DbEngine> InitializeSession<TEntity>()
@@ -72,7 +70,6 @@ namespace RabbitDB.Entity
                 throw new InvalidOperationException("This operation is not allowed because change tracking has been disabled.");
 
             var sessionConfig = InitializeSession<TEntity>();
-            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
 
             using (IDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
@@ -83,13 +80,13 @@ namespace RabbitDB.Entity
                         if (dbSession.PersistChanges(entity) == false) return false;
 
                         transaction.Commit();
-                        entityInfo.MergeChanges();
+                        entity.EntityInfo.MergeChanges();
                         return true;
                     }
                 }
                 catch
                 {
-                    entityInfo.ClearChanges();
+                    entity.EntityInfo.ClearChanges();
                 }
                 return false;
             }

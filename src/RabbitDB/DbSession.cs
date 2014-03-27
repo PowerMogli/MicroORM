@@ -9,6 +9,7 @@ using RabbitDB.Query.StoredProcedure;
 using RabbitDB.Reader;
 using RabbitDB.Schema;
 using RabbitDB.Storage;
+using RabbitDB.Entity;
 
 namespace RabbitDB.Base
 {
@@ -46,6 +47,20 @@ namespace RabbitDB.Base
             Dispose();
         }
 
+        private IDbPersister _dbPersister;
+        private IDbPersister DbPersister
+        {
+            get
+            {
+                if (_dbProvider == null)
+                {
+                    throw new InvalidOperationException("DbProvider is not initialized");
+                }
+
+                return _dbPersister ?? (_dbPersister = new DbPersister(_dbProvider));
+            }
+        }
+
         private DbEntityPersister _dbEntityPersister;
         private DbEntityPersister DbEntityPersister
         {
@@ -56,7 +71,7 @@ namespace RabbitDB.Base
                     throw new InvalidOperationException("DbProvider is not initialized");
                 }
 
-                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(_dbProvider));
+                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(_dbProvider, DbPersister));
             }
         }
 
@@ -171,12 +186,12 @@ namespace RabbitDB.Base
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
-            DbEntityPersister.Update<TEntity>(new UpdateExpressionQuery<TEntity>(criteria, setArguments));
+            DbPersister.Update<TEntity>(new UpdateExpressionQuery<TEntity>(criteria, setArguments));
         }
 
         public void Update<TEntity>(TEntity entity)
         {
-            DbEntityPersister.Update<TEntity>(new UpdateQuery<TEntity>(entity));
+            DbPersister.Update<TEntity>(new UpdateQuery<TEntity>(entity));
         }
 
         void IDbSession.Load<TEntity>(TEntity entity)
@@ -187,12 +202,12 @@ namespace RabbitDB.Base
 
         public void Delete<TEntity>(TEntity entity)
         {
-            DbEntityPersister.Delete(entity);
+            DbPersister.Delete(entity);
         }
 
         public void Insert<TEntity>(TEntity entity)
         {
-            DbEntityPersister.Insert(entity);
+            DbPersister.Insert(entity);
         }
 
         bool IDbSession.PersistChanges<TEntity>(TEntity entity)
@@ -215,9 +230,9 @@ namespace RabbitDB.Base
 
         private void Dispose()
         {
-            if (_dbEntityPersister != null)
+            if (_dbPersister != null)
             {
-                _dbEntityPersister = null;
+                _dbPersister = null;
             }
 
             _dbProvider.Dispose();

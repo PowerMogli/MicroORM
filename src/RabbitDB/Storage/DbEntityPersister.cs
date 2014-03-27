@@ -1,21 +1,19 @@
+using RabbitDB.Entity;
+using RabbitDB.Query;
 using System;
 using System.Collections.Generic;
-using RabbitDB.Caching;
-using RabbitDB.Entity;
-using RabbitDB.Mapping;
-using RabbitDB.Materialization;
-using RabbitDB.Query;
-using RabbitDB.Utils;
 
 namespace RabbitDB.Storage
 {
     internal class DbEntityPersister
     {
         private IDbProvider _dbProvider;
+        private IDbPersister _dbPersister;
 
-        internal DbEntityPersister(IDbProvider dbProvider)
+        internal DbEntityPersister(IDbProvider dbProvider, IDbPersister dbPersister)
         {
             _dbProvider = dbProvider;
+            _dbPersister = dbPersister;
         }
 
         /// <summary>
@@ -26,94 +24,70 @@ namespace RabbitDB.Storage
         /// <param name="entity"></param>
         internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-            if (entity.MarkedForDeletion
-                && entityInfo.EntityState != EntityState.Deleted)
+            var entityInfo = entity.EntityInfo;
+
+            if (entity.IsForDeletion())
             {
-                return Delete(entity, entityInfo);
+                return Delete(entity);
             }
             // Entity was already deleted
             // or is not yet loaded!!
-            else if (entityInfo.EntityState == EntityState.Deleted || entityInfo.EntityState == EntityState.None)
+            else if (entity.IsForInsert())
             {
-                return Insert(entity, entityInfo);
+                return Insert(entity);
             }
-            else if (entityInfo.EntityState != EntityState.Deleted)
+            else if (entity.IsForUpdate())
             {
-                return Update(entity, entityInfo);
+                return Update(entity);
             }
 
             return false;
         }
 
-        private bool Update<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
+        private bool Update<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            var tuple = PrepareForUpdate<TEntity>(entity, entityInfo);
+            var tuple = PrepareForUpdate<TEntity>(entity);
             if (tuple.Item1)
             {
-                return Update<TEntity>(entity, entityInfo, new SqlQuery(tuple.Item2, tuple.Item3));
+                return Update<TEntity>(entity, new SqlQuery(tuple.Item2, tuple.Item3));
             }
             return false;
         }
 
-        private bool Update<TEntity>(TEntity entity, EntityInfo entityInfo, SqlQuery sqlQuery) where TEntity : Entity.Entity
+        private bool Update<TEntity>(TEntity entity, SqlQuery sqlQuery) where TEntity : Entity.Entity
         {
-            Update<TEntity>(sqlQuery);
+            _dbPersister.Update<TEntity>(sqlQuery);
             entity.RaiseEntityUpdated();
-            entityInfo.EntityState = EntityState.Updated;
+            entity.EntityInfo.EntityState = EntityState.Updated;
             return true;
         }
 
-        private bool Insert<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
+        private bool Insert<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            Insert(entity);
+            _dbPersister.Insert(entity);
             entity.RaiseEntityInserted();
-            entityInfo.EntityState = EntityState.Inserted;
+            entity.EntityInfo.EntityState = EntityState.Inserted;
             return true;
         }
 
-        private bool Delete<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
+        private bool Delete<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            Delete(entity);
+            _dbPersister.Delete(entity);
             entity.RaiseEntityDeleted();
-            entityInfo.EntityState = EntityState.Deleted;
+            entity.EntityInfo.EntityState = EntityState.Deleted;
             return true;
         }
 
-        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo)
+        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             // Any changes made to entity?!
-            KeyValuePair<string, object>[] valuesToUpdate = entityInfo.ComputeValuesToUpdate();
+            KeyValuePair<string, object>[] valuesToUpdate = entity.ComputeValuesToUpdate();
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
 
             Tuple<string, QueryParameterCollection> result = entity.PrepareForUpdate(_dbProvider, valuesToUpdate);
             return new Tuple<bool, string, QueryParameterCollection>(true, result.Item1, result.Item2);
-        }
-
-        internal void Update<TEntity>(IQuery query)
-        {
-            _dbProvider.ExecuteCommand(query);
-        }
-
-        internal void Delete<TEntity>(TEntity entity)
-        {
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string deleteStatement = tableInfo.CreateDeleteStatement(_dbProvider);
-            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(tableInfo.GetPrimaryKeyValues(entity));
-
-            _dbProvider.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
-        }
-
-        internal void Insert<TEntity>(TEntity entity)
-        {
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string insertStatement = tableInfo.CreateInsertStatement(_dbProvider);
-            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(new EntityArgumentsReader().GetEntityArguments(entity, tableInfo));
-
-            object insertId = _dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments));
-            tableInfo.SetAutoNumber<TEntity>(entity, insertId);
         }
     }
 }

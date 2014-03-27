@@ -1,12 +1,10 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace RabbitDB.Entity
 {
     public abstract class Entity
     {
-        internal bool MarkedForDeletion { get; set; }
-
         public Entity() { }
 
         public event EventHandler EntityDeleted = delegate { };
@@ -14,6 +12,10 @@ namespace RabbitDB.Entity
         public event EventHandler EntityInserted = delegate { };
 
         public event EventHandler EntityUpdated = delegate { };
+
+        internal EntityInfo EntityInfo { get; set; }
+
+        internal bool MarkedForDeletion { get; set; }
 
         internal void RaiseEntityDeleted()
         {
@@ -28,6 +30,36 @@ namespace RabbitDB.Entity
         internal void RaiseEntityUpdated()
         {
             this.EntityUpdated(this, EventArgs.Empty);
+        }
+
+        internal bool IsForUpdate()
+        {
+            return this.EntityInfo.EntityState != EntityState.Deleted;
+        }
+
+        internal bool IsForInsert()
+        {
+            return this.EntityInfo.EntityState == EntityState.Deleted || this.EntityInfo.EntityState == EntityState.None;
+        }
+
+        internal bool IsForDeletion()
+        {
+            return (this.MarkedForDeletion && this.EntityInfo.EntityState != EntityState.Deleted);
+        }
+
+        internal bool IsLoaded()
+        {
+            return (this.EntityInfo != null && this.EntityInfo.EntityState == EntityState.Loaded);
+        }
+
+        internal bool HasChanges()
+        {
+            return MarkedForDeletion || this.EntityInfo.HasChanges();
+        }
+
+        internal KeyValuePair<string, object>[] ComputeValuesToUpdate()
+        {
+            return this.EntityInfo.ComputeValuesToUpdate();
         }
     }
 }
