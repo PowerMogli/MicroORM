@@ -47,8 +47,7 @@ namespace RabbitDB.Entity
         private void UpdateHashSet(object sender, IsDiryChangedArgs args)
         {
             _notifiedEntityInfo = _notifiedEntityInfo ?? EntityInfoCacheManager.GetNotifiedEntityInfo(this);
-            if (_notifiedEntityInfo != null
-                && _notifiedEntityInfo.EntityState == EntityState.Loaded)
+            if (_notifiedEntityInfo != null)
             {
                 _notifiedEntityInfo.UpdateOrCreateHashSet(args);
             }

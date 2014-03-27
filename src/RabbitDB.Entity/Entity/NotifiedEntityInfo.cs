@@ -14,6 +14,8 @@ namespace RabbitDB.Entity
         }
         internal void UpdateOrCreateHashSet(IsDiryChangedArgs args)
         {
+            if (this.EntityState != EntityState.Loaded) return;
+
             if (this.NotifiedValues.ContainsKey(args.PropertyName))
             {
                 this.NotifiedValues[args.PropertyName] = args.NewValue;
@@ -27,7 +29,7 @@ namespace RabbitDB.Entity
         internal override void ComputeSnapshot<TEntity>(TEntity entity) { /* Do nothing */ }
 
         internal override void MergeChanges() { /* Do nothing */ }
-        
+
         internal override KeyValuePair<string, object>[] ComputeValuesToUpdate<TEntity>(TEntity entity, IEnumerable<KeyValuePair<string, object>> entityValues)
         {
             return NotifiedValues.ToArray();
