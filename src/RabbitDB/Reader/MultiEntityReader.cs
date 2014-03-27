@@ -1,7 +1,7 @@
-﻿using System.Data;
-using RabbitDB.Base;
+﻿using RabbitDB.Base;
 using RabbitDB.Materialization;
 using RabbitDB.Storage;
+using System.Data;
 
 namespace RabbitDB.Reader
 {

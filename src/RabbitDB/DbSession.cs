@@ -46,6 +46,20 @@ namespace RabbitDB.Base
             Dispose();
         }
 
+        private DbEntityPersister _dbEntityPersister;
+        private DbEntityPersister DbEntityPersister
+        {
+            get
+            {
+                if (_dbProvider == null)
+                {
+                    throw new InvalidOperationException("DbProvider is not initialized");
+                }
+
+                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(_dbProvider));
+            }
+        }
+
         public static Configuration Configuration { get { return Configuration.Instance; } }
 
         public void ExecuteCommand(string sql, params object[] arguments)
@@ -71,7 +85,8 @@ namespace RabbitDB.Base
 
         public TEntity ExecuteStoredProcedure<TEntity>(string storedProcedureName, params object[] arguments)
         {
-            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create<TEntity>(arguments)));
+            var query = new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create<TEntity>(arguments));
+            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(query);
             return objectSet.SingleOrDefault();
         }
 
@@ -91,8 +106,8 @@ namespace RabbitDB.Base
             if (primaryKeys == null || primaryKeys.Length == 0)
                 throw new PrimaryKeyException("No primary Keys provided!");
 
-            EntitySet<TEntity> objectSet = ((IDbSession)this).GetEntitySet<TEntity>(new SqlQuery<TEntity>(primaryKeys, additionalPredicate, null));
-            return objectSet.SingleOrDefault();
+            var entitySet = ((IDbSession)this).GetEntitySet<TEntity>(new SqlQuery<TEntity>(primaryKeys, additionalPredicate, null));
+            return entitySet.SingleOrDefault();
         }
 
         public V GetColumnValue<TEntity, V>(Expression<Func<TEntity, V>> selector, Expression<Func<TEntity, bool>> criteria)
@@ -129,7 +144,7 @@ namespace RabbitDB.Base
 
         EntityReader<TEntity> IDbSession.GetEntityReader<TEntity>(IQuery query)
         {
-            return (EntityReader<TEntity>)_dbProvider.ExecuteReader<TEntity>(query);
+            return _dbProvider.ExecuteReader<TEntity>(query);
         }
 
         public EntityReader<TEntity> GetEntityReader<TEntity>(string sql, params object[] arguments)
@@ -156,14 +171,12 @@ namespace RabbitDB.Base
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
-            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            dbEntityPersister.Update<TEntity>(new UpdateExpressionQuery<TEntity>(criteria, setArguments));
+            DbEntityPersister.Update<TEntity>(new UpdateExpressionQuery<TEntity>(criteria, setArguments));
         }
 
         public void Update<TEntity>(TEntity entity)
         {
-            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            dbEntityPersister.Update<TEntity>(new UpdateQuery<TEntity>(entity));
+            DbEntityPersister.Update<TEntity>(new UpdateQuery<TEntity>(entity));
         }
 
         void IDbSession.Load<TEntity>(TEntity entity)
@@ -174,20 +187,17 @@ namespace RabbitDB.Base
 
         public void Delete<TEntity>(TEntity entity)
         {
-            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            dbEntityPersister.Delete(entity);
+            DbEntityPersister.Delete(entity);
         }
 
         public void Insert<TEntity>(TEntity entity)
         {
-            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            dbEntityPersister.Insert(entity);
+            DbEntityPersister.Insert(entity);
         }
 
         bool IDbSession.PersistChanges<TEntity>(TEntity entity)
         {
-            DbEntityPersister dbEntityPersister = new DbEntityPersister(_dbProvider);
-            return dbEntityPersister.PersistChanges(entity);
+            return DbEntityPersister.PersistChanges(entity);
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
@@ -205,6 +215,11 @@ namespace RabbitDB.Base
 
         private void Dispose()
         {
+            if (_dbEntityPersister != null)
+            {
+                _dbEntityPersister = null;
+            }
+
             _dbProvider.Dispose();
             DbSchemaAllocator.SchemaReader.Dispose();
         }

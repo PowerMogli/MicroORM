@@ -38,11 +38,11 @@ namespace RabbitDB.Entity
         {
             if (_loaded) return;
 
-            Tuple<string, DbEngine> result = EntityExtensions.InitializeSession<TEntity>();
+            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
 
-            using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
+            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                EntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>();
+                var entitySet = dbSession.GetEntitySet<TEntity>();
                 SetEntity(entitySet);
             }
             _loaded = true;
@@ -52,11 +52,11 @@ namespace RabbitDB.Entity
         {
             if (_loaded) return;
 
-            Tuple<string, DbEngine> result = EntityExtensions.InitializeSession<TEntity>();
+            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
 
-            using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
+            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                EntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>(sql, arguments);
+                var entitySet = dbSession.GetEntitySet<TEntity>(sql, arguments);
                 SetEntity(entitySet);
             }
             _loaded = true;
@@ -66,11 +66,27 @@ namespace RabbitDB.Entity
         {
             if (_loaded) return;
 
-            Tuple<string, DbEngine> result = EntityExtensions.InitializeSession<TEntity>();
+            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
 
-            using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
+            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                EntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>(criteria);
+                var entitySet = dbSession.GetEntitySet<TEntity>(criteria);
+                SetEntity(entitySet);
+            }
+            _loaded = true;
+        }
+
+        public void LoadAll(Func<IDataReader, IEnumerable<TEntity>> materializer)
+        {
+            if (_loaded) return;
+
+            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
+
+            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
+            {
+                var entityReader = dbSession.GetEntityReader<TEntity>();
+                var entitySet = entityReader.Load(materializer) as EntitySet<TEntity>;
+
                 SetEntity(entitySet);
             }
             _loaded = true;
@@ -78,50 +94,14 @@ namespace RabbitDB.Entity
 
         private void SetEntity(EntitySet<TEntity> entitySet)
         {
-            if (SavedNoTrackingEntities(entitySet)) return;
-
             foreach (TEntity entity in entitySet)
             {
-                EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-                if (entityInfo.EntityState == EntityState.Loaded) continue;
-
-                base.Add(entity);
-                entityInfo.EntityState = EntityState.Loaded;
-                entityInfo.ComputeSnapshot(entity);
-            }
-        }
-
-        private bool SavedNoTrackingEntities(EntitySet<TEntity> entitySet)
-        {
-            if (DbSession.Configuration.AutoDetectChangesEnabled) return false;
-
-            ((List<TEntity>)base.Items).AddRange(entitySet);
-
-            return true;
-        }
-
-        public void LoadAll(Func<IDataReader, IEnumerable<TEntity>> materializer)
-        {
-            if (_loaded) return;
-
-            Tuple<string, DbEngine> result = EntityExtensions.InitializeSession<TEntity>();
-
-            using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
-            {
-                EntityReader<TEntity> entityReader = dbSession.GetEntityReader<TEntity>();
-                foreach (TEntity entity in entityReader.Load(materializer))
+                if (DbSession.Configuration.AutoDetectChangesEnabled)
                 {
-                    if (DbSession.Configuration.AutoDetectChangesEnabled)
-                    {
-                        EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-                        if (entityInfo.EntityState == EntityState.Loaded) continue;
-                        entityInfo.EntityState = EntityState.Loaded;
-                        entityInfo.ComputeSnapshot(entity);
-                    }
-                    base.Add(entity);
+                    EntityExtensions.FinishLoad(entity);
                 }
+                base.Add(entity);
             }
-            _loaded = true;
         }
 
         public void Reload()
@@ -136,7 +116,13 @@ namespace RabbitDB.Entity
             if (base.Count <= 0) return false;
 
             bool persistResult = true;
-            ((List<TEntity>)base.Items).ForEach(entity => persistResult &= EntityExtensions.PersistChanges(entity));
+            ((List<TEntity>)base.Items).ForEach(entity =>
+            {
+                if (entity.HasChanges(Utils.Utils.RemoveUnusedPropertyValues(entity)))
+                {
+                    persistResult &= EntityExtensions.PersistChanges(entity);
+                }
+            });
 
             return persistResult;
         }
@@ -149,7 +135,10 @@ namespace RabbitDB.Entity
             ((List<TEntity>)base.Items).ForEach(entity =>
             {
                 entity.MarkedForDeletion = true;
-                persistResult &= EntityExtensions.PersistChanges(entity);
+                if (entity.HasChanges(Utils.Utils.RemoveUnusedPropertyValues(entity)))
+                {
+                    persistResult &= EntityExtensions.PersistChanges(entity);
+                }
             });
             return persistResult;
         }
@@ -158,20 +147,13 @@ namespace RabbitDB.Entity
         {
             if (base.Count <= 0) return default(TEntity);
 
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+            var tableInfo = TableInfo<TEntity>.GetTableInfo;
 
-            try
+            return ((List<TEntity>)base.Items).FirstOrDefault(entity =>
             {
-                return ((List<TEntity>)base.Items).FirstOrDefault(entity =>
-                {
-                    object[] primaryKeyValues = tableInfo.GetPrimaryKeyValues<TEntity>(entity);
-                    return primaryKeyValues.Any(keyValue => keyValue.Equals(key));
-                });
-            }
-            catch (Exception exception)
-            {
-                throw new PrimaryKeyException("Mismatch of primary key value type!", exception);
-            }
+                object[] primaryKeyValues = tableInfo.GetPrimaryKeyValues<TEntity>(entity);
+                return primaryKeyValues.Any(keyValue => keyValue.Equals(key));
+            });
         }
     }
 }

@@ -25,13 +25,10 @@ namespace RabbitDB.Storage
         /// <param name="entity"></param>
         internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-            if (entity.MarkedForDeletion)
+            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+            if (entity.MarkedForDeletion
+                && entityInfo.EntityState != EntityState.Deleted)
             {
-                // Entity was already deleted
-                if (entityInfo.EntityState == EntityState.Deleted)
-                    return false;
-
                 return Delete(entity, entityInfo);
             }
             // Entity was already deleted
@@ -42,12 +39,19 @@ namespace RabbitDB.Storage
             }
             else if (entityInfo.EntityState != EntityState.Deleted)
             {
-                Tuple<bool, string, QueryParameterCollection> tuple = PrepareForUpdate<TEntity>(entity, entityInfo);
-                if (tuple.Item1 == false) return false;
-
-                return Update<TEntity>(entity, entityInfo, new SqlQuery(tuple.Item2, tuple.Item3));
+                return Update(entity, entityInfo);
             }
 
+            return false;
+        }
+
+        private bool Update<TEntity>(TEntity entity, EntityInfo entityInfo) where TEntity : Entity.Entity
+        {
+            var tuple = PrepareForUpdate<TEntity>(entity, entityInfo);
+            if (tuple.Item1)
+            {
+                return Update<TEntity>(entity, entityInfo, new SqlQuery(tuple.Item2, tuple.Item3));
+            }
             return false;
         }
 
@@ -78,7 +82,7 @@ namespace RabbitDB.Storage
         private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo)
         {
             // Any changes made to entity?!
-            KeyValuePair<string, object>[] valuesToUpdate = EntityHashSetManager.ComputeUpdateValues(entity, entityInfo);
+            KeyValuePair<string, object>[] valuesToUpdate = entityInfo.ComputeValuesToUpdate(entity, Utils.Utils.RemoveUnusedPropertyValues(entity));
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);

@@ -41,13 +41,13 @@ namespace RabbitDB.Caching
 
         internal void Add(TEntity entity, EntityInfo entityInfo)
         {
-            CacheItem<TEntity> item;
+            CacheItem<TEntity> cacheItem;
             int hash = entity.GetHashCode();
 
-            if (_referenceCache.TryGetValue(hash, out item) == false)
+            if (_referenceCache.TryGetValue(hash, out cacheItem) == false)
             {
-                item = new CacheItem<TEntity>(entity, entityInfo);
-                _referenceCache.TryAdd(hash, item);
+                cacheItem = new CacheItem<TEntity>(entity, entityInfo);
+                _referenceCache.TryAdd(hash, cacheItem);
             }
             lock (_lock)
             {

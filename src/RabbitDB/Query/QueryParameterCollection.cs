@@ -1,21 +1,15 @@
-﻿using System;
+﻿using RabbitDB.Mapping;
+using RabbitDB.Query.StoredProcedure;
+using RabbitDB.Reflection;
+using RabbitDB.Utils;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Globalization;
-using System.Linq;
-using RabbitDB.Mapping;
-using RabbitDB.Query.StoredProcedure;
-using RabbitDB.Reflection;
-using RabbitDB.Schema;
-using RabbitDB.Utils;
 
 namespace RabbitDB.Query
 {
     class QueryParameterCollection : Collection<QueryParameter>
     {
-        private static CultureInfo _culture = CultureInfo.InvariantCulture;
-
         internal void AddRange(object[] arguments)
         {
             QueryParameterCollection collection = Create(arguments);
@@ -65,7 +59,7 @@ namespace RabbitDB.Query
             QueryParameterCollection queryParameterCollection = new QueryParameterCollection();
             foreach (IDbDataParameter parameter in procedureCollection)
             {
-                queryParameterCollection.Add(new QueryParameter(parameter.ParameterName, parameter.DbType, parameter.Value, parameter.Size));
+                queryParameterCollection.Add(QueryParameter.CreateFromDbParameter(parameter));
             }
             return queryParameterCollection;
         }
@@ -74,11 +68,9 @@ namespace RabbitDB.Query
         {
             QueryParameterCollection collection = new QueryParameterCollection();
 
-            for (int i = 0; i < arguments.Length; i++)
+            for (int index = 0; index < arguments.Length; index++)
             {
-                Type argumentType = arguments[i].GetType();
-                if (argumentType.IsEnum) argumentType = typeof(Int32);
-                collection.Add(new QueryParameter(i.ToString(_culture), TypeConverter.ToDbType(argumentType), arguments[i]));
+                collection.Add(QueryParameter.CreateFromRegular(index, arguments));
             }
             return collection;
         }
@@ -110,42 +102,10 @@ namespace RabbitDB.Query
 
             foreach (KeyValuePair<string, object> kvp in argument)
             {
-                Type argumentType = null;
-                if (kvp.Value != null)
-                {
-                    argumentType = kvp.Value.GetType();
-                    if (argumentType.IsEnum) argumentType = typeof(Int32);
-                }
-
-                collection.Add(new QueryParameter(
-                        kvp.Key,
-                        tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.ConvertToDbType(kvp.Key) : TypeConverter.ToDbType(argumentType),
-                        EvaluateParameterValue(tableInfo, kvp),
-                        tableInfo != null && tableInfo.IsColumn(kvp.Key) ? tableInfo.GetColumnSize(kvp.Key) : -1));
-
-                argumentType = null;
+                collection.Add(QueryParameter.CreateFromKeyValuePairs(kvp, tableInfo));
             }
 
             return collection;
-        }
-
-        private static object EvaluateParameterValue(TableInfo tableInfo, KeyValuePair<string, object> kvp)
-        {
-            if (tableInfo == null)
-                return kvp.Value ?? DBNull.Value;
-
-            if (kvp.Value != null) return kvp.Value;
-            DbColumn dbColumn = tableInfo.DbTable.DbColumns.FirstOrDefault(column => column.Name == kvp.Key && column.IsNullable);
-            if (dbColumn == null) return DBNull.Value;
-
-            if (string.IsNullOrWhiteSpace(dbColumn.DefaultValue))
-                return DBNull.Value;
-            else if (dbColumn.DefaultValue == "getdate()" || dbColumn.DefaultValue == "(getdate())")
-                return DateTime.Now.ToShortDateString();
-            else if (dbColumn.DefaultValue == "newid()")
-                return Guid.NewGuid().ToString();
-            else
-                return dbColumn.DefaultValue.Replace("(", "").Replace(")", "");
         }
     }
 }

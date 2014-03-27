@@ -214,4 +214,7 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-src/RabbitDB.*
+src/RabbitDB.Program
+src/RabbitDB.Test
+src/RabbitDB.Tests
+src/RabbitDB.vsmdi

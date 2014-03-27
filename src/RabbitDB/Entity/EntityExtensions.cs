@@ -15,38 +15,48 @@ namespace RabbitDB.Entity
             EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
             if (entityInfo.EntityState == EntityState.Loaded) return;
 
-            Tuple<string, DbEngine> result = InitializeSession<TEntity>();
+            var sessionConfig = InitializeSession<TEntity>();
 
-            using (IDbSession entitySession = new DbSession(result.Item1, result.Item2))
+            using (IDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                entitySession.Load(entity);
+                dbSession.Load(entity);
 
-                entityInfo.EntityState = EntityState.Loaded;
-                entityInfo.ComputeSnapshot(entity);
+                FinishLoad(entity, entityInfo);
             }
         }
 
         public static void Load<TEntity>(this TEntity entity, Action<TEntity, IDataReader> customMapper) where TEntity : Entity, new()
         {
-            EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
             if (entityInfo.EntityState == EntityState.Loaded) return;
 
-            Tuple<string, DbEngine> result = InitializeSession<TEntity>();
+            var sessionConfig = InitializeSession<TEntity>();
 
-            using (IDbSession entitySession = new DbSession(result.Item1, result.Item2))
+            using (IDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                EntityReader<TEntity> entityReader = (EntityReader<TEntity>)entitySession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
+                var entityReader = dbSession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
                 entityReader.Load(entity, customMapper);
 
-                entityInfo.EntityState = EntityState.Loaded;
-                entityInfo.ComputeSnapshot(entity);
+                FinishLoad(entity, entityInfo);
             }
+        }
+
+        internal static void FinishLoad<TEntity>(TEntity entity, EntityInfo entityInfo = null)
+        {
+            if (entityInfo == null)
+            {
+                entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+            }
+            if (entityInfo.EntityState == EntityState.Loaded) return;
+
+            entityInfo.EntityState = EntityState.Loaded;
+            entityInfo.ComputeSnapshot(entity);
         }
 
         internal static Tuple<string, DbEngine> InitializeSession<TEntity>()
         {
-            string connectionString = Registrar<string>.GetFor(typeof(TEntity));
-            DbEngine dbEngine = Registrar<DbEngine>.GetFor(typeof(TEntity));
+            var connectionString = Registrar<string>.GetFor(typeof(TEntity));
+            var dbEngine = Registrar<DbEngine>.GetFor(typeof(TEntity));
 
             return new Tuple<string, DbEngine>(connectionString, dbEngine);
         }
@@ -61,10 +71,10 @@ namespace RabbitDB.Entity
             if (DbSession.Configuration.AutoDetectChangesEnabled == false)
                 throw new InvalidOperationException("This operation is not allowed because change tracking has been disabled.");
 
-            Tuple<string, DbEngine> result = InitializeSession<TEntity>();
-            EntityInfo entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+            var sessionConfig = InitializeSession<TEntity>();
+            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
 
-            using (IDbSession dbSession = new DbSession(result.Item1, result.Item2))
+            using (IDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
                 try
                 {
