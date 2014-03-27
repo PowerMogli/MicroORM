@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RabbitDB.Entity
 {
-    public abstract class Entity
+    public abstract class Entity : IDisposable
     {
         public Entity() { }
 
@@ -60,6 +60,11 @@ namespace RabbitDB.Entity
         internal KeyValuePair<string, object>[] ComputeValuesToUpdate()
         {
             return this.EntityInfo.ComputeValuesToUpdate();
+        }
+
+        public void Dispose()
+        {
+            this.EntityInfo.Dispose();
         }
     }
 }

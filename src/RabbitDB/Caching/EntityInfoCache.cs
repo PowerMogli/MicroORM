@@ -73,6 +73,10 @@ namespace RabbitDB.Caching
                 {
                     _keys.Remove(entityHash);
                 }
+                if (cacheItem.Target is IDisposable)
+                {
+                    ((IDisposable)cacheItem.Target).Dispose();
+                }
             }
         }
 

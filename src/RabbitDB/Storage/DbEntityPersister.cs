@@ -42,7 +42,7 @@ namespace RabbitDB.Storage
 
         private bool Update<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            var tuple = PrepareForUpdate<TEntity>(entity);
+            var tuple = entity.PrepareForUpdate<TEntity>(_dbProvider);
             if (tuple.Item1)
             {
                 return Update<TEntity>(entity, new SqlQuery(tuple.Item2, tuple.Item3));
@@ -72,18 +72,6 @@ namespace RabbitDB.Storage
             entity.RaiseEntityDeleted();
             entity.EntityInfo.EntityState = EntityState.Deleted;
             return true;
-        }
-
-        private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity) where TEntity : Entity.Entity
-        {
-            // Any changes made to entity?!
-            KeyValuePair<string, object>[] valuesToUpdate = entity.ComputeValuesToUpdate();
-
-            if (valuesToUpdate == null || valuesToUpdate.Length == 0)
-                return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
-
-            Tuple<string, QueryParameterCollection> result = entity.PrepareForUpdate(_dbProvider, valuesToUpdate);
-            return new Tuple<bool, string, QueryParameterCollection>(true, result.Item1, result.Item2);
         }
     }
 }
