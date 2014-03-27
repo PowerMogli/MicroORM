@@ -119,8 +119,7 @@ namespace RabbitDB.Entity
             bool persistResult = true;
             ((List<TEntity>)base.Items).ForEach(entity =>
             {
-                var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-                if (entity.MarkedForDeletion || entityInfo.HasChanges())
+                if (HasChanges(entity))
                 {
                     persistResult &= EntityExtensions.PersistChanges(entity);
                 }
@@ -137,13 +136,18 @@ namespace RabbitDB.Entity
             ((List<TEntity>)base.Items).ForEach(entity =>
             {
                 entity.MarkedForDeletion = true;
-                var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
-                if (entity.MarkedForDeletion || entityInfo.HasChanges())
+                if (HasChanges(entity))
                 {
                     persistResult &= EntityExtensions.PersistChanges(entity);
                 }
             });
             return persistResult;
+        }
+
+        private bool HasChanges(TEntity entity)
+        {
+            var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+            return entity.MarkedForDeletion || entityInfo.HasChanges();
         }
 
         public TEntity FindByKey<TKey>(TKey key)
