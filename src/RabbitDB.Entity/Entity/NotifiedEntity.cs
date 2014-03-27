@@ -29,18 +29,7 @@ namespace RabbitDB.Entity
                 OnPropertyChanged(this, new PropertyChangedExtendedEventArgs<T>(propertyName, oldValue, newValue));
             }
         }
-
-        /// <summary>
-        /// Calling PropertyChanged event for given property.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="expression">Property in expression form (i.e. () => PropertyName).</param>
-        public void NotifyPropertyChanged<T>(Expression<Func<T>> expression)
-        {
-            var propertyName = GetPropertyName(expression);
-            OnPropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
-
+        
         /// <summary>
         /// Default implementation of Propertychanged event invoker
         /// </summary>

@@ -24,14 +24,10 @@ namespace RabbitDB.Storage
         /// <param name="entity"></param>
         internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            var entityInfo = entity.EntityInfo;
-
             if (entity.IsForDeletion())
             {
                 return Delete(entity);
             }
-            // Entity was already deleted
-            // or is not yet loaded!!
             else if (entity.IsForInsert())
             {
                 return Insert(entity);
