@@ -44,6 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="Caching\CacheItem.cs" />
+    <Compile Include="Caching\EntityInfoCache.cs" />
+    <Compile Include="Caching\EntityInfoCacheManager.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Entity\EntityCollection.cs" />
     <Compile Include="Entity\EntityExtensions.cs" />
@@ -58,6 +61,7 @@
     <Compile Include="Expression\UpdateTableBuilder.cs" />
     <Compile Include="IDbSession.cs" />
     <Compile Include="Mapping\TypeConverter.cs" />
+    <Compile Include="Materialization\EntityHashSetCreator.cs" />
     <Compile Include="Materialization\IDataSchemaCreator.cs" />
     <Compile Include="Materialization\IEntityMaterializer.cs" />
     <Compile Include="Query\Generic\UpdateQuery.cs" />
@@ -97,6 +101,7 @@
     <Compile Include="Query\Stored Procedure\StoredProcedureQuery.cs" />
     <Compile Include="DbSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\ParameterTypeDescriptor.cs" />
     <Compile Include="Reflection\ReflectionExtensions.cs" />
     <Compile Include="Registrar.cs" />
     <Compile Include="Schema\DbColumn.cs" />
@@ -121,8 +126,10 @@
     <Compile Include="Storage\PostgresDbProvider.cs" />
     <Compile Include="Storage\SqlDbProvider.cs" />
     <Compile Include="Storage\TransactionalDbProvider.cs" />
+    <Compile Include="Utils\EntityArgumentsReader.cs" />
+    <Compile Include="Utils\ObjectExtensions.cs" />
     <Compile Include="Utils\SqlTools.cs" />
-    <Compile Include="Utils\Utils.cs" />
+    <Compile Include="Utils\ValidEntityArgumentReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RabbitDB.Entity\RabbitDB.Entity.csproj">

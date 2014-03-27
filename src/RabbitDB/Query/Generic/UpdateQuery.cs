@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using RabbitDB.Entity;
+﻿using RabbitDB.Entity;
 using RabbitDB.Mapping;
 using RabbitDB.Storage;
+using RabbitDB.Utils;
+using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace RabbitDB.Query.Generic
 {
@@ -18,7 +19,7 @@ namespace RabbitDB.Query.Generic
 
         public IDbCommand Compile(IDbProvider dbProvider)
         {
-            var valuesToUpdate = Utils.Utils.GetEntityArguments(_entity, TableInfo<TEntity>.GetTableInfo);
+            var valuesToUpdate = new EntityArgumentsReader().GetEntityArguments(_entity, TableInfo<TEntity>.GetTableInfo);
             if (valuesToUpdate == null || valuesToUpdate.Length <= 0)
                 throw new InvalidOperationException("Entity had no properties provided!");
 

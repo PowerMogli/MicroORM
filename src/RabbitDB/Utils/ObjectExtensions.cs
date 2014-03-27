@@ -1,58 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using RabbitDB.Mapping;
-using RabbitDB.Reflection;
 
 namespace RabbitDB.Utils
 {
-    internal static class Utils
+    internal static class ObjectExtensions
     {
-        internal static IEnumerable<KeyValuePair<string, object>> RemoveUnusedPropertyValues<TEntity>(TEntity entity)
-        {
-            var entityValues = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
-
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return entityValues.Where(kvp => tableInfo.DbTable.DbColumns.Any(column => column.Name == tableInfo.ResolveColumnName(kvp.Key)));
-        }
-
-        internal static object[] GetEntityArguments<TEntity>(TEntity entity, TableInfo tableInfo)
-        {
-            KeyValuePair<string, object>[] properties = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
-            int count = properties.Count();
-            List<KeyValuePair<string, object>> arguments = new List<KeyValuePair<string, object>>();
-            for (int i = 0; i < count; i++)
-            {
-                IPropertyInfo propertyInfo = tableInfo.Columns.Where(column => column.ColumnAttribute.ColumnName == properties[i].Key).FirstOrDefault();
-                if (propertyInfo == null) continue;
-
-                if (tableInfo.Columns.Contains(propertyInfo.ColumnAttribute.ColumnName)
-                    && (propertyInfo.ColumnAttribute.AutoNumber || propertyInfo.ColumnAttribute.IsPrimaryKey)) { continue; }
-
-                arguments.Add(properties[i]);
-            }
-            return new object[] { arguments.ToArray() };
-        }
-
-        //private static TypeAttributes _nonPublic = TypeAttributes.NotPublic;
-        ///// <summary>
-        ///// Gets whether the given type is an anonymous type.
-        ///// </summary>
-        ///// <param name="type">The type that is inspected for being anonymous.</param>
-        //internal static bool CheckIfAnonymousType(Type type)
-        //{
-        //    if (type == null)
-        //        throw new ArgumentNullException("type");
-
-        //    // HACK: The only way to detect anonymous types right now.
-        //    return Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), false)
-        //           && type.IsGenericType && type.Name.Contains("AnonymousType")
-        //           && (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$"))
-        //           && (type.Attributes & _nonPublic) == _nonPublic;
-        //}
-
         internal static bool IsCustomObject<T>(this T t)
         {
             return !(t is ValueType) && (Type.GetTypeCode(t.GetType()) == TypeCode.Object);
@@ -64,7 +17,7 @@ namespace RabbitDB.Utils
             return data is IEnumerable && !(data is string) && !(data is byte[]);
         }
 
-        public static bool IsDefault<T>(this T value) where T : struct
+        internal static bool IsDefault<T>(this T value) where T : struct
         {
             bool isDefault = value.Equals(default(T));
 

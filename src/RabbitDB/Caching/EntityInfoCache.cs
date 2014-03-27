@@ -95,8 +95,6 @@ namespace RabbitDB.Caching
         {
             if (_referenceCache.IsEmpty) return;
 
-            List<int> disposed = new List<int>();
-
             for (int i = 0; i < _referenceCache.Count; i++)
             {
                 int key;
@@ -108,10 +106,8 @@ namespace RabbitDB.Caching
                 if (item.IsAlive == false
                     || item.Target == null
                     || item.EntityInfo.CanBeRemoved)
-                    disposed.Add(key);
+                    Remove(key);
             }
-            foreach (int key in disposed)
-                Remove(key);
         }
 
         private void Remove(int key)
@@ -120,6 +116,7 @@ namespace RabbitDB.Caching
 
             CacheItem<TEntity> item;
             _referenceCache.TryRemove(key, out item);
+            item.EntityInfo.Dispose();
         }
 
         public void Dispose()
@@ -128,6 +125,9 @@ namespace RabbitDB.Caching
             _waitHandle.WaitOne();
             _cleanUpWorker.Dispose();
             _cleanUpWorker = null;
+
+            foreach (var key in _keys)
+                Remove(key);
             _keys.Clear();
             _referenceCache.Clear();
         }

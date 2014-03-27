@@ -9,6 +9,7 @@ using RabbitDB.Caching;
 using RabbitDB.Mapping;
 using RabbitDB.Reader;
 using RabbitDB.Storage;
+using RabbitDB.Utils;
 
 namespace RabbitDB.Entity
 {
@@ -118,7 +119,8 @@ namespace RabbitDB.Entity
             bool persistResult = true;
             ((List<TEntity>)base.Items).ForEach(entity =>
             {
-                if (entity.HasChanges(Utils.Utils.RemoveUnusedPropertyValues(entity)))
+                var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+                if (entity.MarkedForDeletion || entityInfo.HasChanges())
                 {
                     persistResult &= EntityExtensions.PersistChanges(entity);
                 }
@@ -135,7 +137,8 @@ namespace RabbitDB.Entity
             ((List<TEntity>)base.Items).ForEach(entity =>
             {
                 entity.MarkedForDeletion = true;
-                if (entity.HasChanges(Utils.Utils.RemoveUnusedPropertyValues(entity)))
+                var entityInfo = EntityInfoCacheManager.GetEntityInfo(entity);
+                if (entity.MarkedForDeletion || entityInfo.HasChanges())
                 {
                     persistResult &= EntityExtensions.PersistChanges(entity);
                 }

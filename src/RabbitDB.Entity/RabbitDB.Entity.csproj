@@ -40,15 +40,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Caching\CacheItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Caching\EntityInfoCache.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Caching\EntityInfoCacheManager.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ChangeTracker\ComponentTrackerHelper.cs" />
     <Compile Include="ChangeTracker\ComponentTrackerType.cs" />
     <Compile Include="ChangeTracker\IComponentTracker.cs" />
@@ -68,9 +59,9 @@
     <Compile Include="Entity\EntityState.cs" />
     <Compile Include="Entity\NotifiedEntity.cs" />
     <Compile Include="Entity\NotifiedEntityInfo.cs" />
-    <Compile Include="Materialization\EntityHashSetManager.cs" />
+    <Compile Include="Materialization\IEntityHashSetCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reflection\ParameterTypeDescriptor.cs" />
+    <Compile Include="Utils\IValidEntityArgumentsReader.cs" />
     <Compile Include="Utils\PropertyChangedExtendedEventArgs.cs" />
   </ItemGroup>
   <ItemGroup />

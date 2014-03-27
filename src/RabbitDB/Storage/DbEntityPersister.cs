@@ -5,6 +5,7 @@ using RabbitDB.Entity;
 using RabbitDB.Mapping;
 using RabbitDB.Materialization;
 using RabbitDB.Query;
+using RabbitDB.Utils;
 
 namespace RabbitDB.Storage
 {
@@ -82,7 +83,7 @@ namespace RabbitDB.Storage
         private Tuple<bool, string, QueryParameterCollection> PrepareForUpdate<TEntity>(TEntity entity, EntityInfo entityInfo)
         {
             // Any changes made to entity?!
-            KeyValuePair<string, object>[] valuesToUpdate = entityInfo.ComputeValuesToUpdate(entity, Utils.Utils.RemoveUnusedPropertyValues(entity));
+            KeyValuePair<string, object>[] valuesToUpdate = entityInfo.ComputeValuesToUpdate();
 
             if (valuesToUpdate == null || valuesToUpdate.Length == 0)
                 return new Tuple<bool, string, QueryParameterCollection>(false, null, null);
@@ -109,7 +110,7 @@ namespace RabbitDB.Storage
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             string insertStatement = tableInfo.CreateInsertStatement(_dbProvider);
-            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(Utils.Utils.GetEntityArguments(entity, tableInfo));
+            QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(new EntityArgumentsReader().GetEntityArguments(entity, tableInfo));
 
             object insertId = _dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments));
             tableInfo.SetAutoNumber<TEntity>(entity, insertId);

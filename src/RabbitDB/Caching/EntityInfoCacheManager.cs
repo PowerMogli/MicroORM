@@ -1,5 +1,8 @@
 using System;
 using RabbitDB.Entity;
+using RabbitDB.Materialization;
+using RabbitDB.ChangeTracker;
+using RabbitDB.Utils;
 
 namespace RabbitDB.Caching
 {
@@ -10,22 +13,31 @@ namespace RabbitDB.Caching
 
         internal static NotifiedEntityInfo GetNotifiedEntityInfo<TEntity>(TEntity entity)
         {
-            EntityInfo entityInfo = GetEntityInfoFromCache(entity);
+            NotifiedEntityInfo notifiedEntityInfo = GetEntityInfoFromCache(entity) as NotifiedEntityInfo;
 
-            if (entityInfo == null)
-                entityInfo = SetEntityInfo<TEntity>(entity, new NotifiedEntityInfo());
+            if (notifiedEntityInfo == null)
+            {
+                ITracker changeTracker = new Tracker();
+                changeTracker.TrackObject(entity);
+                notifiedEntityInfo = new NotifiedEntityInfo(changeTracker, new ValidEntityArgumentReader<TEntity>(entity));
+                SetEntityInfo<TEntity>(entity, notifiedEntityInfo);
+            }
+            UpdateEntityInfoLastCallTime(notifiedEntityInfo);
 
-            UpdateEntityInfoLastCallTime(entityInfo);
-
-            return entityInfo as NotifiedEntityInfo;
+            return notifiedEntityInfo;
         }
 
         internal static EntityInfo GetEntityInfo<TEntity>(TEntity entity)
         {
+            if (entity is NotifiedEntity)
+            {
+                return GetNotifiedEntityInfo(entity);
+            }
+
             EntityInfo entityInfo = GetEntityInfoFromCache(entity);
 
             if (entityInfo == null)
-                entityInfo = SetEntityInfo<TEntity>(entity, new EntityInfo());
+                SetEntityInfo<TEntity>(entity, new EntityInfo(new EntityHashSetCreator<TEntity>(entity), new ValidEntityArgumentReader<TEntity>(entity)));
 
             UpdateEntityInfoLastCallTime(entityInfo);
 
@@ -59,19 +71,18 @@ namespace RabbitDB.Caching
             }
         }
 
-        private static EntityInfo SetEntityInfo<TEntity>(TEntity entity, EntityInfo entityInfo)
+        private static void SetEntityInfo<TEntity>(TEntity entity, EntityInfo entityInfo)
         {
             lock (_lock)
             {
                 if (_referenceCache == null)
-                    return null;
+                    return;
 
                 if (_referenceCache.Get(entity) == null)
                     _referenceCache.Add(entity, entityInfo);
                 else
                     _referenceCache.Update(entity, entityInfo);
             }
-            return entityInfo;
         }
     }
 }

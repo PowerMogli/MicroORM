@@ -6,20 +6,32 @@ using System.Linq;
 
 namespace RabbitDB.Entity
 {
-    internal class EntityInfo
+    internal class EntityInfo : IDisposable
     {
-        internal EntityInfo()
+        internal EntityInfo(IEntityHashSetCreator entityHashSetCreator, IValidEntityArgumentsReader validEntityArgumentsReader)
+            : this()
         {
-            this.EntityState = EntityState.None;
+            this.EntityHashSetCreator = entityHashSetCreator;
+            this.ValidArgumentReader = validEntityArgumentsReader;
             this.ValueSnapshot = new Dictionary<string, int>();
             this.ChangesSnapshot = new Dictionary<string, int>();
+        }
+
+        protected EntityInfo()
+        {
+            this.EntityState = EntityState.None;
             this.LastCallTime = DateTime.Now;
         }
 
+        protected bool _disposed;
+
+        private IEntityHashSetCreator EntityHashSetCreator { get; set; }
+        protected IValidEntityArgumentsReader ValidArgumentReader { get; set; }
+
         internal bool CanBeRemoved { get { return DateTime.Now.Subtract(this.LastCallTime) > TimeSpan.FromMinutes(2); } }
         internal EntityState EntityState { get; set; }
-        internal Dictionary<string, int> ValueSnapshot { get; private set; }
-        internal Dictionary<string, int> ChangesSnapshot { get; private set; }
+        private Dictionary<string, int> ValueSnapshot { get; set; }
+        private Dictionary<string, int> ChangesSnapshot { get; set; }
         internal DateTime LastCallTime { get; set; }
 
         internal void ClearChanges()
@@ -38,12 +50,13 @@ namespace RabbitDB.Entity
 
         internal virtual void ComputeSnapshot<TEntity>(TEntity entity)
         {
-            this.ValueSnapshot = EntityHashSetManager.ComputeEntityHashSet(entity);
+            this.ValueSnapshot = EntityHashSetCreator.ComputeEntityHashSet();
         }
 
-        internal virtual KeyValuePair<string, object>[] ComputeValuesToUpdate<TEntity>(TEntity entity, IEnumerable<KeyValuePair<string, object>> entityValues)
+        internal virtual KeyValuePair<string, object>[] ComputeValuesToUpdate()
         {
-            var entityHashSet = EntityHashSetManager.ComputeEntityHashSet(entity);
+            var entityHashSet = EntityHashSetCreator.ComputeEntityHashSet();
+            var entityValues = ValidArgumentReader.ReadValidEntityArguments();
 
             var valuesToUpdate = new Dictionary<string, object>();
             foreach (var kvp in entityHashSet)
@@ -57,6 +70,34 @@ namespace RabbitDB.Entity
             }
 
             return valuesToUpdate.ToArray();
+        }
+
+        internal bool HasChanges()
+        {
+            var valuesToUpdate = ComputeValuesToUpdate();
+            return valuesToUpdate.Count() > 0
+                || this.EntityState == EntityState.Deleted
+                || this.EntityState == EntityState.None;
+        }
+
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose && _disposed == false)
+            {
+                this.ValidArgumentReader = null;
+                this.EntityHashSetCreator = null;
+                this.ValueSnapshot.Clear();
+                this.ValueSnapshot = null;
+                this.ChangesSnapshot.Clear();
+                this.ChangesSnapshot = null;
+
+                _disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

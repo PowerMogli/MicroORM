@@ -1,10 +1,6 @@
-﻿using RabbitDB.Caching;
-using RabbitDB.ChangeTracker;
-using RabbitDB.Utils;
+﻿using RabbitDB.Utils;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace RabbitDB.Entity
@@ -12,46 +8,9 @@ namespace RabbitDB.Entity
     /// <summary>
     /// Base class implements INotifyPropertyChanged
     /// </summary>
-    public class NotifiedEntity : Entity, INotifyPropertyChanged, IDisposable
+    public class NotifiedEntity : Entity, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-
-        private ITracker _tracker;
-        private NotifiedEntityInfo _notifiedEntityInfo;
-
-        public NotifiedEntity()
-        {
-            _tracker = new Tracker();
-            _tracker.TrackObject(this);
-            _tracker.IsDirtyChanged += UpdateHashSet;
-        }
-
-        ~NotifiedEntity()
-        {
-            if (_tracker != null)
-            {
-                _tracker.IsDirtyChanged -= UpdateHashSet;
-                _tracker = null;
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_tracker != null)
-            {
-                _tracker.IsDirtyChanged -= UpdateHashSet;
-                _tracker = null;
-            }
-        }
-
-        private void UpdateHashSet(object sender, IsDiryChangedArgs args)
-        {
-            _notifiedEntityInfo = _notifiedEntityInfo ?? EntityInfoCacheManager.GetNotifiedEntityInfo(this);
-            if (_notifiedEntityInfo != null)
-            {
-                _notifiedEntityInfo.UpdateOrCreateHashSet(args);
-            }
-        }
 
         /// <summary>
         /// Sets a value to a particular property while calling PropertyChanged
@@ -99,15 +58,6 @@ namespace RabbitDB.Entity
         {
             MemberExpression memberExpression = (MemberExpression)expression.Body;
             return memberExpression.Member.Name;
-        }
-
-        internal override bool HasChanges(IEnumerable<KeyValuePair<string, object>> entityValues)
-        {
-            var valuesToUpdate = _notifiedEntityInfo.ComputeValuesToUpdate(this, entityValues);
-            return valuesToUpdate.Count() > 0
-                || MarkedForDeletion
-                || _notifiedEntityInfo.EntityState == EntityState.Deleted
-                || _notifiedEntityInfo.EntityState == EntityState.None;
         }
     }
 }
