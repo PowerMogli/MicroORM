@@ -44,7 +44,7 @@ namespace RabbitDB.Entity
             using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
                 var entitySet = dbSession.GetEntitySet<TEntity>();
-                SetEntity(entitySet);
+                FinishLoad(entitySet);
             }
             _loaded = true;
         }
@@ -58,7 +58,7 @@ namespace RabbitDB.Entity
             using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
                 var entitySet = dbSession.GetEntitySet<TEntity>(sql, arguments);
-                SetEntity(entitySet);
+                FinishLoad(entitySet);
             }
             _loaded = true;
         }
@@ -72,7 +72,7 @@ namespace RabbitDB.Entity
             using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
                 var entitySet = dbSession.GetEntitySet<TEntity>(criteria);
-                SetEntity(entitySet);
+                FinishLoad(entitySet);
             }
             _loaded = true;
         }
@@ -88,12 +88,12 @@ namespace RabbitDB.Entity
                 var entityReader = dbSession.GetEntityReader<TEntity>();
                 var entitySet = entityReader.Load(materializer) as EntitySet<TEntity>;
 
-                SetEntity(entitySet);
+                FinishLoad(entitySet);
             }
             _loaded = true;
         }
 
-        private void SetEntity(EntitySet<TEntity> entitySet)
+        private void FinishLoad(EntitySet<TEntity> entitySet)
         {
             foreach (TEntity entity in entitySet)
             {
