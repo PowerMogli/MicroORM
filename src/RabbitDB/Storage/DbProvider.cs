@@ -60,10 +60,7 @@ namespace RabbitDB.Storage
         {
             try
             {
-                CreateConnection();
-                _dbCommand = query.Compile(this);
-                _dbCommand.Transaction = _dbTransaction;
-
+                PrepareExecution(query);
                 _dbCommand.ExecuteNonQuery();
             }
             finally
@@ -74,36 +71,35 @@ namespace RabbitDB.Storage
 
         public virtual IDataReader ExecuteReader(IQuery query)
         {
-            CreateConnection();
-            _dbCommand = query.Compile(this);
-            _dbCommand.Transaction = _dbTransaction;
-
+            PrepareExecution(query);
             return _dbCommand.ExecuteReader();
         }
 
         public virtual EntityReader<T> ExecuteReader<T>(IQuery query)
         {
-            CreateConnection();
-            _dbCommand = query.Compile(this);
-            _dbCommand.Transaction = _dbTransaction;
-
-            return new EntityReader<T>(_dbCommand.ExecuteReader(), this, new EntityMaterializer(this));
+            PrepareExecution(query);
+            IDataReader dataReader = _dbCommand.ExecuteReader();
+            return new EntityReader<T>(dataReader, this, new EntityMaterializer(this));
         }
 
         public virtual T ExecuteScalar<T>(IQuery query)
         {
             try
             {
-                CreateConnection();
-                _dbCommand = query.Compile(this);
-                _dbCommand.Transaction = _dbTransaction;
-
+                PrepareExecution(query);
                 return (T)_dbCommand.ExecuteScalar();
             }
             finally
             {
                 Dispose();
             }
+        }
+
+        private void PrepareExecution(IQuery query)
+        {
+            CreateConnection();
+            _dbCommand = query.Compile(this);
+            _dbCommand.Transaction = _dbTransaction;
         }
 
         public virtual string EscapeName(string value)

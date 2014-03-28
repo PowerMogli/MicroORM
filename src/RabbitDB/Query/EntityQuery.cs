@@ -1,7 +1,7 @@
-using System.Data;
 using RabbitDB.Mapping;
 using RabbitDB.Query.Generic;
 using RabbitDB.Storage;
+using System.Data;
 
 namespace RabbitDB.Query
 {

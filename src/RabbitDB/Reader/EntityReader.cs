@@ -44,7 +44,7 @@ namespace RabbitDB.Reader
             return Read(1);
         }
 
-        internal bool Read(int step)
+        private bool Read(int step)
         {
             if (step < 0)
                 throw new ArgumentException("Step is lower then 1. This is not allowed!", "step");

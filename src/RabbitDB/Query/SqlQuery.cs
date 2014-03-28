@@ -7,10 +7,12 @@ namespace RabbitDB.Query
     {
         protected string _sql;
 
-        public string SqlStatement { get { return _sql; } internal set { _sql = value; } }
+        public string SqlStatement
+        {
+            get { return _sql; }
+            internal set { _sql = value; }
+        }
         public QueryParameterCollection Arguments { get; protected set; }
-
-        internal SqlQuery() { }
 
         internal SqlQuery(string sql, QueryParameterCollection arguments = null)
         {

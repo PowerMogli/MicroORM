@@ -1,7 +1,7 @@
-﻿using System.Data;
-using RabbitDB.Base;
+﻿using RabbitDB.Base;
 using RabbitDB.Mapping;
 using RabbitDB.Storage;
+using System.Data;
 
 namespace RabbitDB.Query.Generic
 {
@@ -20,7 +20,10 @@ namespace RabbitDB.Query.Generic
         }
 
         internal SqlQuery(string sqlStatement, QueryParameterCollection arguments = null)
-            : base(sqlStatement, arguments) { }
+            : base(sqlStatement, arguments)
+        {
+            _tableInfo = TableInfo<T>.GetTableInfo;
+        }
 
         public override IDbCommand Compile(IDbProvider provider)
         {
