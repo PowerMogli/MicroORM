@@ -18,6 +18,8 @@ namespace RabbitDB.Base
         private IDbProvider _dbProvider = null;
         private DbEngine _dbEngine;
 
+        #region Ctor
+
         public DbSession(string connectionString, DbEngine dbEngine)
         {
             if (string.IsNullOrEmpty(connectionString))
@@ -41,6 +43,8 @@ namespace RabbitDB.Base
         {
             _dbProvider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
         }
+
+        #endregion
 
         ~DbSession()
         {
@@ -228,6 +232,8 @@ namespace RabbitDB.Base
                 : transactionalProvider.BeginTransaction();
         }
 
+        #region IDisposable
+
         private void Dispose()
         {
             if (_dbPersister != null)
@@ -243,5 +249,7 @@ namespace RabbitDB.Base
         {
             this.Dispose();
         }
+
+        #endregion
     }
 }
