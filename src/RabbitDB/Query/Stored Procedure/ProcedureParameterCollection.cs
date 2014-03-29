@@ -14,7 +14,7 @@ namespace RabbitDB.Query.StoredProcedure
 
         internal Dictionary<string, IDbDataParameter> Parameters { get; private set; }
 
-        internal bool AddParameter<T>(string parameterName, T value, DbType dbType, int length)
+        internal bool IsParameterValid<T>(string parameterName, T value, DbType dbType, int length)
         {
             if (value is string && string.IsNullOrWhiteSpace(value.ToString())) throw new ArgumentNullException("value");
             if (string.IsNullOrWhiteSpace(parameterName)) throw new ArgumentNullException("parameterName");

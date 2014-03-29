@@ -15,7 +15,7 @@ namespace RabbitDB.Query.StoredProcedure
 
         protected bool AddParameter<T>(string parameterName, T value, DbType dbType, int length = -1, ParameterDirection parameterDirection = default(ParameterDirection))
         {
-            if (base.Parameters.AddParameter(parameterName, value, dbType, length) == false) return false;
+            if (!base.Parameters.IsParameterValid(parameterName, value, dbType, length)) return false;
 
             string prefix = "@";
             if (parameterName.StartsWith("@"))
