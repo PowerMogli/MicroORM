@@ -10,7 +10,7 @@ namespace RabbitDB.Query.StoredProcedure
         {
             string connectionString = Registrar<string>.GetFor(procedureObject.GetType());
             DbEngine dbEngine = Registrar<DbEngine>.GetFor(procedureObject.GetType());
-            using (IDbSession dbSession = new DbSession(connectionString, dbEngine))
+            using (IStoredProcedureSession dbSession = new StoredProcedureSession(connectionString, dbEngine))
             {
                 return dbSession.ExecuteStoredProcedure<TEntity>(procedureObject);
             }
@@ -20,7 +20,7 @@ namespace RabbitDB.Query.StoredProcedure
         {
             string connectionString = Registrar<string>.GetFor(procedureObject.GetType());
             DbEngine dbEngine = Registrar<DbEngine>.GetFor(procedureObject.GetType());
-            using (IDbSession dbSession = new DbSession(connectionString, dbEngine))
+            using (IStoredProcedureSession dbSession = new StoredProcedureSession(connectionString, dbEngine))
             {
                 IDbTransaction transaction = null;
                 if (isolationLevel != null)

@@ -30,7 +30,7 @@ namespace RabbitDB.Entity
 
             var sessionConfig = InitializeSession<TEntity>();
 
-            using (IDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
+            using (IBaseDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
                 var entityReader = dbSession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
                 entityReader.Load(entity, customMapper);
