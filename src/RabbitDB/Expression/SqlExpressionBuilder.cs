@@ -16,6 +16,7 @@ using System.Linq.Expressions;
 using System.Text;
 using RabbitDB.Mapping;
 using RabbitDB.Storage;
+using RabbitDB.SqlBuilder;
 
 namespace RabbitDB.Expressions
 {
@@ -23,7 +24,7 @@ namespace RabbitDB.Expressions
     {
         private readonly IDbProvider _dbProvider;
         private readonly TableInfo _tableInfo;
-        private StringBuilder _sqlBuilder = new StringBuilder();
+        private StringBuilder _sqlQuery = new StringBuilder();
         private readonly ExpressionWriter<T> _expressionWriter;
 
         internal SqlExpressionBuilder(IDbProvider dbProvider)
@@ -42,32 +43,32 @@ namespace RabbitDB.Expressions
         {
             if (_order)
             {
-                _sqlBuilder.Append(", ");
+                _sqlQuery.Append(", ");
             }
             else
             {
-                _sqlBuilder.Append(" ORDER BY ");
+                _sqlQuery.Append(" ORDER BY ");
             }
 
             var column = selector.Body.GetPropertyName();
-            _sqlBuilder.AppendFormat("{0} {1}", _dbProvider.EscapeName(column), SortToString(sort));
+            _sqlQuery.AppendFormat("{0} {1}", _dbProvider.EscapeName(column), SortToString(sort));
             _order = true;
             return this;
         }
 
         internal SqlExpressionBuilder<T> EndEnumeration()
         {
-            string query = _sqlBuilder.ToString();
+            string query = _sqlQuery.ToString();
             int commaIndex = query.LastIndexOf(',');
             if (commaIndex < 0) return this;
 
-            _sqlBuilder = new StringBuilder(query.Substring(0, commaIndex));
+            _sqlQuery = new StringBuilder(query.Substring(0, commaIndex));
             return this;
         }
 
         internal void Append(string text)
         {
-            _sqlBuilder.Append(text);
+            _sqlQuery.Append(text);
         }
 
         internal SqlExpressionBuilder<T> WriteSelectColumn<R>(Expression<Func<T, R>> selector, string alias = null)
@@ -75,13 +76,13 @@ namespace RabbitDB.Expressions
             var name = selector.Body.GetPropertyName();
             if (_hasColumn)
             {
-                _sqlBuilder.Append(", ");
+                _sqlQuery.Append(", ");
             }
-            _sqlBuilder.Append(_dbProvider.EscapeName(_tableInfo.ResolveColumnName(name)));
+            _sqlQuery.Append(_dbProvider.EscapeName(_tableInfo.ResolveColumnName(name)));
             _hasColumn = true;
             if (alias != null)
             {
-                _sqlBuilder.AppendFormat(" AS {0}", alias);
+                _sqlQuery.AppendFormat(" AS {0}", alias);
             }
 
             return this;
@@ -95,12 +96,12 @@ namespace RabbitDB.Expressions
         {
             if (!_where)
             {
-                _sqlBuilder.Append(" WHERE ");
+                _sqlQuery.Append(" WHERE ");
                 _where = true;
             }
             else
             {
-                _sqlBuilder.Append(" AND ");
+                _sqlQuery.Append(" AND ");
             }
             Write(criteria);
             return this;
@@ -114,17 +115,18 @@ namespace RabbitDB.Expressions
 
         private void WriteSelectAllColumns()
         {
-            _sqlBuilder.Append(_tableInfo.GetBaseSelect(_dbProvider));
+            var sqlBuilder = new SelectSqlBuilder(_dbProvider, _tableInfo);
+            _sqlQuery.Append(sqlBuilder.GetBaseSelect());
         }
 
         internal void Write(Expression<Func<T, bool>> criteria)
         {
-            _sqlBuilder.Append(_expressionWriter.Write(criteria));
+            _sqlQuery.Append(_expressionWriter.Write(criteria));
         }
 
         internal void Write(Expression<Func<T, object>> statement)
         {
-            _sqlBuilder.Append(_expressionWriter.Write(statement));
+            _sqlQuery.Append(_expressionWriter.Write(statement));
         }
 
         private ExpressionParameterCollection _parameterCollection;
@@ -135,7 +137,7 @@ namespace RabbitDB.Expressions
 
         public override string ToString()
         {
-            return _sqlBuilder.ToString();
+            return _sqlQuery.ToString();
         }
     }
 }

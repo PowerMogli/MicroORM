@@ -11,7 +11,7 @@ namespace RabbitDB.Entity
         internal static Tuple<string, QueryParameterCollection> PrepareForUpdate<TEntity>(this TEntity entity, IDbProvider dbProvider, KeyValuePair<string, object>[] valuesToUpdate)
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string updateStatement = tableInfo.CreateUpdateStatement(dbProvider, valuesToUpdate);
+            string updateStatement = SqlBuilder.SqlBuilder<TEntity>.GetUpdateStatement(valuesToUpdate);
             QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
             queryParameterCollection.AddRange(tableInfo.GetPrimaryKeyValues<TEntity>(entity));
 

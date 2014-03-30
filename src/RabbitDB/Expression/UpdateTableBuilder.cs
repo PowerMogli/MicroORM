@@ -13,6 +13,7 @@ using System;
 using System.Linq.Expressions;
 using RabbitDB.Mapping;
 using RabbitDB.Storage;
+using RabbitDB.SqlBuilder;
 
 namespace RabbitDB.Expressions
 {
@@ -29,13 +30,15 @@ namespace RabbitDB.Expressions
         private readonly SqlExpressionBuilder<T> _builder;
         private TableInfo _tableInfo;
         private IDbProvider _dbProvider;
+        private UpdateSqlBuilder _updateSqlBuilder;
 
         public UpdateTableBuilder(IDbProvider dbProvider)
         {
             _builder = new SqlExpressionBuilder<T>(dbProvider);
             _dbProvider = dbProvider;
             _tableInfo = TableInfo<T>.GetTableInfo;
-            _builder.Append(_tableInfo.GetBaseUpdate(dbProvider));
+            _updateSqlBuilder = new UpdateSqlBuilder(_dbProvider, _tableInfo);
+            _builder.Append(_updateSqlBuilder.GetBaseUpdate());
         }
 
         public IBuildUpdateTable<T> Set(Expression<Func<T, object>> column, Expression<Func<T, object>> statement)

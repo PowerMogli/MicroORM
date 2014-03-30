@@ -2,6 +2,7 @@
 using RabbitDB.Query;
 using RabbitDB.Query.Generic;
 using RabbitDB.Reader;
+using RabbitDB.SqlBuilder;
 using RabbitDB.Storage;
 using System;
 using System.Data;
@@ -64,7 +65,8 @@ namespace RabbitDB.Base
         public EntitySet<TEntity> GetEntitySet<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IBaseDbSession)this).GetEntitySet<TEntity>(new SqlQuery(tableInfo.GetBaseSelect(_dbProvider)));
+            var sqlBuilder = new SelectSqlBuilder(_dbProvider, tableInfo);
+            return ((IBaseDbSession)this).GetEntitySet<TEntity>(new SqlQuery(sqlBuilder.GetBaseSelect()));
         }
 
         public EntityReader<TEntity> GetEntityReader<TEntity>(string sql, params object[] arguments)
@@ -80,7 +82,8 @@ namespace RabbitDB.Base
         public EntityReader<TEntity> GetEntityReader<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            return ((IBaseDbSession)this).GetEntityReader<TEntity>(new SqlQuery(tableInfo.GetBaseSelect(_dbProvider)));
+            var sqlBuilder = new SelectSqlBuilder(_dbProvider, tableInfo);
+            return ((IBaseDbSession)this).GetEntityReader<TEntity>(new SqlQuery(sqlBuilder.GetBaseSelect()));
         }
 
         public MultiEntityReader ExecuteMultiple(string sql, params object[] arguments)

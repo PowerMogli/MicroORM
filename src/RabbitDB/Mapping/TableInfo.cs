@@ -1,12 +1,10 @@
+using RabbitDB.Attributes;
+using RabbitDB.Base;
+using RabbitDB.Schema;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-using RabbitDB.Attributes;
-using RabbitDB.Base;
-using RabbitDB.Schema;
-using RabbitDB.Storage;
 
 namespace RabbitDB.Mapping
 {
@@ -19,10 +17,7 @@ namespace RabbitDB.Mapping
             this.Columns = new PropertyInfoCollection();
         }
 
-        private string SelectStatement { get; set; }
-        private string InsertStatement { get; set; }
-        private string DeleteStatement { get; set; }
-        private string WithNolock
+        internal string WithNolock
         {
             get
             {
@@ -32,7 +27,7 @@ namespace RabbitDB.Mapping
             }
         }
 
-        private string SchemedTableName
+        internal string SchemedTableName
         {
             get { return string.Format("{0}.{1}", this.DbTable.Schema, this.Name); }
         }
@@ -69,7 +64,7 @@ namespace RabbitDB.Mapping
         }
 
         private IEnumerable<IPropertyInfo> _primaryKeyColumns;
-        private IEnumerable<IPropertyInfo> PrimaryKeyColumns
+        internal IEnumerable<IPropertyInfo> PrimaryKeyColumns
         {
             get
             {
@@ -112,85 +107,6 @@ namespace RabbitDB.Mapping
                 columnNames.Add(this.Columns[index].Name);
             }
             columnNames.ForEach(name => this.Columns.Remove(name));
-        }
-
-        internal string CreateSelectStatement(IDbProvider dbProvider)
-        {
-            if (string.IsNullOrEmpty(this.SelectStatement) == false)
-                return this.SelectStatement;
-
-            var selectStatement = new StringBuilder();
-            selectStatement.Append(GetBaseSelect(dbProvider));
-
-            selectStatement.Append(AppendPrimaryKeys(dbProvider));
-            return this.SelectStatement = selectStatement.ToString();
-        }
-
-        internal string GetBaseSelect(IDbProvider dbProvider)
-        {
-            var selectStatement = new StringBuilder();
-            selectStatement.Append("SELECT ");
-
-            selectStatement.AppendFormat("{0}", string.Join(", ", this.Columns.SelectValidColumnNames(this.DbTable, dbProvider)));
-            selectStatement.AppendFormat(" FROM {0}{1}", dbProvider.EscapeName(this.SchemedTableName), this.WithNolock);
-
-            return selectStatement.ToString();
-        }
-
-        internal string CreateDeleteStatement(IDbProvider dbProvider)
-        {
-            if (string.IsNullOrWhiteSpace(this.DeleteStatement) == false)
-                return this.DeleteStatement;
-
-            return this.DeleteStatement =
-                string.Format("DELETE FROM {0} {1}", dbProvider.EscapeName(this.SchemedTableName), AppendPrimaryKeys(dbProvider));
-        }
-
-        private string AppendPrimaryKeys(IDbProvider dbProvider)
-        {
-            var primaryKeys = this.PrimaryKeyColumns.Select(column => column.ColumnAttribute.ColumnName);
-            var count = primaryKeys.Count();
-
-            var whereClause = new StringBuilder(" WHERE ");
-            var i = 0;
-            var seperator = " AND ";
-            foreach (var primaryKey in primaryKeys)
-            {
-                if (i >= count - 1) seperator = string.Empty;
-                whereClause.AppendFormat("{0}=@{1}{2}", dbProvider.EscapeName(primaryKey), i++, seperator);
-            }
-            return whereClause.ToString();
-        }
-
-        internal string CreateInsertStatement(IDbProvider dbProvider)
-        {
-            if (string.IsNullOrEmpty(this.InsertStatement) == false)
-                return this.InsertStatement;
-
-            var insertStatement = new StringBuilder();
-            insertStatement.AppendFormat("INSERT INTO {0} ", dbProvider.EscapeName(this.SchemedTableName));
-
-            insertStatement.AppendFormat("({0})", string.Join(", ", this.Columns.SelectValidNonAutoNumberColumnNames(dbProvider)));
-            insertStatement.AppendFormat(" VALUES({0})", string.Join(", ", this.Columns.SelectValidNonAutoNumberPrefixedColumnNames()));
-
-            return this.InsertStatement = string.Concat(insertStatement.ToString(), dbProvider.ResolveScopeIdentity(this));
-        }
-
-        internal string CreateUpdateStatement(IDbProvider dbProvider, KeyValuePair<string, object>[] arguments)
-        {
-            string updateStatement = GetBaseUpdate(dbProvider);
-            updateStatement += string.Join(", ",
-                arguments
-                .SkipWhile(kvp => this.DbTable.SkipWhile(ResolveColumnName(kvp.Key)))
-                .Select(kvp2 => string.Format("{0} = @{1}", dbProvider.EscapeName(kvp2.Key), kvp2.Key)));
-            updateStatement += AppendPrimaryKeys(dbProvider);
-
-            return updateStatement;
-        }
-
-        internal string GetBaseUpdate(IDbProvider dbProvider)
-        {
-            return string.Format("UPDATE {0} SET ", dbProvider.EscapeName(this.SchemedTableName));
         }
 
         internal DbType ConvertToDbType(string name)

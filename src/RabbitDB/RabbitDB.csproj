@@ -120,6 +120,13 @@
     <Compile Include="Schema\OracleDbSchemaReader.cs" />
     <Compile Include="Schema\PostgreSqlDbSchemaReader.cs" />
     <Compile Include="Schema\SqlDbSchemaReader.cs" />
+    <Compile Include="Session\SqlDbProviderAccessor.cs" />
+    <Compile Include="SqlBuilder\DeleteSqlBuilder.cs" />
+    <Compile Include="SqlBuilder\InsertSqlBuilder.cs" />
+    <Compile Include="SqlBuilder\SelectSqlBuilder.cs" />
+    <Compile Include="SqlBuilder\SqlBuilder2.cs" />
+    <Compile Include="SqlBuilder\SqlBuilder.cs" />
+    <Compile Include="SqlBuilder\UpdateSqlBuilder.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\DbEntityPersister.cs" />
     <Compile Include="Storage\DbPersister.cs" />

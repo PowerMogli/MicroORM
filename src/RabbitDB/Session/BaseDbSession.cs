@@ -1,6 +1,7 @@
 ﻿using RabbitDB.Query;
 using RabbitDB.Reader;
 using RabbitDB.Schema;
+using RabbitDB.Session;
 using RabbitDB.Storage;
 using System;
 using System.Data;
@@ -31,6 +32,7 @@ namespace RabbitDB.Base
         private void Initialize(string connectionString, DbEngine dbEngine)
         {
             _dbProvider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
+            SqlDbProviderAccessor.DbProvider = _dbProvider;
         }
 
         internal IDbProvider _dbProvider = null;

@@ -1,5 +1,6 @@
 ﻿using RabbitDB.Mapping;
 using RabbitDB.Query;
+using RabbitDB.SqlBuilder;
 using RabbitDB.Utils;
 
 namespace RabbitDB.Storage
@@ -21,7 +22,7 @@ namespace RabbitDB.Storage
         public void Delete<TEntity>(TEntity entity)
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string deleteStatement = tableInfo.CreateDeleteStatement(_dbProvider);
+            string deleteStatement = SqlBuilder<TEntity>.DeleteStatement;
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(tableInfo.GetPrimaryKeyValues(entity));
 
             _dbProvider.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
@@ -30,7 +31,7 @@ namespace RabbitDB.Storage
         public void Insert<TEntity>(TEntity entity)
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string insertStatement = tableInfo.CreateInsertStatement(_dbProvider);
+            string insertStatement = SqlBuilder<TEntity>.InsertStatement;
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(new EntityArgumentsReader().GetEntityArguments(entity, tableInfo));
 
             object insertId = _dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments));
