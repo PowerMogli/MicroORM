@@ -55,8 +55,8 @@ namespace RabbitDB.SqlBuilder
         internal static string GetUpdateStatement(KeyValuePair<string, object>[] arguments)
         {
             var tableInfo = TableInfo<TEntity>.GetTableInfo;
-            var insertBuilder = new UpdateSqlBuilder(SqlDbProviderAccessor.DbProvider, tableInfo, arguments);
-            return insertBuilder.CreateStatement();
+            var updateBuilder = new UpdateSqlBuilder(SqlDbProviderAccessor.DbProvider, tableInfo, arguments);
+            return updateBuilder.CreateStatement();
         }
     }
 }
