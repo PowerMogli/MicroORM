@@ -1,10 +1,9 @@
-using System;
-using System.Data;
 using RabbitDB.Base;
 using RabbitDB.Caching;
 using RabbitDB.Query;
-using RabbitDB.Reader;
 using RabbitDB.Storage;
+using System;
+using System.Data;
 
 namespace RabbitDB.Entity
 {
@@ -87,8 +86,8 @@ namespace RabbitDB.Entity
                 catch
                 {
                     entity.EntityInfo.ClearChanges();
+                    throw;
                 }
-                return false;
             }
         }
     }

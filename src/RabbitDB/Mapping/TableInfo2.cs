@@ -1,23 +1,36 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using RabbitDB.Schema;
+using System;
 
 namespace RabbitDB.Mapping
 {
-    internal static class TableInfoContainer
+    internal static class TableInfo<T>
     {
-        private static ConcurrentDictionary<Type, TableInfo> _mappings = new ConcurrentDictionary<Type, TableInfo>();
-        private static ConcurrentDictionary<Type, Type> _interfacePersistents = new ConcurrentDictionary<Type, Type>();
-        private static TableInfo _lastMapping;
+        private static TableInfo InternalTableInfo { get; set; }
+
+        internal static TableInfo GetTableInfo
+        {
+            get
+            {
+                if (InternalTableInfo != null)
+                    return InternalTableInfo;
+
+                InternalTableInfo = GetInternalTableInfo(typeof(T));
+                if (InternalTableInfo == null) return null;
+
+                InternalTableInfo.DbTable = DbSchemaAllocator<T>.DbTable;
+                return InternalTableInfo;
+            }
+        }
 
         /// <summary>
         /// Returns the mapping for a given object. If the mapping does not exist it is created by this routine.
         /// </summary>
         /// <param name="entity">The object the mapping is returned.</param>
-        public static TableInfo GetTableInfo(object entity)
+        internal static TableInfo GetInternalTableInfo(object entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");
 
-            return GetTableInfo(entity.GetType());
+            return GetInternalTableInfo(entity.GetType());
         }
 
         /// <summary>
@@ -25,45 +38,33 @@ namespace RabbitDB.Mapping
         /// created by this routine.
         /// </summary>
         /// <param name="entityType">Type of object the mapping is returned.</param>
-        public static TableInfo GetTableInfo(Type entityType)
+        internal static TableInfo GetInternalTableInfo(Type entityType)
         {
             if (entityType == null) throw new ArgumentNullException("entityType");
 
             if (entityType == typeof(string)
                 || entityType.IsValueType
-                || entityType.IsEnum) { return null; }
+                || entityType.IsEnum)
+            {
+                return null;
+            }
 
             // Get the real entity type.
             entityType = GetEntityType(entityType);
-
-            if (_lastMapping != null
-                && _lastMapping.EntityType == entityType) { return _lastMapping; }
-
-            TableInfo tableInfo = null;
-            if (!_mappings.TryGetValue(entityType, out tableInfo))
-            {
-                tableInfo = TableInfoBuilder.CreateTypeMapping(entityType);
-                _mappings.TryAdd(entityType, tableInfo);
-            }
-
-            return _lastMapping = tableInfo;
+            return new TableInfoBuilder(entityType).Build();
         }
 
         /// <summary>
         /// Gets the persistent type from the given type.
         /// </summary>
         /// <param name="entityType">The type that's persistent type is returned.</param>
-        public static Type GetEntityType(Type entityType)
+        internal static Type GetEntityType(Type entityType)
         {
             if (entityType == null)
                 throw new ArgumentNullException("entityType");
 
             // If not an interface return the given type.
             if (!entityType.IsInterface) return entityType;
-
-            // Get the persistent type for the interface.
-            Type interfaceType = null;
-            if (_interfacePersistents.TryGetValue(entityType, out interfaceType)) return interfaceType;
 
             // Throw an exception if the interface is not registered with a persistent.
             throw new TableInfoException(string.Format("There is no entity type registered for the interface type: {0}.", entityType.FullName));

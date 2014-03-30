@@ -50,20 +50,6 @@ namespace RabbitDB.Base
             }
         }
 
-        private DbEntityPersister _dbEntityPersister;
-        internal DbEntityPersister DbEntityPersister
-        {
-            get
-            {
-                if (_dbProvider == null)
-                {
-                    throw new InvalidOperationException("DbProvider is not initialized");
-                }
-
-                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(_dbProvider, DbPersister));
-            }
-        }
-
         EntitySet<TEntity> IBaseDbSession.GetEntitySet<TEntity>(IQuery query)
         {
             EntitySet<TEntity> objectSet = new EntitySet<TEntity>();

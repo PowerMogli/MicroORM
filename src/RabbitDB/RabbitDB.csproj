@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="Mapping\TableInfo2.cs" />
     <Compile Include="Session\BaseDbSession.cs" />
     <Compile Include="Caching\CacheItem.cs" />
     <Compile Include="Caching\EntityInfoCache.cs" />
@@ -79,7 +80,6 @@
     <Compile Include="Mapping\PropertyMetaInfo.cs" />
     <Compile Include="Mapping\TableInfoBuilder.cs" />
     <Compile Include="Attributes\TableAttribute.cs" />
-    <Compile Include="Mapping\TableInfoContainer.cs" />
     <Compile Include="Mapping\TableInfoException.cs" />
     <Compile Include="Mapping\TableInfo.cs" />
     <Compile Include="Materialization\DataSchemaCreator.cs" />

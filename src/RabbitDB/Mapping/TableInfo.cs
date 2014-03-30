@@ -268,43 +268,5 @@ namespace RabbitDB.Mapping
 
             return new Tuple<bool, string>(true, castTo);
         }
-
-        /// <summary>
-        /// Returns the mapping for a given object.
-        /// </summary>
-        /// <param name="obj">The object the mapping is returned for.</param>
-        public static TableInfo GetTableInfo(object obj)
-        {
-            return TableInfoContainer.GetTableInfo(obj);
-        }
-
-        /// <summary>
-        /// Returns the mapping for the given persistent type.
-        /// </summary>
-        /// <param name="type">Type of object the mapping is returned for.</param>
-        public static TableInfo GetTableInfo(Type type)
-        {
-            return TableInfoContainer.GetTableInfo(type);
-        }
-    }
-
-    internal static class TableInfo<T>
-    {
-        private static TableInfo InternalTableInfo { get; set; }
-
-        internal static TableInfo GetTableInfo
-        {
-            get
-            {
-                if (InternalTableInfo != null)
-                    return InternalTableInfo;
-
-                InternalTableInfo = TableInfo.GetTableInfo(typeof(T));
-                if (InternalTableInfo == null) return null;
-
-                InternalTableInfo.DbTable = DbSchemaAllocator<T>.DbTable;
-                return InternalTableInfo;
-            }
-        }
     }
 }

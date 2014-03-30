@@ -33,6 +33,20 @@ namespace RabbitDB.Base
             base.Dispose();
         }
 
+        private DbEntityPersister _dbEntityPersister;
+        internal DbEntityPersister DbEntityPersister
+        {
+            get
+            {
+                if (_dbProvider == null)
+                {
+                    throw new InvalidOperationException("DbProvider is not initialized");
+                }
+
+                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(_dbProvider, DbPersister));
+            }
+        }
+
         public static Configuration Configuration { get { return Configuration.Instance; } }
 
         public void ExecuteCommand(string sql, params object[] arguments)

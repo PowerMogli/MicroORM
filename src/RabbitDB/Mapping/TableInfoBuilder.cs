@@ -1,63 +1,78 @@
-﻿using System;
+﻿using RabbitDB.Attributes;
+using RabbitDB.Entity;
+using System;
 using System.Data;
 using System.Reflection;
-using RabbitDB.Attributes;
 
 namespace RabbitDB.Mapping
 {
-    internal static class TableInfoBuilder
+    internal class TableInfoBuilder
     {
-        internal static TableInfo CreateTypeMapping(Type entityType)
+        private Type _entityType;
+        private TableInfo _tableInfo;
+
+        internal TableInfoBuilder(Type entityType)
         {
             if (entityType == null)
                 throw new ArgumentNullException("entityType");
 
             if (entityType.IsInterface)
-                throw new TableInfoException(string.Format("Cannot create mapping for interface '{0}'! Please use TypeMapping.RegisterPersistentInterface to register the interface with persistent type.", entityType.FullName));
+                throw new TableInfoException(string.Format("Cannot create mapping for interface '{0}'!", entityType.FullName));
 
-            TableAttribute attribute = GetPersistentAttribute(entityType);
-            TableInfo tableInfo = new TableInfo(entityType, attribute);
-            CreateMemberMappingsFor<ColumnAttribute>(entityType, tableInfo, AddPropertyMetaInfo);
-            //CreateMemberMappingsFor<PrimaryKeyAttribute>(entityType, tableInfo, AddPrimaryKeyInfo);
-
-            return tableInfo;
+            _entityType = entityType;
         }
 
-        private static TableAttribute GetPersistentAttribute(Type entityType)
+        internal TableInfo Build()
         {
-            if (entityType == null) throw new ArgumentNullException("entityType");
+            TableAttribute attribute = GetPersistentAttribute();
+            _tableInfo = new TableInfo(_entityType, attribute);
+            CreateMemberMappingsFor<ColumnAttribute>(_entityType, AddPropertyMetaInfo);
+            //CreateMemberMappingsFor<PrimaryKeyAttribute>(entityType, AddPrimaryKeyInfo);
 
-            TableAttribute attribute = (TableAttribute)Attribute.GetCustomAttribute(entityType, typeof(TableAttribute), true);
+            return _tableInfo;
+        }
+
+        private TableAttribute GetPersistentAttribute()
+        {
+            TableAttribute attribute = (TableAttribute)Attribute.GetCustomAttribute(_entityType, typeof(TableAttribute), true);
             if (attribute == null)
-                return new TableAttribute(entityType.Name);
+                return new TableAttribute(_entityType.Name);
 
             if (attribute.EntityName == null)
-                attribute.EntityName = entityType.Name;
+                attribute.EntityName = _entityType.Name;
 
             return attribute;
         }
 
-        private static void CreateMemberMappingsFor<TAttribute>(Type entityType, TableInfo tableInfo, Action<TableInfo, PropertyInfo, Type, ColumnAttribute> action) where TAttribute : ColumnAttribute
+        private void CreateMemberMappingsFor<TAttribute>(Type entityType, Action<PropertyInfo, Type, ColumnAttribute> action) where TAttribute : ColumnAttribute
         {
-            if (entityType == null || entityType == typeof(object)) return;
+            if (IsInvalidEntityType(entityType)) return;
 
             foreach (PropertyInfo propertyInfo in entityType.GetProperties())
             {
                 var attribute = GetAttribute<TAttribute>(propertyInfo);
 
-                action(tableInfo, propertyInfo, entityType, attribute);
+                action(propertyInfo, entityType, attribute);
             }
 
-            CreateMemberMappingsFor<TAttribute>(entityType.BaseType, tableInfo, action);
+            CreateMemberMappingsFor<TAttribute>(entityType.BaseType, action);
         }
 
-        private static void AddPropertyMetaInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
+        private bool IsInvalidEntityType(Type entityType)
+        {
+            return (entityType == null
+                || entityType == typeof(NotifiedEntity)
+                || entityType == typeof(Entity.Entity)
+                || entityType == typeof(object));
+        }
+
+        private void AddPropertyMetaInfo(PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
         {
             attribute = CreateAttribute<ColumnAttribute>(attribute, propertyInfo.Name);
             Type propertyType = GetPropertyType(entityType, propertyInfo);
             if (propertyType.IsEnum) attribute.DbType = DbType.Int32;
 
-            tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute.NullDbType ?? TypeConverter.ToDbType(propertyType), attribute));
+            _tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute.NullDbType ?? TypeConverter.ToDbType(propertyType), attribute));
         }
 
         //private static void AddPrimaryKeyInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
@@ -71,7 +86,7 @@ namespace RabbitDB.Mapping
         //    tableInfo.PrimaryKeys.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute));
         //}
 
-        private static ColumnAttribute CreateAttribute<TAttribute>(ColumnAttribute attribute, string name)
+        private ColumnAttribute CreateAttribute<TAttribute>(ColumnAttribute attribute, string name)
         {
             if (attribute == null)
                 attribute = Activator.CreateInstance(typeof(TAttribute), name) as ColumnAttribute;
@@ -82,7 +97,7 @@ namespace RabbitDB.Mapping
             return attribute;
         }
 
-        private static Type GetPropertyType(Type entityType, PropertyInfo propertyInfo)
+        private Type GetPropertyType(Type entityType, PropertyInfo propertyInfo)
         {
             if (propertyInfo.PropertyType.IsInterface)
             {
@@ -97,7 +112,7 @@ namespace RabbitDB.Mapping
             return propertyInfo.PropertyType;
         }
 
-        private static TAttribute GetAttribute<TAttribute>(PropertyInfo propertyInfo) where TAttribute : Attribute
+        private TAttribute GetAttribute<TAttribute>(PropertyInfo propertyInfo) where TAttribute : Attribute
         {
             var attributes = Attribute.GetCustomAttributes(propertyInfo, typeof(TAttribute));
             if (attributes.Length == 0) return null;

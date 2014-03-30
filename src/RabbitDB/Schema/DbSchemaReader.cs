@@ -22,7 +22,7 @@ namespace RabbitDB.Schema
             DbTable dbTable = null;
             using (this)
             {
-                TableInfo tableInfo = TableInfo.GetTableInfo(typeof(T));
+                TableInfo tableInfo = TableInfo<T>.GetTableInfo;
                 if (tableInfo == null) return null;
 
                 else if ((dbTable = this.Tables[tableInfo.Name]) != null)
