@@ -1,5 +1,6 @@
 ﻿using RabbitDB.Mapping;
 using RabbitDB.Query;
+using RabbitDB.SqlBuilder;
 using RabbitDB.Storage;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,10 @@ namespace RabbitDB.Entity
     {
         internal static Tuple<string, QueryParameterCollection> PrepareForUpdate<TEntity>(this TEntity entity, IDbProvider dbProvider, KeyValuePair<string, object>[] valuesToUpdate)
         {
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            string updateStatement = SqlBuilder.SqlBuilder<TEntity>.GetUpdateStatement(valuesToUpdate);
+            string updateStatement = SqlBuilder<TEntity>.GetUpdateStatement(valuesToUpdate);
             QueryParameterCollection queryParameterCollection = QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
+            
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
             queryParameterCollection.AddRange(tableInfo.GetPrimaryKeyValues<TEntity>(entity));
 
             return new Tuple<string, QueryParameterCollection>(updateStatement, queryParameterCollection);

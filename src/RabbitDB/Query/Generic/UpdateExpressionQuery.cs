@@ -5,6 +5,8 @@ using System.Linq.Expressions;
 using RabbitDB.Expressions;
 using RabbitDB.Reflection;
 using RabbitDB.Storage;
+using RabbitDB.SqlBuilder;
+using RabbitDB.Mapping;
 
 namespace RabbitDB.Query.Generic
 {
@@ -21,7 +23,7 @@ namespace RabbitDB.Query.Generic
 
         public IDbCommand Compile(IDbProvider dbProvider)
         {
-            UpdateTableBuilder<TEntity> updateTableBuilder = new UpdateTableBuilder<TEntity>(dbProvider);
+            UpdateTableBuilder<TEntity> updateTableBuilder = new UpdateTableBuilder<TEntity>(dbProvider, new UpdateSqlBuilder(dbProvider, TableInfo<TEntity>.GetTableInfo));
             foreach (KeyValuePair<string, object> parameter in ParameterTypeDescriptor.ToKeyValuePairs(_arguments))
             {
                 updateTableBuilder.Set(parameter.Key, parameter.Value);
