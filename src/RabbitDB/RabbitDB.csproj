@@ -128,6 +128,10 @@
     <Compile Include="SqlBuilder\SqlBuilder2.cs" />
     <Compile Include="SqlBuilder\SqlBuilder.cs" />
     <Compile Include="SqlBuilder\UpdateSqlBuilder.cs" />
+    <Compile Include="SqlDialect\MsSqlCharacter.cs" />
+    <Compile Include="SqlDialect\MsSqlDialect.cs" />
+    <Compile Include="SqlDialect\SqlCharacter.cs" />
+    <Compile Include="SqlDialect\SqlDialect.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\DbEntityPersister.cs" />
     <Compile Include="Storage\DbPersister.cs" />

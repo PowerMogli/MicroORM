@@ -1,15 +1,15 @@
-﻿using RabbitDB.Entity.ChangeTracker;
+﻿using RabbitDB.Entity.ChangeRecorder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace RabbitDB.Entity
 {
-    internal class EntityInfo : IDisposable, IChangeTracer
+    internal class EntityInfo : IDisposable, IChangeRecorder
     {
-        private IChangeTracer _changeTracer;
+        private IChangeRecorder _changeTracer;
 
-        internal EntityInfo(IChangeTracer changeTracer)
+        internal EntityInfo(IChangeRecorder changeTracer)
             : this()
         {
             _changeTracer = changeTracer;

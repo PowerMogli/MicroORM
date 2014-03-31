@@ -40,12 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChangeTracker\BaseChangeTracer.cs" />
-    <Compile Include="ChangeTracker\ChangeTracerOption.cs" />
+    <Compile Include="ChangeRecorder\BaseChangeRecorder.cs" />
+    <Compile Include="ChangeRecorder\ChangeRecorderOption.cs" />
     <Compile Include="ChangeTracker\ComponentTrackerHelper.cs" />
     <Compile Include="ChangeTracker\ComponentTrackerType.cs" />
-    <Compile Include="ChangeTracker\HashedChangeTracer.cs" />
-    <Compile Include="ChangeTracker\IChangeTracer.cs" />
+    <Compile Include="ChangeRecorder\HashedChangeRecorder.cs" />
+    <Compile Include="ChangeRecorder\IChangeRecorder.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ChangeTracker\IComponentTracker.cs" />
     <Compile Include="ChangeTracker\IEnumerableExtensions.cs" />
     <Compile Include="ChangeTracker\IListComponentFilter.cs" />
@@ -55,7 +57,7 @@
     <Compile Include="ChangeTracker\ListComponentFilter.cs" />
     <Compile Include="ChangeTracker\ListComponentTracker.cs" />
     <Compile Include="ChangeTracker\NodeComponentTracker.cs" />
-    <Compile Include="ChangeTracker\NotifiedChangeTracer.cs" />
+    <Compile Include="ChangeRecorder\NotifiedChangeRecorder.cs" />
     <Compile Include="ChangeTracker\PropertyTracker.cs" />
     <Compile Include="ChangeTracker\Tracker.cs" />
     <Compile Include="ChangeTracker\TrackerInfo.cs" />

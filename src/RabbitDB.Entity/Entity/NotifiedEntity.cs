@@ -1,4 +1,4 @@
-﻿using RabbitDB.Entity.ChangeTracker;
+﻿using RabbitDB.Entity.ChangeRecorder;
 using RabbitDB.Utils;
 using System;
 using System.ComponentModel;
@@ -13,7 +13,7 @@ namespace RabbitDB.Entity
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        internal override ChangeTracerOption ChangeTracerOption { get { return ChangeTracerOption.Notified; } }
+        internal override ChangeRecorderOption ChangeTracerOption { get { return ChangeRecorderOption.Notified; } }
 
         /// <summary>
         /// Sets a value to a particular property while calling PropertyChanged

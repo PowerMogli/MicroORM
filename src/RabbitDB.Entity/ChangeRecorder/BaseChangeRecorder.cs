@@ -2,13 +2,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace RabbitDB.Entity.ChangeTracker
+namespace RabbitDB.Entity.ChangeRecorder
 {
-    internal abstract class BaseChangeTracer : IChangeTracer, IDisposable
+    internal abstract class BaseChangeRecorder : IChangeRecorder, IDisposable
     {
         protected bool _disposed;
 
-        public BaseChangeTracer(IValidEntityArgumentsReader validEntityArgumentsReader)
+        public BaseChangeRecorder(IValidEntityArgumentsReader validEntityArgumentsReader)
         {
             this.ValidArgumentReader = validEntityArgumentsReader;
         }

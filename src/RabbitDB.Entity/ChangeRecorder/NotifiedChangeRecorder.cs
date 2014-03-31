@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RabbitDB.Entity.ChangeTracker
+namespace RabbitDB.Entity.ChangeRecorder
 {
-    internal class NotifiedChangeTracer : BaseChangeTracer, IChangeTracer, IDisposable
+    internal class NotifiedChangeRecorder : BaseChangeRecorder, IChangeRecorder, IDisposable
     {
         private ITracker _tracker;
 
         private Dictionary<string, object> NotifiedValues { get; set; }
 
-        public NotifiedChangeTracer(ITracker tracker, IValidEntityArgumentsReader validEntityArgumentsReader)
+        public NotifiedChangeRecorder(ITracker tracker, IValidEntityArgumentsReader validEntityArgumentsReader)
             : base(validEntityArgumentsReader)
         {
             _tracker = tracker;

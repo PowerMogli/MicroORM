@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RabbitDB.Entity.ChangeTracker
+namespace RabbitDB.Entity.ChangeRecorder
 {
-    internal class HashedChangeTracer : BaseChangeTracer, IChangeTracer, IDisposable
+    internal class HashedChangeRecorder : BaseChangeRecorder, IChangeRecorder, IDisposable
     {
         private IEntityHashSetCreator EntityHashSetCreator { get; set; }
         private Dictionary<string, int> ValueSnapshot { get; set; }
         private Dictionary<string, int> ChangesSnapshot { get; set; }
 
-        internal HashedChangeTracer(IEntityHashSetCreator entityHashSetCreator, IValidEntityArgumentsReader validEntityArgumentsReader)
+        internal HashedChangeRecorder(IEntityHashSetCreator entityHashSetCreator, IValidEntityArgumentsReader validEntityArgumentsReader)
             : base(validEntityArgumentsReader)
         {
             this.EntityHashSetCreator = entityHashSetCreator;

@@ -1,4 +1,4 @@
-using RabbitDB.Entity.ChangeTracker;
+using RabbitDB.Entity.ChangeRecorder;
 using System;
 using System.Collections.Generic;
 
@@ -16,7 +16,7 @@ namespace RabbitDB.Entity
 
         internal EntityInfo EntityInfo { get; set; }
 
-        internal virtual ChangeTracerOption ChangeTracerOption { get { return ChangeTracerOption.Hashed; } }
+        internal virtual ChangeRecorderOption ChangeTracerOption { get { return ChangeRecorderOption.Hashed; } }
 
         internal bool MarkedForDeletion { get; set; }
 

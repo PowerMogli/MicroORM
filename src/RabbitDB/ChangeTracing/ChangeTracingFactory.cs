@@ -1,5 +1,5 @@
 ﻿using RabbitDB.ChangeTracker;
-using RabbitDB.Entity.ChangeTracker;
+using RabbitDB.Entity.ChangeRecorder;
 using RabbitDB.Materialization;
 using RabbitDB.Utils;
 using System;
@@ -8,7 +8,7 @@ namespace RabbitDB.ChangeTracing
 {
     internal class ChangeTracingFactory
     {
-        internal static IChangeTracer Create<TEntity>(TEntity entity)
+        internal static IChangeRecorder Create<TEntity>(TEntity entity)
         {
             Entity.Entity internalEntity = entity as Entity.Entity;
             if (internalEntity == null)
@@ -16,13 +16,13 @@ namespace RabbitDB.ChangeTracing
                 throw new ArgumentNullException("entity", "Entity can´t be null!");
             }
 
-            IChangeTracer changeTracer = null;
+            IChangeRecorder changeTracer = null;
             switch (internalEntity.ChangeTracerOption)
             {
-                case ChangeTracerOption.Hashed:
+                case ChangeRecorderOption.Hashed:
                     changeTracer = CreateHashedTracer(entity);
                     break;
-                case ChangeTracerOption.Notified:
+                case ChangeRecorderOption.Notified:
                     changeTracer = CraeteNotifiedTracer(entity);
                     break;
                 default:
@@ -32,17 +32,17 @@ namespace RabbitDB.ChangeTracing
             return changeTracer;
         }
 
-        private static IChangeTracer CreateHashedTracer<TEntity>(TEntity entity)
+        private static IChangeRecorder CreateHashedTracer<TEntity>(TEntity entity)
         {
-            return new HashedChangeTracer(new EntityHashSetCreator<TEntity>(entity), new ValidEntityArgumentReader<TEntity>(entity));
+            return new HashedChangeRecorder(new EntityHashSetCreator<TEntity>(entity), new ValidEntityArgumentReader<TEntity>(entity));
         }
 
-        private static IChangeTracer CraeteNotifiedTracer<TEntity>(TEntity entity)
+        private static IChangeRecorder CraeteNotifiedTracer<TEntity>(TEntity entity)
         {
             var changeTracker = new Tracker();
             changeTracker.TrackObject(entity);
 
-            return new NotifiedChangeTracer(changeTracker, new ValidEntityArgumentReader<TEntity>(entity));
+            return new NotifiedChangeRecorder(changeTracker, new ValidEntityArgumentReader<TEntity>(entity));
         }
     }
 }
