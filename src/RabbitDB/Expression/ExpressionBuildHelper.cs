@@ -1,15 +1,15 @@
-﻿using System;
-using RabbitDB.Storage;
+﻿using RabbitDB.SqlDialect;
+using System;
 
 namespace RabbitDB.Expressions
 {
     internal class ExpressionBuildHelper : IDbProviderExpressionBuildHelper
     {
-        protected IDbProvider _dbProvider;
+        protected SqlCharacters _sqlCharacters;
 
-        internal ExpressionBuildHelper(IDbProvider dbProvider)
+        internal ExpressionBuildHelper(SqlCharacters sqlCharacters)
         {
-            _dbProvider = dbProvider;
+            _sqlCharacters = sqlCharacters;
         }
 
         public virtual string FormatBoolean(bool value)
@@ -23,27 +23,27 @@ namespace RabbitDB.Expressions
                 throw new ArgumentNullException("column");
 
             var idx = pos + 1;
-            return string.Format("substring({0},{1},{2})", _dbProvider.EscapeName(column), idx, length);
+            return string.Format("substring({0},{1},{2})", _sqlCharacters.EscapeName(column), idx, length);
         }
 
         public string ToUpper(string column)
         {
-            return string.Format("upper({0})", _dbProvider.EscapeName(column));
+            return string.Format("upper({0})", _sqlCharacters.EscapeName(column));
         }
 
         public string ToLower(string column)
         {
-            return string.Format("lower({0})", _dbProvider.EscapeName(column));
+            return string.Format("lower({0})", _sqlCharacters.EscapeName(column));
         }
 
         public virtual string Length(string column)
         {
-            return string.Format("len({0})", _dbProvider.EscapeName(column));
+            return string.Format("len({0})", _sqlCharacters.EscapeName(column));
         }
 
         public string EscapeName(string value)
         {
-            return _dbProvider.EscapeName(value);
+            return _sqlCharacters.EscapeName(value);
         }
     }
 }

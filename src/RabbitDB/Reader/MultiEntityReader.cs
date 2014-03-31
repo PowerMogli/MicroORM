@@ -1,6 +1,5 @@
 ﻿using RabbitDB.Base;
 using RabbitDB.Materialization;
-using RabbitDB.Storage;
 using System.Data;
 
 namespace RabbitDB.Reader
@@ -8,17 +7,17 @@ namespace RabbitDB.Reader
     public class MultiEntityReader
     {
         private IDataReader _dataReader;
-        private IDbProvider _dbProvider;
+        private SqlDialect.SqlDialect _sqlDialect;
 
-        internal MultiEntityReader(IDataReader dataReader, IDbProvider dbProvider)
+        internal MultiEntityReader(IDataReader dataReader, SqlDialect.SqlDialect sqlDialect)
         {
-            _dbProvider = dbProvider;
+            _sqlDialect = sqlDialect;
             _dataReader = dataReader;
         }
 
         public EntitySet<TEntity> Read<TEntity>()
         {
-            EntityReader<TEntity> entityReader = new EntityReader<TEntity>(_dataReader, _dbProvider, new EntityMaterializer(_dbProvider));
+            EntityReader<TEntity> entityReader = new EntityReader<TEntity>(_dataReader, _sqlDialect.DbProvider, new EntityMaterializer(_sqlDialect));
             EntitySet<TEntity> entitySet = new EntitySet<TEntity>();
 
             while (entityReader.Read())

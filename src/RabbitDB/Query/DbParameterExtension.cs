@@ -12,7 +12,8 @@ namespace RabbitDB.Query
 
         private static void SetupParameter(IDbDataParameter parameter, string parameterPrefix, string name, object value)
         {
-            if (name == null) throw new ArgumentNullException("name", "Der Name des Parameters darf niemals NULL sein");
+            if (name == null)
+                throw new ArgumentNullException("name", "The name of a parameter can´t be NULL!");
 
             if (name.StartsWith(parameterPrefix))
                 parameterPrefix = string.Empty;

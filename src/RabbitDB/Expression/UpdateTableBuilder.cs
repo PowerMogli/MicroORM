@@ -9,11 +9,10 @@
  * please feel free to send me an e-Mail: albix@gmx.net
  */
 
+using RabbitDB.Mapping;
+using RabbitDB.SqlBuilder;
 using System;
 using System.Linq.Expressions;
-using RabbitDB.Mapping;
-using RabbitDB.Storage;
-using RabbitDB.SqlBuilder;
 
 namespace RabbitDB.Expressions
 {
@@ -29,19 +28,19 @@ namespace RabbitDB.Expressions
     {
         private readonly SqlExpressionBuilder<T> _builder;
         private TableInfo _tableInfo;
-        private IDbProvider _dbProvider;
+        private SqlDialect.SqlDialect _sqlDialect;
 
-        public UpdateTableBuilder(IDbProvider dbProvider, UpdateSqlBuilder updateSqlBuilder)
+        public UpdateTableBuilder(SqlDialect.SqlDialect sqlDialect, UpdateSqlBuilder updateSqlBuilder)
         {
-            _builder = new SqlExpressionBuilder<T>(dbProvider);
-            _dbProvider = dbProvider;
+            _builder = new SqlExpressionBuilder<T>(sqlDialect);
+            _sqlDialect = sqlDialect;
             _tableInfo = TableInfo<T>.GetTableInfo;
             _builder.Append(updateSqlBuilder.GetBaseUpdate());
         }
 
         public IBuildUpdateTable<T> Set(Expression<Func<T, object>> column, Expression<Func<T, object>> statement)
         {
-            _builder.Append(string.Format(" {0}=", _dbProvider.EscapeName(_tableInfo.ResolveColumnName(column.Body.GetPropertyName()))));
+            _builder.Append(string.Format(" {0}=", _sqlDialect.SqlCharacters.EscapeName(_tableInfo.ResolveColumnName(column.Body.GetPropertyName()))));
             _builder.Write(statement);
             _builder.Append(",");
             return this;
@@ -55,7 +54,7 @@ namespace RabbitDB.Expressions
 
         public void Set(string column, object value)
         {
-            _builder.Append(string.Format(" {0}=@{1},", _dbProvider.EscapeName(_tableInfo.ResolveColumnName(column)), _builder.Parameters.NextIndex));
+            _builder.Append(string.Format(" {0}=@{1},", _sqlDialect.SqlCharacters.EscapeName(_tableInfo.ResolveColumnName(column)), _builder.Parameters.NextIndex));
             _builder.Parameters.Add(value);
         }
 

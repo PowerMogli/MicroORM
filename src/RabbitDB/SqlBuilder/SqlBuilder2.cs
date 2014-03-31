@@ -17,7 +17,7 @@ namespace RabbitDB.SqlBuilder
                 if (string.IsNullOrWhiteSpace(InternalSelectStatement))
                 {
                     var tableInfo = TableInfo<TEntity>.GetTableInfo;
-                    var selectBuilder = new SelectSqlBuilder(SqlDbProviderAccessor.DbProvider, tableInfo);
+                    var selectBuilder = new SelectSqlBuilder(DbProviderAccessor.SqlDialect, tableInfo);
                     InternalSelectStatement = selectBuilder.CreateStatement();
                 }
                 return InternalSelectStatement;
@@ -31,7 +31,7 @@ namespace RabbitDB.SqlBuilder
                 if (string.IsNullOrWhiteSpace(InternalDeleteStatement))
                 {
                     var tableInfo = TableInfo<TEntity>.GetTableInfo;
-                    var deleteBuilder = new DeleteSqlBuilder(SqlDbProviderAccessor.DbProvider, tableInfo);
+                    var deleteBuilder = new DeleteSqlBuilder(DbProviderAccessor.SqlDialect, tableInfo);
                     InternalDeleteStatement = deleteBuilder.CreateStatement();
                 }
                 return InternalDeleteStatement;
@@ -45,7 +45,7 @@ namespace RabbitDB.SqlBuilder
                 if (string.IsNullOrWhiteSpace(InternalInsertStatement))
                 {
                     var tableInfo = TableInfo<TEntity>.GetTableInfo;
-                    var insertBuilder = new InsertSqlBuilder(SqlDbProviderAccessor.DbProvider, tableInfo);
+                    var insertBuilder = new InsertSqlBuilder(DbProviderAccessor.SqlDialect, tableInfo);
                     InternalInsertStatement = insertBuilder.CreateStatement();
                 }
                 return InternalInsertStatement;
@@ -55,7 +55,7 @@ namespace RabbitDB.SqlBuilder
         internal static string GetUpdateStatement(KeyValuePair<string, object>[] arguments)
         {
             var tableInfo = TableInfo<TEntity>.GetTableInfo;
-            var updateBuilder = new UpdateSqlBuilder(SqlDbProviderAccessor.DbProvider, tableInfo, arguments);
+            var updateBuilder = new UpdateSqlBuilder(DbProviderAccessor.SqlDialect, tableInfo, arguments);
             return updateBuilder.CreateStatement();
         }
     }

@@ -1,19 +1,18 @@
 using System.Data;
-using RabbitDB.Storage;
 
 namespace RabbitDB.Query
 {
     internal class DbCommandCompiler
     {
         private IArgumentQuery _query;
-        private IDbProvider _provider;
+        private SqlDialect.SqlDialect _sqlDialect;
         private IDbCommand _command;
 
-        internal DbCommandCompiler(IArgumentQuery query, IDbProvider provider)
+        internal DbCommandCompiler(IArgumentQuery query, SqlDialect.SqlDialect sqlDialect)
         {
             _query = query;
-            _provider = provider;
-            _command = provider.CreateCommand();
+            _sqlDialect = sqlDialect;
+            _command = sqlDialect.DbProvider.CreateCommand();
         }
 
         internal IDbCommand Compile()
@@ -31,7 +30,7 @@ namespace RabbitDB.Query
             foreach (QueryParameter argument in _query.Arguments)
             {
                 IDbDataParameter parameter = _command.CreateParameter();
-                parameter.Setup(argument, _provider.ParameterPrefix);
+                parameter.Setup(argument, _sqlDialect.SqlCharacters.ParameterPrefix);
 
                 _command.Parameters.Add(parameter);
             }

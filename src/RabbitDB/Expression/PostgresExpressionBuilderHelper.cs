@@ -1,12 +1,13 @@
 ﻿using System;
 using RabbitDB.Storage;
+using RabbitDB.SqlDialect;
 
 namespace RabbitDB.Expressions
 {
     internal class PostgresExpressionBuilderHelper : ExpressionBuildHelper
     {
-        internal PostgresExpressionBuilderHelper(IDbProvider dbProvider)
-            : base(dbProvider) { }
+        internal PostgresExpressionBuilderHelper(SqlCharacters sqlCharacters)
+            : base(sqlCharacters) { }
 
         public override string FormatBoolean(bool value)
         {

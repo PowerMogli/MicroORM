@@ -1,18 +1,14 @@
 using RabbitDB.Entity;
 using RabbitDB.Query;
-using System;
-using System.Collections.Generic;
 
 namespace RabbitDB.Storage
 {
     internal class DbEntityPersister
     {
-        private IDbProvider _dbProvider;
         private IDbPersister _dbPersister;
 
-        internal DbEntityPersister(IDbProvider dbProvider, IDbPersister dbPersister)
+        internal DbEntityPersister(IDbPersister dbPersister)
         {
-            _dbProvider = dbProvider;
             _dbPersister = dbPersister;
         }
 
@@ -42,7 +38,7 @@ namespace RabbitDB.Storage
 
         private bool Update<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
-            var tuple = entity.PrepareForUpdate<TEntity>(_dbProvider);
+            var tuple = entity.PrepareForUpdate<TEntity>();
             if (tuple.Item1)
             {
                 return Update<TEntity>(entity, new SqlQuery(tuple.Item2, tuple.Item3));

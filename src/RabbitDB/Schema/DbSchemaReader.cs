@@ -9,11 +9,12 @@ namespace RabbitDB.Schema
 {
     internal abstract class DbSchemaReader : IDisposable
     {
-        protected IDbProvider DbProvider { get; set; }
+        protected SqlDialect.SqlDialect SqlDialect { get; private set; }
         protected DbTableCollection Tables { get; private set; }
 
-        internal DbSchemaReader()
+        internal DbSchemaReader(SqlDialect.SqlDialect sqlDialect)
         {
+            this.SqlDialect = sqlDialect;
             this.Tables = new DbTableCollection();
         }
 
@@ -56,7 +57,7 @@ namespace RabbitDB.Schema
 
         public void Dispose()
         {
-            this.DbProvider.Dispose();
+            this.SqlDialect.Dispose();
         }
     }
 }

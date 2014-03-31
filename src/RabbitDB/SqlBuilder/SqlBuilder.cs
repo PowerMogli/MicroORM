@@ -1,5 +1,4 @@
 ﻿using RabbitDB.Mapping;
-using RabbitDB.Storage;
 using System.Linq;
 using System.Text;
 
@@ -7,13 +6,13 @@ namespace RabbitDB.SqlBuilder
 {
     internal abstract class SqlBuilder
     {
-        protected IDbProvider _dbProvider;
+        protected SqlDialect.SqlDialect _sqlDialect;
         protected TableInfo _tableInfo;
 
-        internal SqlBuilder(IDbProvider dbProvider, TableInfo tableInfo)
+        internal SqlBuilder(SqlDialect.SqlDialect sqlDialect, TableInfo tableInfo)
         {
             _tableInfo = tableInfo;
-            _dbProvider = dbProvider;
+            _sqlDialect = sqlDialect;
         }
 
         internal abstract string CreateStatement();
@@ -29,7 +28,7 @@ namespace RabbitDB.SqlBuilder
             foreach (var primaryKey in primaryKeys)
             {
                 if (i >= count - 1) seperator = string.Empty;
-                whereClause.AppendFormat("{0}=@{1}{2}", _dbProvider.EscapeName(primaryKey), i++, seperator);
+                whereClause.AppendFormat("{0}=@{1}{2}", _sqlDialect.SqlCharacters.EscapeName(primaryKey), i++, seperator);
             }
             return whereClause.ToString();
         }

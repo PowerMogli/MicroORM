@@ -1,5 +1,5 @@
-﻿using System.Data;
-using RabbitDB.Expressions;
+﻿using RabbitDB.Expressions;
+using System.Data;
 
 namespace RabbitDB.Storage
 {
@@ -27,9 +27,5 @@ namespace RabbitDB.Storage
         }
 
         public abstract override string ProviderName { get; }
-
-        public abstract override string ScopeIdentity { get; }
-
-        public abstract override IDbProviderExpressionBuildHelper BuilderHelper { get; }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using RabbitDB.Schema;
-using RabbitDB.Storage;
+using RabbitDB.SqlDialect;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -53,15 +53,15 @@ namespace RabbitDB.Mapping
             return _propertyInfos.Any(propertyInfo => propertyInfo.ColumnAttribute.ColumnName == columnName);
         }
 
-        internal IEnumerable<string> SelectValidColumnNames(DbTable table, IDbProvider dbProvider)
+        internal IEnumerable<string> SelectValidColumnNames(DbTable table, SqlCharacters sqlCharacters)
         {
             return this.Where(column => table.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
-                .Select(member => dbProvider.EscapeName(member.ColumnAttribute.ColumnName));
+                .Select(member => sqlCharacters.EscapeName(member.ColumnAttribute.ColumnName));
         }
 
-        internal IEnumerable<string> SelectValidNonAutoNumberColumnNames(IDbProvider dbProvider)
+        internal IEnumerable<string> SelectValidNonAutoNumberColumnNames(SqlCharacters sqlCharacters)
         {
-            return this.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => dbProvider.EscapeName(column.ColumnAttribute.ColumnName));
+            return this.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => sqlCharacters.EscapeName(column.ColumnAttribute.ColumnName));
         }
 
         internal IEnumerable<string> SelectValidNonAutoNumberPrefixedColumnNames()

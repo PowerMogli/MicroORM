@@ -1,8 +1,7 @@
-﻿using System;
+﻿using RabbitDB.Expressions;
+using System;
 using System.Data;
 using System.Linq.Expressions;
-using RabbitDB.Expressions;
-using RabbitDB.Storage;
 
 namespace RabbitDB.Query.Generic
 {
@@ -18,9 +17,9 @@ namespace RabbitDB.Query.Generic
             _expression = expression;
         }
 
-        public IDbCommand Compile(IDbProvider dbProvider)
+        public IDbCommand Compile(SqlDialect.SqlDialect sqlDialect)
         {
-            SqlExpressionBuilder<T> sqlExpressionBuilder = new SqlExpressionBuilder<T>(dbProvider);
+            SqlExpressionBuilder<T> sqlExpressionBuilder = new SqlExpressionBuilder<T>(sqlDialect);
             sqlExpressionBuilder.CreateSelect(_expression);
             string query = sqlExpressionBuilder.ToString();
             QueryParameterCollection queryParameterCollection =
@@ -29,7 +28,7 @@ namespace RabbitDB.Query.Generic
                 : new QueryParameterCollection();
 
             SqlQuery sqlQuery = new SqlQuery(query, queryParameterCollection);
-            return sqlQuery.Compile(dbProvider);
+            return sqlQuery.Compile(sqlDialect);
         }
     }
 }

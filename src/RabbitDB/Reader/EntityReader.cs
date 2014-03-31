@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
 using RabbitDB.Mapping;
 using RabbitDB.Materialization;
 using RabbitDB.Storage;
+using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace RabbitDB.Reader
 {

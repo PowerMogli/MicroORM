@@ -10,28 +10,28 @@
  */
 
 
+using RabbitDB.Mapping;
+using RabbitDB.SqlBuilder;
+using RabbitDB.Storage;
 using System;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Text;
-using RabbitDB.Mapping;
-using RabbitDB.Storage;
-using RabbitDB.SqlBuilder;
 
 namespace RabbitDB.Expressions
 {
     internal class SqlExpressionBuilder<T>
     {
-        private readonly IDbProvider _dbProvider;
+        private readonly SqlDialect.SqlDialect _sqlDialect;
         private readonly TableInfo _tableInfo;
         private StringBuilder _sqlQuery = new StringBuilder();
         private readonly ExpressionWriter<T> _expressionWriter;
 
-        internal SqlExpressionBuilder(IDbProvider dbProvider)
+        internal SqlExpressionBuilder(SqlDialect.SqlDialect sqlDialect)
         {
-            _dbProvider = dbProvider;
+            _sqlDialect = sqlDialect;
             _tableInfo = TableInfo<T>.GetTableInfo;
-            _expressionWriter = new ExpressionWriter<T>(dbProvider.BuilderHelper, this.Parameters);
+            _expressionWriter = new ExpressionWriter<T>(sqlDialect.BuilderHelper, this.Parameters);
         }
 
         private static string SortToString(SortOrder sort)
@@ -51,7 +51,7 @@ namespace RabbitDB.Expressions
             }
 
             var column = selector.Body.GetPropertyName();
-            _sqlQuery.AppendFormat("{0} {1}", _dbProvider.EscapeName(column), SortToString(sort));
+            _sqlQuery.AppendFormat("{0} {1}", _sqlDialect.SqlCharacters.EscapeName(column), SortToString(sort));
             _order = true;
             return this;
         }
@@ -78,7 +78,7 @@ namespace RabbitDB.Expressions
             {
                 _sqlQuery.Append(", ");
             }
-            _sqlQuery.Append(_dbProvider.EscapeName(_tableInfo.ResolveColumnName(name)));
+            _sqlQuery.Append(_sqlDialect.SqlCharacters.EscapeName(_tableInfo.ResolveColumnName(name)));
             _hasColumn = true;
             if (alias != null)
             {
@@ -115,7 +115,7 @@ namespace RabbitDB.Expressions
 
         private void WriteSelectAllColumns()
         {
-            var sqlBuilder = new SelectSqlBuilder(_dbProvider, _tableInfo);
+            var sqlBuilder = new SelectSqlBuilder(_sqlDialect, _tableInfo);
             _sqlQuery.Append(sqlBuilder.GetBaseSelect());
         }
 

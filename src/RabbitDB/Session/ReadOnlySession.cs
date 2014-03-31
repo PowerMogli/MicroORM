@@ -49,7 +49,7 @@ namespace RabbitDB.Base
 
         public TEntity GetScalarValue<TEntity>(string sql, params object[] arguments)
         {
-            return _dbProvider.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
+            return _sqlDialect.ExecuteScalar<TEntity>(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
         public EntitySet<TEntity> GetEntitySet<TEntity>(string sql, params object[] arguments)
@@ -65,7 +65,7 @@ namespace RabbitDB.Base
         public EntitySet<TEntity> GetEntitySet<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            var sqlBuilder = new SelectSqlBuilder(_dbProvider, tableInfo);
+            var sqlBuilder = new SelectSqlBuilder(_sqlDialect, tableInfo);
             return ((IBaseDbSession)this).GetEntitySet<TEntity>(new SqlQuery(sqlBuilder.GetBaseSelect()));
         }
 
@@ -82,14 +82,14 @@ namespace RabbitDB.Base
         public EntityReader<TEntity> GetEntityReader<TEntity>()
         {
             TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
-            var sqlBuilder = new SelectSqlBuilder(_dbProvider, tableInfo);
+            var sqlBuilder = new SelectSqlBuilder(_sqlDialect, tableInfo);
             return ((IBaseDbSession)this).GetEntityReader<TEntity>(new SqlQuery(sqlBuilder.GetBaseSelect()));
         }
 
         public MultiEntityReader ExecuteMultiple(string sql, params object[] arguments)
         {
-            IDataReader dataReader = _dbProvider.ExecuteReader(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
-            return new MultiEntityReader(dataReader, _dbProvider);
+            IDataReader dataReader = _sqlDialect.ExecuteReader(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
+            return new MultiEntityReader(dataReader, _sqlDialect);
         }
     }
 }

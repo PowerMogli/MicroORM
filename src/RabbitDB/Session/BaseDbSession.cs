@@ -31,11 +31,11 @@ namespace RabbitDB.Base
 
         private void Initialize(string connectionString, DbEngine dbEngine)
         {
-            _dbProvider = DbProviderFactory.GetProvider(_dbEngine, connectionString);
-            SqlDbProviderAccessor.DbProvider = _dbProvider;
+            _sqlDialect = SqlDialectFactory.Create(_dbEngine, connectionString);
+            DbProviderAccessor.SqlDialect = _sqlDialect;
         }
 
-        internal IDbProvider _dbProvider = null;
+        internal SqlDialect.SqlDialect _sqlDialect = null;
         protected DbEngine _dbEngine;
 
         private IDbPersister _dbPersister;
@@ -43,12 +43,12 @@ namespace RabbitDB.Base
         {
             get
             {
-                if (_dbProvider == null)
+                if (_sqlDialect == null)
                 {
-                    throw new InvalidOperationException("DbProvider is not initialized");
+                    throw new InvalidOperationException("SqlDialect is not initialized");
                 }
 
-                return _dbPersister ?? (_dbPersister = new DbPersister(_dbProvider));
+                return _dbPersister ?? (_dbPersister = new DbPersister(_sqlDialect));
             }
         }
 
@@ -60,12 +60,12 @@ namespace RabbitDB.Base
 
         EntityReader<TEntity> IBaseDbSession.GetEntityReader<TEntity>(IQuery query)
         {
-            return _dbProvider.ExecuteReader<TEntity>(query);
+            return _sqlDialect.ExecuteReader<TEntity>(query);
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
         {
-            ITransactionalDbProvider transactionalProvider = _dbProvider as ITransactionalDbProvider;
+            ITransactionalDbProvider transactionalProvider = _sqlDialect as ITransactionalDbProvider;
             if (transactionalProvider == null)
                 throw new NotSupportedException(
                     string.Format(@"This type of DbEngine ('{0}') does not implement the interface ITransactionalDbProvider
@@ -85,7 +85,7 @@ namespace RabbitDB.Base
                 _dbPersister = null;
             }
 
-            _dbProvider.Dispose();
+            _sqlDialect.Dispose();
             DbSchemaAllocator.SchemaReader.Dispose();
         }
 

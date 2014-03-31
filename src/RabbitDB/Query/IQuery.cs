@@ -1,10 +1,10 @@
-﻿using System.Data;
-using RabbitDB.Storage;
+﻿using RabbitDB.Storage;
+using System.Data;
 
 namespace RabbitDB.Query
 {
     internal interface IQuery
     {
-        IDbCommand Compile(IDbProvider provider);
+        IDbCommand Compile(SqlDialect.SqlDialect sqlDialect);
     }
 }

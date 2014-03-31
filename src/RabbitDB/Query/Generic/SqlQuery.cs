@@ -1,7 +1,6 @@
 ﻿using RabbitDB.Base;
 using RabbitDB.Mapping;
 using RabbitDB.SqlBuilder;
-using RabbitDB.Storage;
 using System.Data;
 
 namespace RabbitDB.Query.Generic
@@ -26,13 +25,13 @@ namespace RabbitDB.Query.Generic
             _tableInfo = TableInfo<TEntity>.GetTableInfo;
         }
 
-        public override IDbCommand Compile(IDbProvider provider)
+        public override IDbCommand Compile(SqlDialect.SqlDialect sqlDialect)
         {
             if (_primaryKeys != null)
                 PrepareSqlStatement();
             PrepareArguments();
 
-            return base.Compile(provider);
+            return base.Compile(sqlDialect);
         }
 
         private void PrepareSqlStatement()

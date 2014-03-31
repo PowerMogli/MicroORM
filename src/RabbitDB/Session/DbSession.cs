@@ -1,15 +1,9 @@
-using System;
-using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using RabbitDB.Mapping;
 using RabbitDB.Query;
 using RabbitDB.Query.Generic;
-using RabbitDB.Query.StoredProcedure;
 using RabbitDB.Reader;
-using RabbitDB.Schema;
 using RabbitDB.Storage;
-using RabbitDB.Entity;
+using System;
+using System.Linq.Expressions;
 
 namespace RabbitDB.Base
 {
@@ -38,12 +32,12 @@ namespace RabbitDB.Base
         {
             get
             {
-                if (_dbProvider == null)
+                if (_sqlDialect == null)
                 {
                     throw new InvalidOperationException("DbProvider is not initialized");
                 }
 
-                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(_dbProvider, DbPersister));
+                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(DbPersister));
             }
         }
 
@@ -51,7 +45,7 @@ namespace RabbitDB.Base
 
         public void ExecuteCommand(string sql, params object[] arguments)
         {
-            _dbProvider.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
+            _sqlDialect.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
@@ -66,7 +60,7 @@ namespace RabbitDB.Base
 
         void IDbSession.Load<TEntity>(TEntity entity)
         {
-            EntityReader<TEntity> objectReader = (EntityReader<TEntity>)_dbProvider.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
+            EntityReader<TEntity> objectReader = (EntityReader<TEntity>)_sqlDialect.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
             if (objectReader.Load(entity) == false) throw new Exception("Loading data was not successfull!");
         }
 

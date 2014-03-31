@@ -7,16 +7,16 @@ namespace RabbitDB.Storage
 {
     internal class DbPersister : IDbPersister
     {
-        private IDbProvider _dbProvider;
+        private ICommandExecutor _dbCommandExecutor;
 
-        internal DbPersister(IDbProvider dbProvider)
+        internal DbPersister(ICommandExecutor dbCommandExecutor)
         {
-            _dbProvider = dbProvider;
+            _dbCommandExecutor = dbCommandExecutor;
         }
 
         public void Update<TEntity>(IQuery query)
         {
-            _dbProvider.ExecuteCommand(query);
+            _dbCommandExecutor.ExecuteCommand(query);
         }
 
         public void Delete<TEntity>(TEntity entity)
@@ -25,7 +25,7 @@ namespace RabbitDB.Storage
             string deleteStatement = SqlBuilder<TEntity>.DeleteStatement;
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(tableInfo.GetPrimaryKeyValues(entity));
 
-            _dbProvider.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
+            _dbCommandExecutor.ExecuteCommand(new SqlQuery(deleteStatement, arguments));
         }
 
         public void Insert<TEntity>(TEntity entity)
@@ -34,7 +34,7 @@ namespace RabbitDB.Storage
             string insertStatement = SqlBuilder<TEntity>.InsertStatement;
             QueryParameterCollection arguments = QueryParameterCollection.Create<TEntity>(new EntityArgumentsReader().GetEntityArguments(entity, tableInfo));
 
-            object insertId = _dbProvider.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments));
+            object insertId = _dbCommandExecutor.ExecuteScalar<object>(new SqlQuery(insertStatement, arguments));
             tableInfo.SetAutoNumber<TEntity>(entity, insertId);
         }
     }

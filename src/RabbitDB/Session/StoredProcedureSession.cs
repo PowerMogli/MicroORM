@@ -23,7 +23,7 @@ namespace RabbitDB.Base
 
         public void ExecuteStoredProcedure(StoredProcedure procedureObject)
         {
-            _dbProvider.ExecuteCommand(new StoredProcedureQuery(procedureObject));
+            _sqlDialect.ExecuteCommand(new StoredProcedureQuery(procedureObject));
         }
 
         public TEntity ExecuteStoredProcedure<TEntity>(StoredProcedure procedureObject)
@@ -34,7 +34,7 @@ namespace RabbitDB.Base
 
         public void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments)
         {
-            _dbProvider.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create(arguments)));
+            _sqlDialect.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create(arguments)));
         }
 
         public TEntity ExecuteStoredProcedure<TEntity>(string storedProcedureName, params object[] arguments)

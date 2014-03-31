@@ -1,20 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
 //using LinFu.DynamicProxy;
 using RabbitDB.Mapping;
 using RabbitDB.Storage;
+using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace RabbitDB.Materialization
 {
     class EntityMaterializer : IEntityMaterializer
     {
         //private ProxyFactory _proxyFactory = new ProxyFactory();
-        private IDbProvider _dbProvider;
+        private INullValueResolver _nullValueResolver;
 
-        internal EntityMaterializer(IDbProvider provider)
+        internal EntityMaterializer(INullValueResolver nullValueResolver)
         {
-            _dbProvider = provider;
+            _nullValueResolver = nullValueResolver;
         }
 
         public IEnumerable<TEntity> Materialize<TEntity>(Func<IDataReader, IEnumerable<TEntity>> materializer, IDataReader dataReader)
@@ -49,7 +49,9 @@ namespace RabbitDB.Materialization
             if (!propertyInfo.CanWrite) return;
 
             if (Convert.IsDBNull(value))
-                value = propertyInfo.IsNullable ? null : _dbProvider.ResolveNullValue(value, propertyInfo.PropertyType);
+                value = propertyInfo.IsNullable
+                    ? null
+                    : _nullValueResolver.ResolveNullValue(value, propertyInfo.PropertyType);
 
             propertyInfo.SetValue(entity, value);
         }

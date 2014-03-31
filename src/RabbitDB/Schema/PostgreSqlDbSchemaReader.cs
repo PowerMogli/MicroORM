@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using RabbitDB.Mapping;
+﻿using RabbitDB.Mapping;
 using RabbitDB.Query;
 using RabbitDB.Storage;
 using RabbitDB.Utils;
+using System;
+using System.Collections.Generic;
+using System.Data;
 
 namespace RabbitDB.Schema
 {
@@ -26,23 +26,20 @@ namespace RabbitDB.Schema
 			WHERE lower(tc.constraint_type)='primary key'
 			AND kcu.table_name=@tablename";
 
-        internal PostgreSqlDbSchemaReader(string connectionString)
-            : base()
-        {
-            this.DbProvider = new PostgresDbProvider(connectionString);
-        }
+        internal PostgreSqlDbSchemaReader(string connectionString, SqlDialect.SqlDialect sqlDialect)
+            : base(sqlDialect) { }
 
         protected override List<DbColumn> GetColumns(DbTable dbTable)
         {
             List<DbColumn> columns = new List<DbColumn>();
-            using (IDataReader dataReader = base.DbProvider.ExecuteReader(
+            using (IDataReader dataReader = base.SqlDialect.ExecuteReader(
                         new SqlQuery(SQL_COLUMN, QueryParameterCollection.Create(new object[] { new { tableName = dbTable.Name, schemaName = dbTable.Schema } }))))
             {
                 while (dataReader.Read())
                 {
                     try
                     {
-                        DbColumn dbColumn =new DbColumn();
+                        DbColumn dbColumn = new DbColumn();
                         dbColumn.Name = SqlTools.GetDbValue<string>(dataReader["column_name"]);
                         dbColumn.PropertyName = DbSchemaCleaner.CleanUp(dbColumn.Name);
                         try { dbColumn.DbType = TypeConverter.ToDbType(SqlTools.GetDbValue<string>(dataReader["udt_name"])); }
@@ -63,7 +60,7 @@ namespace RabbitDB.Schema
 
         protected override DbTable GetTable(string tableName)
         {
-            using (IDataReader dataReader = base.DbProvider.ExecuteReader(new SqlQuery(SQL_TABLE, QueryParameterCollection.Create(new object[] { new { tableName = tableName } }))))
+            using (IDataReader dataReader = base.SqlDialect.ExecuteReader(new SqlQuery(SQL_TABLE, QueryParameterCollection.Create(new object[] { new { tableName = tableName } }))))
             {
                 if (dataReader.Read())
                 {
@@ -84,7 +81,7 @@ namespace RabbitDB.Schema
         {
             List<string> primaryKeys = new List<string>();
 
-            using (IDataReader dataReader = base.DbProvider.ExecuteReader(new SqlQuery(SQL_PRIMARYKEY, QueryParameterCollection.Create(new object[] { new { tableName = table } }))))
+            using (IDataReader dataReader = base.SqlDialect.ExecuteReader(new SqlQuery(SQL_PRIMARYKEY, QueryParameterCollection.Create(new object[] { new { tableName = table } }))))
             {
                 while (dataReader.Read())
                 {

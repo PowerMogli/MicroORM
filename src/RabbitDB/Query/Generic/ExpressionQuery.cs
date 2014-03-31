@@ -1,8 +1,7 @@
+using RabbitDB.Expressions;
 using System;
 using System.Data;
 using System.Linq.Expressions;
-using RabbitDB.Expressions;
-using RabbitDB.Storage;
 
 namespace RabbitDB.Query
 {
@@ -17,7 +16,7 @@ namespace RabbitDB.Query
             _condition = condition;
         }
 
-        public IDbCommand Compile(IDbProvider provider)
+        public IDbCommand Compile(SqlDialect.SqlDialect sqlDialect)
         {
             return null;
         }

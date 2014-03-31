@@ -1,5 +1,5 @@
-﻿using System.Data;
-using RabbitDB.Storage;
+﻿using RabbitDB.Storage;
+using System.Data;
 
 namespace RabbitDB.Query
 {
@@ -20,9 +20,9 @@ namespace RabbitDB.Query
             this.Arguments = arguments;
         }
 
-        public virtual IDbCommand Compile(IDbProvider provider)
+        public virtual IDbCommand Compile(SqlDialect.SqlDialect sqlDialect)
         {
-            DbCommandCompiler commandCompiler = new DbCommandCompiler(this, provider);
+            DbCommandCompiler commandCompiler = new DbCommandCompiler(this, sqlDialect);
             IDbCommand dbCommand = commandCompiler.Compile();
             dbCommand.CommandType = CommandType.Text;
 

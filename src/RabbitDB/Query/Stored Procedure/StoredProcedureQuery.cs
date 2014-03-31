@@ -1,5 +1,4 @@
-﻿using RabbitDB.Storage;
-using System.Data;
+﻿using System.Data;
 
 namespace RabbitDB.Query.StoredProcedure
 {
@@ -20,9 +19,9 @@ namespace RabbitDB.Query.StoredProcedure
             this.Arguments = arguments;
         }
 
-        public IDbCommand Compile(IDbProvider dbProvider)
+        public IDbCommand Compile(SqlDialect.SqlDialect sqlDialect)
         {
-            DbCommandCompiler commandCompiler = new DbCommandCompiler(this, dbProvider);
+            DbCommandCompiler commandCompiler = new DbCommandCompiler(this, sqlDialect);
             IDbCommand dbCommand = commandCompiler.Compile();
             dbCommand.CommandType = CommandType.StoredProcedure;
 

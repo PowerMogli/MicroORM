@@ -25,7 +25,10 @@ data_type DataType,
 where uc.constraint_type = 'P'
 and uc.table_name = upper(:tableName)
 and ucc.position = 1";
-        
+
+        internal OracleDbSchemaReader(SqlDialect.SqlDialect sqlDialect)
+            : base(sqlDialect) { }
+
         protected override List<DbColumn> GetColumns(DbTable dbTable)
         {
             throw new NotImplementedException();
