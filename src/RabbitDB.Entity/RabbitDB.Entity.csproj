@@ -40,8 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangeTracker\BaseChangeTracer.cs" />
+    <Compile Include="ChangeTracker\ChangeTracerOption.cs" />
     <Compile Include="ChangeTracker\ComponentTrackerHelper.cs" />
     <Compile Include="ChangeTracker\ComponentTrackerType.cs" />
+    <Compile Include="ChangeTracker\HashedChangeTracer.cs" />
+    <Compile Include="ChangeTracker\IChangeTracer.cs" />
     <Compile Include="ChangeTracker\IComponentTracker.cs" />
     <Compile Include="ChangeTracker\IEnumerableExtensions.cs" />
     <Compile Include="ChangeTracker\IListComponentFilter.cs" />
@@ -51,6 +55,7 @@
     <Compile Include="ChangeTracker\ListComponentFilter.cs" />
     <Compile Include="ChangeTracker\ListComponentTracker.cs" />
     <Compile Include="ChangeTracker\NodeComponentTracker.cs" />
+    <Compile Include="ChangeTracker\NotifiedChangeTracer.cs" />
     <Compile Include="ChangeTracker\PropertyTracker.cs" />
     <Compile Include="ChangeTracker\Tracker.cs" />
     <Compile Include="ChangeTracker\TrackerInfo.cs" />
@@ -58,7 +63,6 @@
     <Compile Include="Entity\EntityInfo.cs" />
     <Compile Include="Entity\EntityState.cs" />
     <Compile Include="Entity\NotifiedEntity.cs" />
-    <Compile Include="Entity\NotifiedEntityInfo.cs" />
     <Compile Include="Materialization\IEntityHashSetCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\IValidEntityArgumentsReader.cs" />

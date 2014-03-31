@@ -1,8 +1,6 @@
-using System;
+using RabbitDB.ChangeTracing;
 using RabbitDB.Entity;
-using RabbitDB.Materialization;
-using RabbitDB.ChangeTracker;
-using RabbitDB.Utils;
+using System;
 
 namespace RabbitDB.Caching
 {
@@ -11,33 +9,15 @@ namespace RabbitDB.Caching
         private static readonly object _lock = new object();
         private static EntityInfoCache<object> _referenceCache = new EntityInfoCache<object>();
 
-        internal static NotifiedEntityInfo GetNotifiedEntityInfo<TEntity>(TEntity entity)
-        {
-            NotifiedEntityInfo notifiedEntityInfo = GetEntityInfoFromCache(entity) as NotifiedEntityInfo;
-
-            if (notifiedEntityInfo == null)
-            {
-                ITracker changeTracker = new Tracker();
-                changeTracker.TrackObject(entity);
-                notifiedEntityInfo = new NotifiedEntityInfo(changeTracker, new ValidEntityArgumentReader<TEntity>(entity));
-                SetEntityInfo<TEntity>(entity, notifiedEntityInfo);
-            }
-            UpdateEntityInfoLastCallTime(notifiedEntityInfo);
-
-            return notifiedEntityInfo;
-        }
-
         internal static EntityInfo GetEntityInfo<TEntity>(TEntity entity)
         {
-            if (entity is NotifiedEntity)
-            {
-                return GetNotifiedEntityInfo(entity);
-            }
-
-            EntityInfo entityInfo = GetEntityInfoFromCache(entity);
+            var entityInfo = GetEntityInfoFromCache(entity);
 
             if (entityInfo == null)
-                SetEntityInfo<TEntity>(entity, new EntityInfo(new EntityHashSetCreator<TEntity>(entity), new ValidEntityArgumentReader<TEntity>(entity)));
+            {
+                entityInfo = new EntityInfo(ChangeTracingFactory.Create(entity));
+                SetEntityInfo<TEntity>(entity, entityInfo);
+            }
 
             UpdateEntityInfoLastCallTime(entityInfo);
 

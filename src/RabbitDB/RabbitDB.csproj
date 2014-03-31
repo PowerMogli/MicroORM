@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="ChangeTracing\ChangeTracingFactory.cs" />
     <Compile Include="Mapping\TableInfo2.cs" />
     <Compile Include="Session\BaseDbSession.cs" />
     <Compile Include="Caching\CacheItem.cs" />

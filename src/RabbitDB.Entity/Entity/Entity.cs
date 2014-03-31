@@ -1,3 +1,4 @@
+using RabbitDB.Entity.ChangeTracker;
 using System;
 using System.Collections.Generic;
 
@@ -14,6 +15,8 @@ namespace RabbitDB.Entity
         public event EventHandler EntityUpdated = delegate { };
 
         internal EntityInfo EntityInfo { get; set; }
+
+        internal virtual ChangeTracerOption ChangeTracerOption { get { return ChangeTracerOption.Hashed; } }
 
         internal bool MarkedForDeletion { get; set; }
 

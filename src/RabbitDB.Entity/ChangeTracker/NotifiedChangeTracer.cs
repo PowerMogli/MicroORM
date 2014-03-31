@@ -1,28 +1,27 @@
 ﻿using RabbitDB.ChangeTracker;
 using RabbitDB.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RabbitDB.Entity
+namespace RabbitDB.Entity.ChangeTracker
 {
-    internal sealed class NotifiedEntityInfo : EntityInfo
+    internal class NotifiedChangeTracer : BaseChangeTracer, IChangeTracer, IDisposable
     {
         private ITracker _tracker;
+
         private Dictionary<string, object> NotifiedValues { get; set; }
 
-        internal NotifiedEntityInfo(ITracker tracker, IValidEntityArgumentsReader validEntityArgumentsReader)
-            : base()
+        public NotifiedChangeTracer(ITracker tracker, IValidEntityArgumentsReader validEntityArgumentsReader)
+            : base(validEntityArgumentsReader)
         {
             _tracker = tracker;
             _tracker.IsDirtyChanged += UpdateOrCreateHashSet;
-            this.ValidArgumentReader = validEntityArgumentsReader;
             this.NotifiedValues = new Dictionary<string, object>();
         }
 
-        internal void UpdateOrCreateHashSet(object sender, IsDiryChangedArgs args)
+        private void UpdateOrCreateHashSet(object sender, IsDiryChangedArgs args)
         {
-            if (this.EntityState != EntityState.Loaded) return;
-
             if (this.NotifiedValues.ContainsKey(args.PropertyName))
             {
                 if (args.IsDirty)
@@ -36,13 +35,9 @@ namespace RabbitDB.Entity
             }
         }
 
-        internal override void ComputeSnapshot<TEntity>(TEntity entity) { /* Do nothing */ }
-
-        internal override void MergeChanges() { /* Do nothing */ }
-
-        internal override KeyValuePair<string, object>[] ComputeValuesToUpdate()
+        public override KeyValuePair<string, object>[] ComputeValuesToUpdate()
         {
-            var validEntityValues = this.ValidArgumentReader.ReadValidEntityArguments();
+            var validEntityValues = base.ValidArgumentReader.ReadValidEntityArguments();
             var valuesToUpdate = new Dictionary<string, object>();
 
             foreach (var kvp in this.NotifiedValues)
@@ -54,16 +49,22 @@ namespace RabbitDB.Entity
             return valuesToUpdate.ToArray();
         }
 
-        protected override void Dispose(bool dispose)
+        private void Dispose(bool dispose)
         {
-            if (base._disposed == false)
+            if (dispose && base._disposed == false)
             {
-                base.Dispose(dispose);
-
                 _tracker.Dispose();
                 this.NotifiedValues.Clear();
                 this.NotifiedValues = null;
+                _tracker.IsDirtyChanged -= UpdateOrCreateHashSet;
+
+                base._disposed = true;
             }
+        }
+
+        public override void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

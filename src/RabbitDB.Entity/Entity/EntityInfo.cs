@@ -1,75 +1,51 @@
-﻿using RabbitDB.Materialization;
-using RabbitDB.Utils;
+﻿using RabbitDB.Entity.ChangeTracker;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace RabbitDB.Entity
 {
-    internal class EntityInfo : IDisposable
+    internal class EntityInfo : IDisposable, IChangeTracer
     {
-        internal EntityInfo(IEntityHashSetCreator entityHashSetCreator, IValidEntityArgumentsReader validEntityArgumentsReader)
+        private IChangeTracer _changeTracer;
+
+        internal EntityInfo(IChangeTracer changeTracer)
             : this()
         {
-            this.EntityHashSetCreator = entityHashSetCreator;
-            this.ValidArgumentReader = validEntityArgumentsReader;
-            this.ValueSnapshot = new Dictionary<string, int>();
-            this.ChangesSnapshot = new Dictionary<string, int>();
+            _changeTracer = changeTracer;
         }
 
-        protected EntityInfo()
+        private EntityInfo()
         {
             this.EntityState = EntityState.None;
             this.LastCallTime = DateTime.Now;
         }
 
-        protected bool _disposed;
-
-        private IEntityHashSetCreator EntityHashSetCreator { get; set; }
-        protected IValidEntityArgumentsReader ValidArgumentReader { get; set; }
+        private bool _disposed;
 
         internal bool CanBeRemoved { get { return DateTime.Now.Subtract(this.LastCallTime) > TimeSpan.FromMinutes(2); } }
         internal EntityState EntityState { get; set; }
-        private Dictionary<string, int> ValueSnapshot { get; set; }
-        private Dictionary<string, int> ChangesSnapshot { get; set; }
+
         internal DateTime LastCallTime { get; set; }
 
-        internal void ClearChanges()
+        public void ClearChanges()
         {
-            this.ChangesSnapshot.Clear();
+            _changeTracer.ClearChanges();
         }
 
-        internal virtual void MergeChanges()
+        public void MergeChanges()
         {
-            foreach (var change in this.ChangesSnapshot)
-            {
-                this.ValueSnapshot[change.Key] = change.Value;
-            }
-            ClearChanges();
+            _changeTracer.MergeChanges();
         }
 
-        internal virtual void ComputeSnapshot<TEntity>(TEntity entity)
+        public void ComputeSnapshot<TEntity>(TEntity entity)
         {
-            this.ValueSnapshot = EntityHashSetCreator.ComputeEntityHashSet();
+            _changeTracer.ComputeSnapshot(entity);
         }
 
-        internal virtual KeyValuePair<string, object>[] ComputeValuesToUpdate()
+        public KeyValuePair<string, object>[] ComputeValuesToUpdate()
         {
-            var entityHashSet = EntityHashSetCreator.ComputeEntityHashSet();
-            var entityValues = ValidArgumentReader.ReadValidEntityArguments();
-
-            var valuesToUpdate = new Dictionary<string, object>();
-            foreach (var kvp in entityHashSet)
-            {
-                var oldHash = this.ValueSnapshot[kvp.Key];
-                if (oldHash.Equals(kvp.Value) == false)
-                {
-                    valuesToUpdate.Add(kvp.Key, entityValues.FirstOrDefault(kvp1 => kvp1.Key == kvp.Key).Value);
-                    this.ChangesSnapshot.Add(kvp.Key, kvp.Value);
-                }
-            }
-
-            return valuesToUpdate.ToArray();
+            return _changeTracer.ComputeValuesToUpdate();
         }
 
         internal bool HasChanges()
@@ -80,16 +56,11 @@ namespace RabbitDB.Entity
                 || this.EntityState == EntityState.None;
         }
 
-        protected virtual void Dispose(bool dispose)
+        private void Dispose(bool dispose)
         {
             if (dispose && _disposed == false)
             {
-                this.ValidArgumentReader = null;
-                this.EntityHashSetCreator = null;
-                this.ValueSnapshot.Clear();
-                this.ValueSnapshot = null;
-                this.ChangesSnapshot.Clear();
-                this.ChangesSnapshot = null;
+                _changeTracer.Dispose();
 
                 _disposed = true;
             }
