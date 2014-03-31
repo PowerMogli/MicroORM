@@ -24,8 +24,8 @@ namespace RabbitDB.SqlDialect
 
         internal SqlDialect(SqlCharacters sqlCharacters, IDbProvider dbProvider)
         {
-            this.DbCommandExecutor = new DbCommandExecutor(this.DbProvider, this);
             this.DbProvider = dbProvider;
+            this.DbCommandExecutor = new DbCommandExecutor(this.DbProvider, this);
             this.SqlCharacters = sqlCharacters;
         }
 

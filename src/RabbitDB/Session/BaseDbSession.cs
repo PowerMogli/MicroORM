@@ -65,7 +65,7 @@ namespace RabbitDB.Base
 
         public IDbTransaction BeginTransaction(IsolationLevel? isolationLevel = null)
         {
-            ITransactionalDbProvider transactionalProvider = _sqlDialect as ITransactionalDbProvider;
+            ITransactionalDbProvider transactionalProvider = _sqlDialect.DbProvider as ITransactionalDbProvider;
             if (transactionalProvider == null)
                 throw new NotSupportedException(
                     string.Format(@"This type of DbEngine ('{0}') does not implement the interface ITransactionalDbProvider

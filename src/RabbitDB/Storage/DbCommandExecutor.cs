@@ -41,7 +41,7 @@ namespace RabbitDB.Storage
         public virtual EntityReader<T> ExecuteReader<T>(IDbCommand dbCommand)
         {
             IDataReader dataReader = dbCommand.ExecuteReader();
-            return new EntityReader<T>(dataReader, this._dbProvider, new EntityMaterializer(this.NullValueResolver));
+            return new EntityReader<T>(dataReader, _dbProvider, new EntityMaterializer(this.NullValueResolver));
         }
 
         public T ExecuteScalar<T>(IDbCommand dbCommand)
