@@ -31,8 +31,16 @@ namespace RabbitDB.SqlDialect
 
         private IDbCommand CompileCommand(IQuery query)
         {
-            this.DbProvider.CreateConnection();
             return query.Compile(this);
+        }
+
+        private IDbCommand PrepareCommand(IQuery query)
+        {
+            this.DbProvider.CreateConnection();
+            var dbCommand = CompileCommand(query);
+            this.DbProvider.SetupCommand(dbCommand);
+
+            return dbCommand;
         }
 
         public virtual object ResolveNullValue(object value, Type type)
@@ -66,29 +74,25 @@ namespace RabbitDB.SqlDialect
 
         public void ExecuteCommand(IQuery query)
         {
-            var dbCommand = CompileCommand(query);
-            this.DbProvider.SetupCommand(dbCommand);
+            var dbCommand = PrepareCommand(query);
             this.DbCommandExecutor.ExecuteCommand(dbCommand);
         }
 
         public IDataReader ExecuteReader(IQuery query)
         {
-            var dbCommand = CompileCommand(query);
-            this.DbProvider.SetupCommand(dbCommand);
+            var dbCommand = PrepareCommand(query);
             return this.DbCommandExecutor.ExecuteReader(dbCommand);
         }
 
         public EntityReader<T> ExecuteReader<T>(IQuery query)
         {
-            var dbCommand = CompileCommand(query);
-            this.DbProvider.SetupCommand(dbCommand);
+            var dbCommand = PrepareCommand(query);
             return this.DbCommandExecutor.ExecuteReader<T>(dbCommand);
         }
 
         public T ExecuteScalar<T>(IQuery query)
         {
-            var dbCommand = CompileCommand(query);
-            this.DbProvider.SetupCommand(dbCommand);
+            var dbCommand = PrepareCommand(query);
             return this.DbCommandExecutor.ExecuteScalar<T>(dbCommand);
         }
 
