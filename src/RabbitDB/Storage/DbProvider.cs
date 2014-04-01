@@ -12,7 +12,7 @@ namespace RabbitDB.Storage
         protected IDbCommand _dbCommand;
         protected IDbTransaction _dbTransaction;
 
-        public string ProviderName { get; }
+        public abstract string ProviderName { get; }
 
         public DbProvider(string connectionString)
         {

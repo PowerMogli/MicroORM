@@ -77,6 +77,8 @@ namespace RabbitDB.Base
         }
 
         #region IDisposable
+        
+        protected bool _disposed;
 
         internal void Dispose()
         {
@@ -87,10 +89,13 @@ namespace RabbitDB.Base
 
             _sqlDialect.Dispose();
             DbSchemaAllocator.SchemaReader.Dispose();
+            _disposed = true;
         }
 
         void IDisposable.Dispose()
         {
+            if (_disposed) return;
+
             Dispose();
         }
 

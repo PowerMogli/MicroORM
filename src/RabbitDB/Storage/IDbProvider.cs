@@ -6,7 +6,7 @@ namespace RabbitDB.Storage
 {
     internal interface IDbProvider : IDisposable
     {
-        string ProviderName { get; set; }
+        string ProviderName { get; }
         IDbCommand CreateCommand();
         IDbCommand PrepareCommand(IQuery query, SqlDialect.SqlDialect sqlDialect);
         void CreateConnection();

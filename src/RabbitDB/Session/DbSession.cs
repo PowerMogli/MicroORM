@@ -24,7 +24,10 @@ namespace RabbitDB.Base
 
         ~DbSession()
         {
-            base.Dispose();
+            if (base._disposed == false)
+            {
+                base.Dispose();
+            }
         }
 
         private DbEntityPersister _dbEntityPersister;
