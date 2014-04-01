@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using RabbitDB.Query;
+using System.Data;
 using System.Data.Common;
 
 namespace RabbitDB.Storage
@@ -11,7 +12,7 @@ namespace RabbitDB.Storage
         protected IDbCommand _dbCommand;
         protected IDbTransaction _dbTransaction;
 
-        public abstract string ProviderName { get; }
+        public string ProviderName { get; }
 
         public DbProvider(string connectionString)
         {
@@ -24,6 +25,15 @@ namespace RabbitDB.Storage
             return _dbConnection.CreateCommand();
         }
 
+        public IDbCommand PrepareCommand(IQuery query, SqlDialect.SqlDialect sqlDialect)
+        {
+            CreateConnection();
+            var _dbCommand = query.Compile(sqlDialect);
+            _dbCommand.Transaction = _dbTransaction;
+
+            return _dbCommand;
+        }
+        
         private void CreateNewConnection()
         {
             if (_dbConnection == null
@@ -45,14 +55,6 @@ namespace RabbitDB.Storage
             {
                 CreateNewConnection();
             }
-        }
-
-        public IDbCommand SetupCommand(IDbCommand dbCommand)
-        {
-            _dbCommand = dbCommand;
-            dbCommand.Transaction = _dbTransaction;
-
-            return dbCommand;
         }
 
         public void Dispose()
