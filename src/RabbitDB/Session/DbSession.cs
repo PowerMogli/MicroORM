@@ -37,7 +37,7 @@ namespace RabbitDB.Base
             {
                 if (_sqlDialect == null)
                 {
-                    throw new InvalidOperationException("DbProvider is not initialized");
+                    throw new InvalidOperationException("SqlDialect is not initialized");
                 }
 
                 return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(DbPersister));
