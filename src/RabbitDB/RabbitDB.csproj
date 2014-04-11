@@ -45,6 +45,14 @@
   <ItemGroup>
     <Compile Include="Attributes\ColumnAttribute.cs" />
     <Compile Include="ChangeTracing\ChangeTracingFactory.cs" />
+    <Compile Include="Expressions\ExpressionBuildHelper.cs" />
+    <Compile Include="Expressions\ExpressionExtensions.cs" />
+    <Compile Include="Expressions\ExpressionParameterCollection.cs" />
+    <Compile Include="Expressions\ExpressionWriter.cs" />
+    <Compile Include="Expressions\IDbProviderExpressionBuildHelper.cs" />
+    <Compile Include="Expressions\PostgresExpressionBuilderHelper.cs" />
+    <Compile Include="Expressions\SqlExpressionBuilder.cs" />
+    <Compile Include="Expressions\UpdateTableBuilder.cs" />
     <Compile Include="Mapping\TableInfo2.cs" />
     <Compile Include="Session\BaseDbSession.cs" />
     <Compile Include="Caching\CacheItem.cs" />
@@ -54,14 +62,6 @@
     <Compile Include="Entity\EntityCollection.cs" />
     <Compile Include="Entity\EntityExtensions.cs" />
     <Compile Include="Entity\GeneralEntityExtensions.cs" />
-    <Compile Include="Expression\ExpressionBuildHelper.cs" />
-    <Compile Include="Expression\ExpressionExtensions.cs" />
-    <Compile Include="Expression\ExpressionParameterCollection.cs" />
-    <Compile Include="Expression\ExpressionWriter.cs" />
-    <Compile Include="Expression\IDbProviderExpressionBuildHelper.cs" />
-    <Compile Include="Expression\PostgresExpressionBuilderHelper.cs" />
-    <Compile Include="Expression\SqlExpressionBuilder.cs" />
-    <Compile Include="Expression\UpdateTableBuilder.cs" />
     <Compile Include="Session\IBaseDbSession.cs" />
     <Compile Include="Session\IDbSession.cs" />
     <Compile Include="Session\IReadOnlySession.cs" />

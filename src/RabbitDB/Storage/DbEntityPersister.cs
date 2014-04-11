@@ -1,60 +1,104 @@
-using RabbitDB.Entity;
-using RabbitDB.Query;
-
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="DbEntityPersister.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The db entity persister.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB.Storage
 {
+    using RabbitDB.Entity;
+    using RabbitDB.Query;
+
+    /// <summary>
+    /// The db entity persister.
+    /// </summary>
     internal class DbEntityPersister
     {
-        private IDbPersister _dbPersister;
+        #region Fields
 
+        /// <summary>
+        /// The _db persister.
+        /// </summary>
+        private readonly IDbPersister _dbPersister;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbEntityPersister"/> class.
+        /// </summary>
+        /// <param name="dbPersister">
+        /// The db persister.
+        /// </param>
         internal DbEntityPersister(IDbPersister dbPersister)
         {
             _dbPersister = dbPersister;
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// This method is ONLY for POCOs 
         /// who inherit from Entity.Entity
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <param name="entity"></param>
-        internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity.Entity
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <param name="entity">
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        internal bool PersistChanges<TEntity>(TEntity entity) where TEntity : Entity
         {
             if (entity.IsForDeletion())
             {
                 return Delete(entity);
             }
-            else if (entity.IsForInsert())
+
+            if (entity.IsForInsert())
             {
                 return Insert(entity);
             }
-            else if (entity.IsForUpdate())
-            {
-                return Update(entity);
-            }
 
-            return false;
+            return entity.IsForUpdate() && Update(entity);
         }
 
-        private bool Update<TEntity>(TEntity entity) where TEntity : Entity.Entity
+        /// <summary>
+        /// The delete.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        private bool Delete<TEntity>(TEntity entity) where TEntity : Entity
         {
-            var tuple = entity.PrepareForUpdate<TEntity>();
-            if (tuple.Item1)
-            {
-                return Update<TEntity>(entity, new SqlQuery(tuple.Item2, tuple.Item3));
-            }
-            return false;
-        }
-
-        private bool Update<TEntity>(TEntity entity, SqlQuery sqlQuery) where TEntity : Entity.Entity
-        {
-            _dbPersister.Update<TEntity>(sqlQuery);
-            entity.RaiseEntityUpdated();
-            entity.EntityInfo.EntityState = EntityState.Updated;
+            _dbPersister.Delete(entity);
+            entity.RaiseEntityDeleted();
+            entity.EntityInfo.EntityState = EntityState.Deleted;
             return true;
         }
 
-        private bool Insert<TEntity>(TEntity entity) where TEntity : Entity.Entity
+        /// <summary>
+        /// The insert.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        private bool Insert<TEntity>(TEntity entity) where TEntity : Entity
         {
             _dbPersister.Insert(entity);
             entity.RaiseEntityInserted();
@@ -62,12 +106,45 @@ namespace RabbitDB.Storage
             return true;
         }
 
-        private bool Delete<TEntity>(TEntity entity) where TEntity : Entity.Entity
+        /// <summary>
+        /// The update.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        private bool Update<TEntity>(TEntity entity) where TEntity : Entity
         {
-            _dbPersister.Delete(entity);
-            entity.RaiseEntityDeleted();
-            entity.EntityInfo.EntityState = EntityState.Deleted;
+            var tuple = entity.PrepareForUpdate();
+            return tuple.Item1 && Update(entity, new SqlQuery(tuple.Item2, tuple.Item3));
+        }
+
+        /// <summary>
+        /// The update.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <param name="sqlQuery">
+        /// The sql query.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        private bool Update<TEntity>(TEntity entity, IQuery sqlQuery) where TEntity : Entity
+        {
+            _dbPersister.Update<TEntity>(sqlQuery);
+            entity.RaiseEntityUpdated();
+            entity.EntityInfo.EntityState = EntityState.Updated;
             return true;
         }
+
+        #endregion
     }
 }

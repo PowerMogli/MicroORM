@@ -1,24 +1,95 @@
-﻿using System.Data;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="DbColumn.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The db column.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB.Schema
 {
+    using System.Data;
+
+    /// <summary>
+    /// The db column.
+    /// </summary>
     internal class DbColumn
     {
-        public string Name { get; set; }
-        public string PropertyName { get; set; }
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the db type.
+        /// </summary>
         public DbType DbType { get; set; }
-        public bool IsPrimaryKey { get; set; }
-        public bool IsNullable { get; set; }
-        public bool IsAutoIncrement { get; set; }
-        public bool IsComputed { get; set; }
-        public bool Ignore { get; set; }
-        public int Size { get; set; }
-        public int Precision { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default value.
+        /// </summary>
         public string DefaultValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether ignore.
+        /// </summary>
+        public bool Ignore { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is auto increment.
+        /// </summary>
+        public bool IsAutoIncrement { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is computed.
+        /// </summary>
+        public bool IsComputed { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is nullable.
+        /// </summary>
+        public bool IsNullable { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is primary key.
+        /// </summary>
+        public bool IsPrimaryKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the precision.
+        /// </summary>
+        public int Precision { get; set; }
+
+        /// <summary>
+        /// Gets or sets the property name.
+        /// </summary>
+        public string PropertyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size.
+        /// </summary>
+        public int Size { get; set; }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The is to skip.
+        /// </summary>
+        /// <param name="resolvedColumnName">
+        /// The resolved column name.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         internal bool IsToSkip(string resolvedColumnName)
         {
             return this.Name == resolvedColumnName && (this.IsPrimaryKey || this.IsAutoIncrement);
         }
+
+        #endregion
     }
 }

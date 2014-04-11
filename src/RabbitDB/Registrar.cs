@@ -1,48 +1,92 @@
-using System;
-using System.Collections.Concurrent;
-
-namespace RabbitDB.Base
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Registrar.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The registrar.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+namespace RabbitDB
 {
+    using System;
+    using System.Collections.Concurrent;
+
+    /// <summary>
+    /// The registrar.
+    /// </summary>
+    /// <typeparam name="T">
+    /// </typeparam>
     public static class Registrar<T>
     {
-        private static ConcurrentDictionary<string, T> _container = new ConcurrentDictionary<string, T>();
+        #region Static Fields
 
+        /// <summary>
+        /// The _container.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, T> Container = new ConcurrentDictionary<string, T>();
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The flush.
+        /// </summary>
         public static void Flush()
         {
-            _container.Clear();
+            Container.Clear();
         }
 
         /// <summary>
         /// Registers a value for the given namespace.
         /// </summary>
-        /// <param name="nameSpace"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="nameSpace">
+        /// </param>
+        /// <param name="value">
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         public static bool Register(string nameSpace, T value)
         {
-            if (_container.ContainsKey(nameSpace)) return false;
-
-            return _container.TryAdd(nameSpace, value);
+            return !Container.ContainsKey(nameSpace) && Container.TryAdd(nameSpace, value);
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The get for.
+        /// </summary>
+        /// <param name="entityType">
+        /// The entity type.
+        /// </param>
+        /// <returns>
+        /// The <see cref="T"/>.
+        /// </returns>
         internal static T GetFor(Type entityType)
         {
-            T value = default(T);
+            T value;
 
-            string nameSpace = entityType.ToString();
+            var nameSpace = entityType.ToString();
 
             while (true)
             {
                 nameSpace = string.Concat(nameSpace, ".*");
 
-                if (_container.TryGetValue(nameSpace, out value) || nameSpace == ".*") break;
+                if (Container.TryGetValue(nameSpace, out value) || nameSpace == ".*")
+                {
+                    break;
+                }
 
-                int lastIndexOf = nameSpace.LastIndexOf('.', nameSpace.Length - 3);
-                if (lastIndexOf < 0) nameSpace = ".*";
-                else
-                    nameSpace = nameSpace.Substring(0, lastIndexOf);
+                var lastIndexOf = nameSpace.LastIndexOf('.', nameSpace.Length - 3);
+                nameSpace = lastIndexOf < 0 ? ".*" : nameSpace.Substring(0, lastIndexOf);
             }
-            return value != null ? value : default(T);
+
+            return value.Equals(null) == false ? value : default(T);
         }
+
+        #endregion
     }
 }

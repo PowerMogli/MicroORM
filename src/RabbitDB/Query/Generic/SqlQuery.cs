@@ -1,16 +1,59 @@
-﻿using RabbitDB.Base;
-using RabbitDB.Mapping;
-using RabbitDB.SqlBuilder;
-using System.Data;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SqlQuery.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The sql query.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB.Query.Generic
 {
+    using System.Data;
+
+    using RabbitDB.Mapping;
+    using RabbitDB.SqlBuilder;
+    using RabbitDB.SqlDialect;
+
+    /// <summary>
+    /// The sql query.
+    /// </summary>
+    /// <typeparam name="TEntity">
+    /// </typeparam>
     internal sealed class SqlQuery<TEntity> : SqlQuery
     {
-        private object[] _primaryKeys = null;
-        private string _additionalPredicate = null;
-        private TableInfo _tableInfo = null;
+        #region Fields
 
+        /// <summary>
+        /// The _additional predicate.
+        /// </summary>
+        private readonly string _additionalPredicate;
+
+        /// <summary>
+        /// The _primary keys.
+        /// </summary>
+        private readonly object[] _primaryKeys;
+
+        /// <summary>
+        /// The _table info.
+        /// </summary>
+        private readonly TableInfo _tableInfo;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlQuery{TEntity}"/> class.
+        /// </summary>
+        /// <param name="primaryKeys">
+        /// The primary keys.
+        /// </param>
+        /// <param name="additionalPredicate">
+        /// The additional predicate.
+        /// </param>
+        /// <param name="arguments">
+        /// The arguments.
+        /// </param>
         internal SqlQuery(object[] primaryKeys, string additionalPredicate, QueryParameterCollection arguments = null)
             : base(string.Empty, arguments)
         {
@@ -19,40 +62,90 @@ namespace RabbitDB.Query.Generic
             _additionalPredicate = additionalPredicate;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlQuery{TEntity}"/> class.
+        /// </summary>
+        /// <param name="sqlStatement">
+        /// The sql statement.
+        /// </param>
+        /// <param name="arguments">
+        /// The arguments.
+        /// </param>
         internal SqlQuery(string sqlStatement, QueryParameterCollection arguments = null)
             : base(sqlStatement, arguments)
         {
             _tableInfo = TableInfo<TEntity>.GetTableInfo;
         }
 
-        public override IDbCommand Compile(SqlDialect.SqlDialect sqlDialect)
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The compile.
+        /// </summary>
+        /// <param name="sqlDialect">
+        /// The sql dialect.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IDbCommand"/>.
+        /// </returns>
+        public override IDbCommand Compile(SqlDialect sqlDialect)
         {
             if (_primaryKeys != null)
+            {
                 PrepareSqlStatement();
+            }
+
             PrepareArguments();
 
             return base.Compile(sqlDialect);
         }
 
-        private void PrepareSqlStatement()
-        {
-            base._sql = SqlBuilder<TEntity>.SelectStatement;
-            if (string.IsNullOrEmpty(_additionalPredicate)) return;
+        #endregion
 
-            base._sql = string.Format("{0} and {1}", base._sql, _additionalPredicate);
-        }
+        #region Methods
 
+        /// <summary>
+        /// The prepare arguments.
+        /// </summary>
+        /// <exception cref="PrimaryKeyException">
+        /// </exception>
         private void PrepareArguments()
         {
-            if (_primaryKeys == null || _primaryKeys.Length <= 0) return;
+            if (_primaryKeys == null || _primaryKeys.Length <= 0)
+            {
+                return;
+            }
 
             if (_primaryKeys.Length != _tableInfo.NumberOfPrimaryKeys)
-                throw new PrimaryKeyException("The number of provided primaryKeys does not match the requested number of primaryKeys!");
+            {
+                throw new PrimaryKeyException(
+                    "The number of provided primaryKeys does not match the requested number of primaryKeys!");
+            }
 
             if (base.Arguments == null)
+            {
                 base.Arguments = new QueryParameterCollection();
+            }
 
             base.Arguments.AddRange(_primaryKeys);
         }
+
+        /// <summary>
+        /// The prepare sql statement.
+        /// </summary>
+        private void PrepareSqlStatement()
+        {
+            base.Sql = SqlBuilder<TEntity>.SelectStatement;
+            if (string.IsNullOrEmpty(_additionalPredicate))
+            {
+                return;
+            }
+
+            base.Sql = string.Format("{0} and {1}", base.Sql, _additionalPredicate);
+        }
+
+        #endregion
     }
 }

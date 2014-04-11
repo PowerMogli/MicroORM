@@ -1,59 +1,166 @@
-//using LinFu.DynamicProxy;
-using RabbitDB.Mapping;
-using RabbitDB.Storage;
-using System;
-using System.Collections.Generic;
-using System.Data;
-
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright company="" file="EntityMaterializer.cs">
+//   
+// </copyright>
+// <summary>
+//   The entity materializer.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB.Materialization
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+
+    using RabbitDB.Mapping;
+    using RabbitDB.Storage;
+
+    /// <summary>
+    /// The entity materializer.
+    /// </summary>
     class EntityMaterializer : IEntityMaterializer
     {
-        //private ProxyFactory _proxyFactory = new ProxyFactory();
-        private INullValueResolver _nullValueResolver;
+        // private ProxyFactory _proxyFactory = new ProxyFactory();
+        #region Fields
 
+        /// <summary>
+        /// The _null value resolver.
+        /// </summary>
+        private readonly INullValueResolver _nullValueResolver;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityMaterializer"/> class.
+        /// </summary>
+        /// <param name="nullValueResolver">
+        /// The null value resolver.
+        /// </param>
         internal EntityMaterializer(INullValueResolver nullValueResolver)
         {
             _nullValueResolver = nullValueResolver;
         }
 
-        public IEnumerable<TEntity> Materialize<TEntity>(Func<IDataReader, IEnumerable<TEntity>> materializer, IDataReader dataReader)
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The materialize.
+        /// </summary>
+        /// <param name="materializer">
+        /// The materializer.
+        /// </param>
+        /// <param name="dataReader">
+        /// The data reader.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see>
+        ///         <cref>IEnumerable</cref>
+        ///     </see>
+        ///     .
+        /// </returns>
+        public IEnumerable<TEntity> Materialize<TEntity>(
+            Func<IDataReader, IEnumerable<TEntity>> materializer, 
+            IDataReader dataReader)
         {
             return materializer(dataReader);
         }
 
+        /// <summary>
+        /// The materialize.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <param name="dataReaderSchema">
+        /// The data reader schema.
+        /// </param>
+        /// <param name="dataRecord">
+        /// The data record.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="TEntity"/>.
+        /// </returns>
         public TEntity Materialize<TEntity>(TEntity entity, IDataSchemaCreator dataReaderSchema, IDataRecord dataRecord)
         {
-            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
+            var tableInfo = TableInfo<TEntity>.GetTableInfo;
 
-            for (int index = 0; index < tableInfo.Columns.Count; index++)
+            for (var index = 0; index < tableInfo.Columns.Count; index++)
             {
-                IPropertyInfo propertyInfo = tableInfo.Columns[index];
-                int columnIndex = dataReaderSchema.ColumnIndex(index);
-                if (columnIndex < 0) continue;
+                var propertyInfo = tableInfo.Columns[index];
+                var columnIndex = dataReaderSchema.ColumnIndex(index);
+                if (columnIndex < 0)
+                {
+                    continue;
+                }
 
-                MaterializeEntity(entity, propertyInfo, dataRecord[columnIndex]);
+                this.MaterializeEntity(entity, propertyInfo, dataRecord[columnIndex]);
             }
 
             return entity;
         }
 
+        /// <summary>
+        /// The materialize.
+        /// </summary>
+        /// <param name="dataReaderSchema">
+        /// The data reader schema.
+        /// </param>
+        /// <param name="dataRecord">
+        /// The data record.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="TEntity"/>.
+        /// </returns>
         public TEntity Materialize<TEntity>(IDataSchemaCreator dataReaderSchema, IDataRecord dataRecord)
         {
-            TEntity entity = Activator.CreateInstance<TEntity>();
-            return Materialize<TEntity>(entity, dataReaderSchema, dataRecord);
+            var entity = Activator.CreateInstance<TEntity>();
+
+            return this.Materialize(entity, dataReaderSchema, dataRecord);
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The materialize entity.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <param name="propertyInfo">
+        /// The property info.
+        /// </param>
+        /// <param name="value">
+        /// The value.
+        /// </param>
         private void MaterializeEntity(object entity, IPropertyInfo propertyInfo, object value)
         {
-            if (!propertyInfo.CanWrite) return;
+            if (!propertyInfo.CanWrite)
+            {
+                return;
+            }
 
             if (Convert.IsDBNull(value))
+            {
                 value = propertyInfo.IsNullable
-                    ? null
-                    : _nullValueResolver.ResolveNullValue(value, propertyInfo.PropertyType);
+                            ? null
+                            : this._nullValueResolver.ResolveNullValue(value, propertyInfo.PropertyType);
+            }
 
             propertyInfo.SetValue(entity, value);
         }
+
+        #endregion
     }
 }

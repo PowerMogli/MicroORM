@@ -1,14 +1,61 @@
-using RabbitDB.ChangeTracing;
-using RabbitDB.Entity;
-using System;
-
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="EntityInfoCacheManager.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The entity info cache manager.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB.Caching
 {
+    using System;
+
+    using RabbitDB.ChangeTracing;
+    using RabbitDB.Entity;
+
+    /// <summary>
+    /// The entity info cache manager.
+    /// </summary>
     internal static class EntityInfoCacheManager
     {
-        private static readonly object _lock = new object();
-        private static EntityInfoCache<object> _referenceCache = new EntityInfoCache<object>();
+        #region Static Fields
 
+        /// <summary>
+        /// The _lock.
+        /// </summary>
+        private static readonly object Lock = new object();
+
+        /// <summary>
+        /// The _reference cache.
+        /// </summary>
+        private static readonly EntityInfoCache<object> ReferenceCache = new EntityInfoCache<object>();
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The dispose.
+        /// </summary>
+        internal static void Dispose()
+        {
+            lock (Lock)
+            {
+                ReferenceCache.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// The get entity info.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="EntityInfo"/>.
+        /// </returns>
         internal static EntityInfo GetEntityInfo<TEntity>(TEntity entity)
         {
             var entityInfo = GetEntityInfoFromCache(entity);
@@ -16,7 +63,7 @@ namespace RabbitDB.Caching
             if (entityInfo == null)
             {
                 entityInfo = new EntityInfo(ChangeTracingFactory.Create(entity));
-                SetEntityInfo<TEntity>(entity, entityInfo);
+                SetEntityInfo(entity, entityInfo);
             }
 
             UpdateEntityInfoLastCallTime(entityInfo);
@@ -24,45 +71,83 @@ namespace RabbitDB.Caching
             return entityInfo;
         }
 
+        /// <summary>
+        /// The remove for.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
         internal static void RemoveFor<TEntity>(TEntity entity)
         {
-            _referenceCache.Remove(entity);
+            ReferenceCache.Remove(entity);
         }
 
-        internal static void Dispose()
+        /// <summary>
+        /// The get entity info from cache.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        /// <returns>
+        /// The <see cref="EntityInfo"/>.
+        /// </returns>
+        private static EntityInfo GetEntityInfoFromCache<TEntity>(TEntity entity)
         {
-            lock (_lock) { _referenceCache.Dispose(); }
+            lock (Lock)
+            {
+                return ReferenceCache == null ? null : ReferenceCache.Get(entity);
+            }
         }
 
+        /// <summary>
+        /// The set entity info.
+        /// </summary>
+        /// <param name="entity">
+        /// The entity.
+        /// </param>
+        /// <param name="entityInfo">
+        /// The entity info.
+        /// </param>
+        /// <typeparam name="TEntity">
+        /// </typeparam>
+        private static void SetEntityInfo<TEntity>(TEntity entity, EntityInfo entityInfo)
+        {
+            lock (Lock)
+            {
+                if (ReferenceCache == null)
+                {
+                    return;
+                }
+
+                if (ReferenceCache.Get(entity) == null)
+                {
+                    ReferenceCache.Add(entity, entityInfo);
+                }
+                else
+                {
+                    ReferenceCache.Update(entity, entityInfo);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The update entity info last call time.
+        /// </summary>
+        /// <param name="entityInfo">
+        /// The entity info.
+        /// </param>
         private static void UpdateEntityInfoLastCallTime(EntityInfo entityInfo)
         {
             if (entityInfo != null)
+            {
                 entityInfo.LastCallTime = DateTime.Now;
-        }
-
-        private static EntityInfo GetEntityInfoFromCache<TEntity>(TEntity entity)
-        {
-            lock (_lock)
-            {
-                if (_referenceCache == null)
-                    return null;
-
-                return _referenceCache.Get(entity);
             }
         }
 
-        private static void SetEntityInfo<TEntity>(TEntity entity, EntityInfo entityInfo)
-        {
-            lock (_lock)
-            {
-                if (_referenceCache == null)
-                    return;
-
-                if (_referenceCache.Get(entity) == null)
-                    _referenceCache.Add(entity, entityInfo);
-                else
-                    _referenceCache.Update(entity, entityInfo);
-            }
-        }
+        #endregion
     }
 }

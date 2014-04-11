@@ -1,10 +1,46 @@
-﻿namespace RabbitDB.Storage
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SqlDbProvider.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The sql db provider.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+namespace RabbitDB.Storage
 {
-    internal class SqlDbProvider : TransactionalDbProvider, ITransactionalDbProvider, IDbProvider
+    /// <summary>
+    /// The sql db provider.
+    /// </summary>
+    internal class SqlDbProvider : TransactionalDbProvider
     {
-        internal SqlDbProvider(string connectionString)
-            : base(connectionString) { }
+        #region Constructors and Destructors
 
-        public override string ProviderName { get { return "System.Data.SqlClient"; } }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlDbProvider"/> class.
+        /// </summary>
+        /// <param name="connectionString">
+        /// The connection string.
+        /// </param>
+        internal SqlDbProvider(string connectionString)
+            : base(connectionString)
+        {
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the provider name.
+        /// </summary>
+        public override string ProviderName
+        {
+            get
+            {
+                return "System.Data.SqlClient";
+            }
+        }
+
+        #endregion
     }
 }

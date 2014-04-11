@@ -1,34 +1,91 @@
-﻿using RabbitDB.Expressions;
-using System;
-using System.Data;
-using System.Linq.Expressions;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ExpressionQuery2.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The expression query.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB.Query.Generic
 {
+    using System;
+    using System.Data;
+    using System.Linq.Expressions;
+
+    using RabbitDB.Expressions;
+    using RabbitDB.SqlDialect;
+
+    /// <summary>
+    /// The expression query.
+    /// </summary>
+    /// <typeparam name="T">
+    /// </typeparam>
     internal class ExpressionQuery<T> : IQuery, IArgumentQuery
     {
-        protected Expression<Func<T, bool>> _expression;
+        #region Fields
 
-        public QueryParameterCollection Arguments { get; set; }
-        public string SqlStatement { get; private set; }
+        /// <summary>
+        /// The _expression.
+        /// </summary>
+        protected Expression<Func<T, bool>> Expression;
 
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionQuery{T}"/> class.
+        /// </summary>
+        /// <param name="expression">
+        /// The expression.
+        /// </param>
         internal ExpressionQuery(Expression<Func<T, bool>> expression)
         {
-            _expression = expression;
+            this.Expression = expression;
         }
 
-        public IDbCommand Compile(SqlDialect.SqlDialect sqlDialect)
-        {
-            SqlExpressionBuilder<T> sqlExpressionBuilder = new SqlExpressionBuilder<T>(sqlDialect);
-            sqlExpressionBuilder.CreateSelect(_expression);
-            string query = sqlExpressionBuilder.ToString();
-            QueryParameterCollection queryParameterCollection =
-                sqlExpressionBuilder.Parameters != null
-                ? QueryParameterCollection.Create<T>(sqlExpressionBuilder.Parameters.ToArray())
-                : new QueryParameterCollection();
+        #endregion
 
-            SqlQuery sqlQuery = new SqlQuery(query, queryParameterCollection);
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the arguments.
+        /// </summary>
+        public QueryParameterCollection Arguments { get; set; }
+
+        /// <summary>
+        /// Gets the sql statement.
+        /// </summary>
+        public string SqlStatement { get; private set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The compile.
+        /// </summary>
+        /// <param name="sqlDialect">
+        /// The sql dialect.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IDbCommand"/>.
+        /// </returns>
+        public IDbCommand Compile(SqlDialect sqlDialect)
+        {
+            var sqlExpressionBuilder = new SqlExpressionBuilder<T>(sqlDialect);
+            sqlExpressionBuilder.CreateSelect(this.Expression);
+            var query = sqlExpressionBuilder.ToString();
+            var queryParameterCollection =
+                sqlExpressionBuilder.Parameters != null
+                    ? QueryParameterCollection.Create<T>(sqlExpressionBuilder.Parameters.ToArray())
+                    : new QueryParameterCollection();
+
+            var sqlQuery = new SqlQuery(query, queryParameterCollection);
+
             return sqlQuery.Compile(sqlDialect);
         }
+
+        #endregion
     }
 }

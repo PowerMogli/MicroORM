@@ -1,55 +1,107 @@
-﻿using RabbitDB.Query;
-using System.Data;
-using System.Data.Common;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="DbProvider.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The db provider.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB.Storage
 {
+    using System;
+    using System.Data;
+    using System.Data.Common;
+
+    using RabbitDB.Query;
+    using RabbitDB.SqlDialect;
+
+    /// <summary>
+    /// The db provider.
+    /// </summary>
     internal abstract class DbProvider : IDbProvider
     {
-        private string _connectionString;
-        private readonly System.Data.Common.DbProviderFactory _dbFactory;
-        protected IDbConnection _dbConnection;
-        protected IDbCommand _dbCommand;
-        protected IDbTransaction _dbTransaction;
+        #region Fields
 
-        public abstract string ProviderName { get; }
+        /// <summary>
+        /// The _db command.
+        /// </summary>
+        protected IDbCommand DbCommand;
 
-        public DbProvider(string connectionString)
+        /// <summary>
+        /// The _db connection.
+        /// </summary>
+        protected IDbConnection DbConnection;
+
+        /// <summary>
+        /// The _db transaction.
+        /// </summary>
+        protected IDbTransaction DbTransaction;
+
+        /// <summary>
+        /// The _connection string.
+        /// </summary>
+        private readonly string _connectionString;
+
+        /// <summary>
+        /// The _db factory.
+        /// </summary>
+        private readonly DbProviderFactory _dbFactory;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbProvider"/> class.
+        /// </summary>
+        /// <param name="connectionString">
+        /// The connection string.
+        /// </param>
+        protected DbProvider(string connectionString)
         {
+            // ReSharper disable once DoNotCallOverridableMethodsInConstructor
+            if (this.ProviderName == null)
+            {
+                throw new NullReferenceException("Providername was null.");
+            }
+
+            // ReSharper disable once DoNotCallOverridableMethodsInConstructor
             _dbFactory = DbProviderFactories.GetFactory(this.ProviderName);
             _connectionString = connectionString;
         }
 
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the provider name.
+        /// </summary>
+        public abstract string ProviderName { get; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The create command.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="IDbCommand"/>.
+        /// </returns>
         public IDbCommand CreateCommand()
         {
-            return _dbConnection.CreateCommand();
+            return this.DbConnection.CreateCommand();
         }
 
-        public IDbCommand PrepareCommand(IQuery query, SqlDialect.SqlDialect sqlDialect)
-        {
-            CreateConnection();
-            var _dbCommand = query.Compile(sqlDialect);
-            _dbCommand.Transaction = _dbTransaction;
-
-            return _dbCommand;
-        }
-        
-        private void CreateNewConnection()
-        {
-            if (_dbConnection == null
-                || _dbConnection.State != ConnectionState.Open)
-            {
-                _dbConnection = _dbFactory.CreateConnection();
-                _dbConnection.ConnectionString = _connectionString;
-                _dbConnection.Open();
-            }
-        }
-
+        /// <summary>
+        /// The create connection.
+        /// </summary>
         public void CreateConnection()
         {
-            if (_dbTransaction != null)
+            if (this.DbTransaction != null)
             {
-                _dbConnection = _dbTransaction.Connection;
+                this.DbConnection = this.DbTransaction.Connection;
             }
             else
             {
@@ -57,6 +109,9 @@ namespace RabbitDB.Storage
             }
         }
 
+        /// <summary>
+        /// The dispose.
+        /// </summary>
         public void Dispose()
         {
             DisposeConnection();
@@ -64,34 +119,102 @@ namespace RabbitDB.Storage
             DisposeTransaction();
         }
 
+        /// <summary>
+        /// The prepare command.
+        /// </summary>
+        /// <param name="query">
+        /// The query.
+        /// </param>
+        /// <param name="sqlDialect">
+        /// The sql dialect.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IDbCommand"/>.
+        /// </returns>
+        public IDbCommand PrepareCommand(IQuery query, SqlDialect sqlDialect)
+        {
+            CreateConnection();
+            var dbCommand = query.Compile(sqlDialect);
+            dbCommand.Transaction = this.DbTransaction;
+
+            return dbCommand;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The create new connection.
+        /// </summary>
+        private void CreateNewConnection()
+        {
+            if (this.DbConnection != null && this.DbConnection.State == ConnectionState.Open)
+            {
+                return;
+            }
+
+            this.DbConnection = _dbFactory.CreateConnection();
+
+            // ReSharper disable once PossibleNullReferenceException
+            this.DbConnection.ConnectionString = _connectionString;
+            this.DbConnection.Open();
+        }
+
+        /// <summary>
+        /// The dispose command.
+        /// </summary>
         private void DisposeCommand()
         {
-            if (_dbCommand == null) return;
+            if (this.DbCommand == null)
+            {
+                return;
+            }
 
-            _dbCommand.Dispose();
-            _dbCommand = null;
+            this.DbCommand.Dispose();
+            this.DbCommand = null;
         }
 
+        /// <summary>
+        /// The dispose connection.
+        /// </summary>
         private void DisposeConnection()
         {
-            if (InTransactionMode() || _dbConnection == null) return;
+            if (InTransactionMode() || this.DbConnection == null)
+            {
+                return;
+            }
 
-            _dbConnection.Close();
-            _dbConnection.Dispose();
-            _dbConnection = null;
+            this.DbConnection.Close();
+            this.DbConnection.Dispose();
+            this.DbConnection = null;
         }
 
+        /// <summary>
+        /// The dispose transaction.
+        /// </summary>
         private void DisposeTransaction()
         {
-            if (InTransactionMode() || _dbTransaction == null) return;
+            if (InTransactionMode() || this.DbTransaction == null)
+            {
+                return;
+            }
 
-            _dbTransaction.Dispose();
-            _dbTransaction = null;
+            this.DbTransaction.Dispose();
+            this.DbTransaction = null;
         }
 
+        /// <summary>
+        /// The in transaction mode.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         private bool InTransactionMode()
         {
-            return (_dbTransaction != null && _dbTransaction.Connection != null);
+            return this.DbTransaction != null && this.DbTransaction.Connection != null;
         }
+
+        #endregion
     }
 }
