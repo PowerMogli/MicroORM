@@ -145,11 +145,13 @@
     <Compile Include="Storage\INullValueResolver.cs" />
     <Compile Include="Storage\ITransactionalDbProvider.cs" />
     <Compile Include="Storage\DbProvider.cs" />
-    <Compile Include="Storage\SqlDialectFactory.cs" />
     <Compile Include="Storage\NotSupportedProviderException.cs" />
     <Compile Include="Storage\PostgresDbProvider.cs" />
     <Compile Include="Storage\DbCommandExecutor.cs" />
     <Compile Include="Storage\SqlDbProvider.cs" />
+    <Compile Include="Storage\SqlDialectFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Storage\TransactionalDbProvider.cs" />
     <Compile Include="Session\StoredProcedureSession.cs" />
     <Compile Include="Utils\EntityArgumentsReader.cs" />
