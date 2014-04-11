@@ -11,275 +11,278 @@ using System.Linq;
 
 namespace RabbitDB.ChangeTracker
 {
-	/// <summary>
-	/// ListComponentTracker is used to track IEnumerable objects
-	/// </summary>
-	internal class ListComponentTracker : IComponentTracker
-	{
-		private bool disposed;
-		private Dictionary<object, IComponentTracker> componentTrackers;
-		private ComponentTrackerHelper helper;
-		private IEnumerable objectToTrack;
-		private TrackerInfo trackerInfo;
-		private bool isDirty;
+    /// <summary>
+    /// ListComponentTracker is used to track IEnumerable objects
+    /// </summary>
+    internal class ListComponentTracker : IComponentTracker
+    {
+        private bool _disposed;
+        private Dictionary<object, IComponentTracker> _componentTrackers;
+        private ComponentTrackerHelper _helper;
+        private IEnumerable _objectToTrack;
+        private TrackerInfo _trackerInfo;
+        private bool _isDirty;
 
-		/// <summary>
-		/// Default Constructor
-		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="objectToTrack"></param>
-		/// <param name="trackerInfo"></param>
-		public ListComponentTracker(ComponentTrackerHelper helper, IEnumerable objectToTrack, TrackerInfo trackerInfo)
-		{
-			Initialize(helper, objectToTrack, trackerInfo);
-		}
+        /// <summary>
+        /// Default Constructor
+        /// </summary>
+        /// <param name="helper"></param>
+        /// <param name="objectToTrack"></param>
+        /// <param name="trackerInfo"></param>
+        public ListComponentTracker(ComponentTrackerHelper helper, IEnumerable objectToTrack, TrackerInfo trackerInfo)
+        {
+            Initialize(helper, objectToTrack, trackerInfo);
+        }
 
-		/// <summary>
-		/// The component being tracker
-		/// </summary>
-		public object TrackedComponent
-		{
-			get { return objectToTrack; }
-		}
+        /// <summary>
+        /// The component being tracker
+        /// </summary>
+        public object TrackedComponent
+        {
+            get { return _objectToTrack; }
+        }
 
-		/// <summary>
-		/// True if the component or one of it's children is dirty
-		/// </summary>
-		public bool IsDirty
-		{
-			get
-			{
-				return isDirty || componentTrackers.Values.Any(x => x.IsDirty);
-			}
-		}
+        /// <summary>
+        /// True if the component or one of it's children is dirty
+        /// </summary>
+        public bool IsDirty
+        {
+            get
+            {
+                return _isDirty || _componentTrackers.Values.Any(x => x.IsDirty);
+            }
+        }
 
-		/// <summary>
-		/// mark the component and all it's children as clean
-		/// </summary>
-		public void MarkAsClean()
-		{
-			isDirty = false;
+        /// <summary>
+        /// mark the component and all it's children as clean
+        /// </summary>
+        public void MarkAsClean()
+        {
+            _isDirty = false;
 
-			foreach (IComponentTracker componentTracker in componentTrackers.Values)
-			{
-				componentTracker.MarkAsClean();
-			}
-		}
+            foreach (var componentTracker in _componentTrackers.Values)
+            {
+                componentTracker.MarkAsClean();
+            }
+        }
 
-		/// <summary>
-		/// A list of child trackers
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<IComponentTracker> ChildTrackers()
-		{
-			return componentTrackers.Values;
-		}
+        /// <summary>
+        /// A list of child trackers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<IComponentTracker> ChildTrackers()
+        {
+            return _componentTrackers.Values;
+        }
 
-		/// <summary>
-		/// Event that is raised when the is dirty flag is changed
-		/// </summary>
-		public event EventHandler<IsDiryChangedArgs> IsDirtyChanged;
+        /// <summary>
+        /// Event that is raised when the is dirty flag is changed
+        /// </summary>
+        public event EventHandler<IsDiryChangedArgs> IsDirtyChanged;
 
-		/// <summary>
-		/// Dispose the tracker
-		/// </summary>
-		public void Dispose()
-		{
-			if (!disposed)
-			{
-				foreach (IComponentTracker componentTracker in componentTrackers.Values)
-				{
-					componentTracker.Dispose();
-				}
-				componentTrackers = null;
-				disposed = true;
-			}
-		}
+        /// <summary>
+        /// Dispose the tracker
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
-		/// <summary>
-		/// Initialize the tracker
-		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="objectToTrack"></param>
-		/// <param name="trackerInfo"></param>
-		private void Initialize(ComponentTrackerHelper helper, IEnumerable objectToTrack, TrackerInfo trackerInfo)
-		{
-			componentTrackers = new Dictionary<object, IComponentTracker>();
+            foreach (var componentTracker in _componentTrackers.Values)
+            {
+                componentTracker.Dispose();
+            }
+            _componentTrackers = null;
+            _disposed = true;
+        }
 
-			this.helper = helper;
-			this.objectToTrack = objectToTrack;
-			this.trackerInfo = trackerInfo;
+        /// <summary>
+        /// Initialize the tracker
+        /// </summary>
+        /// <param name="helper"></param>
+        /// <param name="objectToTrack"></param>
+        /// <param name="trackerInfo"></param>
+        private void Initialize(ComponentTrackerHelper helper, IEnumerable objectToTrack, TrackerInfo trackerInfo)
+        {
+            _componentTrackers = new Dictionary<object, IComponentTracker>();
 
-			// add all children to be tracked
-			AddChildren(objectToTrack);
+            _helper = helper;
+            _objectToTrack = objectToTrack;
+            _trackerInfo = trackerInfo;
 
-			// if this list implements the collection changed event we need to listen to it
-			if (objectToTrack is INotifyCollectionChanged)
-			{
-				((INotifyCollectionChanged)objectToTrack).CollectionChanged += OnCollectionChanged;
-			}
-		}
+            // add all children to be tracked
+            AddChildren(objectToTrack);
 
-		/// <summary>
-		/// Handler for collection changed. It adds and removes trackers as the list changes
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="notifyCollectionChangedEventArgs"></param>
-		private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
-		{
-			bool fireChanged = false;
-			bool changed = false;
+            // if this list implements the collection changed event we need to listen to it
+            var track = objectToTrack as INotifyCollectionChanged;
+            if (track != null)
+            {
+                track.CollectionChanged += OnCollectionChanged;
+            }
+        }
 
-			if (!IsDirty)
-			{
-				fireChanged = true;
-			}
+        /// <summary>
+        /// Handler for collection changed. It adds and removes trackers as the list changes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="notifyCollectionChangedEventArgs"></param>
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+        {
+            var fireChanged = false;
+            var changed = false;
 
-			switch (notifyCollectionChangedEventArgs.Action)
-			{
-				case NotifyCollectionChangedAction.Add:
-					changed = AddChildren(notifyCollectionChangedEventArgs.NewItems);
-					break;
-				case NotifyCollectionChangedAction.Remove:
-					changed = RemoveChildren(notifyCollectionChangedEventArgs.OldItems);
-					break;
-				case NotifyCollectionChangedAction.Replace:
-					changed = RemoveChildren(notifyCollectionChangedEventArgs.OldItems);
-					changed |= AddChildren(notifyCollectionChangedEventArgs.NewItems);
-					break;
-				case NotifyCollectionChangedAction.Reset:
-					changed = RemoveChildren(componentTrackers.Values.ToArray());
-					break;
-			}
+            if (!IsDirty)
+            {
+                fireChanged = true;
+            }
 
-			if (changed)
-			{
-				isDirty = true;
-			}
+            switch (notifyCollectionChangedEventArgs.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    changed = AddChildren(notifyCollectionChangedEventArgs.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    changed = RemoveChildren(notifyCollectionChangedEventArgs.OldItems);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    changed = RemoveChildren(notifyCollectionChangedEventArgs.OldItems);
+                    changed |= AddChildren(notifyCollectionChangedEventArgs.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    changed = RemoveChildren(_componentTrackers.Values.ToArray());
+                    break;
+            }
 
-			if (isDirty && fireChanged && IsDirtyChanged != null)
-			{
-				IsDirtyChanged(this, new IsDiryChangedArgs(isDirty));
-			}
-		}
+            if (changed)
+            {
+                _isDirty = true;
+            }
 
-		/// <summary>
-		/// Handler for child tracker is dirty changing
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="eventArgs"></param>
-		private void ChildTrackerIsDirtyChanged(object sender, IsDiryChangedArgs eventArgs)
-		{
-			// short circuit if we are already dirty
-			if (isDirty)
-			{
-				return;
-			}
+            if (_isDirty && fireChanged && IsDirtyChanged != null)
+            {
+                IsDirtyChanged(this, new IsDiryChangedArgs(_isDirty));
+            }
+        }
 
-			IComponentTracker childTracker = (IComponentTracker)sender;
-			bool newValue = childTracker.IsDirty;
-			bool fireChange = true;
+        /// <summary>
+        /// Handler for child tracker is dirty changing
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
+        private void ChildTrackerIsDirtyChanged(object sender, IsDiryChangedArgs eventArgs)
+        {
+            // short circuit if we are already dirty
+            if (_isDirty)
+            {
+                return;
+            }
 
-			foreach (KeyValuePair<object, IComponentTracker> kvp in componentTrackers)
-			{
-				if (kvp.Key == sender)
-				{
-					continue;
-				}
+            var childTracker = (IComponentTracker)sender;
+            var newValue = childTracker.IsDirty;
+            var fireChange = true;
 
-				if (kvp.Value.IsDirty != newValue)
-				{
-					fireChange = false;
-					break;
-				}
-			}
+            foreach (var kvp in this._componentTrackers)
+            {
+                if (kvp.Key == sender
+                    || kvp.Value.IsDirty == newValue)
+                {
+                    continue;
+                }
 
-			if (fireChange && IsDirtyChanged != null)
-			{
-				IsDirtyChanged(this, eventArgs);
-			}
-		}
+                fireChange = false;
+                break;
+            }
 
-		/// <summary>
-		/// Add children to be tracked
-		/// </summary>
-		/// <param name="childObjects"></param>
-		/// <returns></returns>
-		private bool AddChildren(IEnumerable childObjects)
-		{
-			bool returnValue = false;
-			IListComponentFilter listFilter = trackerInfo.ListFilter;
+            if (fireChange && IsDirtyChanged != null)
+            {
+                IsDirtyChanged(this, eventArgs);
+            }
+        }
 
-			// if we have child tracker info create a new tracker for the object
-			if (trackerInfo.ChildTrackerInfo != null)
-			{
-				foreach (object child in childObjects)
-				{
-					// filter the object if a filter exists
-					if (listFilter != null && !listFilter.FilterComponent(child))
-					{
-						continue;
-					}
+        /// <summary>
+        /// Add children to be tracked
+        /// </summary>
+        /// <param name="childObjects"></param>
+        /// <returns></returns>
+        private bool AddChildren(IEnumerable childObjects)
+        {
+            var returnValue = false;
+            var listFilter = _trackerInfo.ListFilter;
 
-					IComponentTracker childTracker =
-						helper.CreateTracker(child, trackerInfo.ChildTrackerInfo);
+            // if we have child tracker info create a new tracker for the object
+            if (_trackerInfo.ChildTrackerInfo != null)
+            {
+                foreach (var child in childObjects)
+                {
+                    // filter the object if a filter exists
+                    if (listFilter != null && !listFilter.FilterComponent(child))
+                    {
+                        continue;
+                    }
 
-					childTracker.IsDirtyChanged += ChildTrackerIsDirtyChanged;
+                    var childTracker =
+                        _helper.CreateTracker(child, _trackerInfo.ChildTrackerInfo);
 
-					componentTrackers.Add(child, childTracker);
+                    childTracker.IsDirtyChanged += ChildTrackerIsDirtyChanged;
 
-					returnValue = true;
-				}
-			}
-			else 
-			{
-				// Create a leaf tracker for each child in the list
-				foreach (object child in childObjects)
-				{
-					if (listFilter != null && !listFilter.FilterComponent(child))
-					{
-						continue;
-					}
+                    _componentTrackers.Add(child, childTracker);
 
-					IComponentTracker childTracker =
-						helper.CreateTracker(child, new TrackerInfo { TrackerType = ComponentTrackerType.Leaf });
+                    returnValue = true;
+                }
+            }
+            else
+            {
+                // Create a leaf tracker for each child in the list
+                foreach (var child in childObjects)
+                {
+                    if (listFilter != null && !listFilter.FilterComponent(child))
+                    {
+                        continue;
+                    }
 
-					childTracker.IsDirtyChanged += ChildTrackerIsDirtyChanged;
+                    var childTracker =
+                        _helper.CreateTracker(child, new TrackerInfo { TrackerType = ComponentTrackerType.Leaf });
 
-					componentTrackers.Add(child, childTracker);
+                    childTracker.IsDirtyChanged += ChildTrackerIsDirtyChanged;
 
-					returnValue = true;
-				}
-			}
+                    _componentTrackers.Add(child, childTracker);
 
-			return returnValue;
-		}
+                    returnValue = true;
+                }
+            }
 
-		/// <summary>
-		/// Remove child object that need to stop being tracked
-		/// </summary>
-		/// <param name="childObjects"></param>
-		/// <returns></returns>
-		private bool RemoveChildren(IEnumerable childObjects)
-		{
-			bool returnValue = false;
+            return returnValue;
+        }
 
-			// foreach child object try and find a tracker and dispose it
-			foreach (object child in childObjects)
-			{
-				IComponentTracker oldTracker;
+        /// <summary>
+        /// Remove child object that need to stop being tracked
+        /// </summary>
+        /// <param name="childObjects"></param>
+        /// <returns></returns>
+        private bool RemoveChildren(IEnumerable childObjects)
+        {
+            var returnValue = false;
 
-				if (componentTrackers.TryGetValue(child, out oldTracker))
-				{
-					componentTrackers.Remove(child);
-					oldTracker.IsDirtyChanged -= ChildTrackerIsDirtyChanged;
-					oldTracker.Dispose();
+            // foreach child object try and find a tracker and dispose it
+            foreach (var child in childObjects)
+            {
+                IComponentTracker oldTracker;
 
-					returnValue = true;
-				}
-			}
+                if (!_componentTrackers.TryGetValue(child, out oldTracker))
+                {
+                    continue;
+                }
+                
+                _componentTrackers.Remove(child);
+                oldTracker.IsDirtyChanged -= this.ChildTrackerIsDirtyChanged;
+                oldTracker.Dispose();
 
-			return returnValue;
-		}
-	}
+                returnValue = true;
+            }
+
+            return returnValue;
+        }
+    }
 }

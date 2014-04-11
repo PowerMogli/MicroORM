@@ -1,24 +1,40 @@
-﻿namespace RabbitDB.Entity
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="EntityState.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   The entity state.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace RabbitDB.Entity
 {
+    /// <summary>
+    /// The entity state.
+    /// </summary>
     internal enum EntityState
     {
         /// <summary>
         /// Persistent objects with this state aren't loaded, saved or deleted. They have been recently created in memory.
         /// </summary>
-        None,
+        None, 
+
         /// <summary>
         /// Persistent objects with this state have been loaded from the storage.
         /// </summary>
-        Loaded,
+        Loaded, 
+
         /// <summary>
         /// Persistent objects with this state have been inserted into the storage. The framework is doing an
         /// update if the persistent is saved again.
         /// </summary>
-        Inserted,
+        Inserted, 
+
         /// <summary>
         /// Persistent objects with this state have been updated in the storage.
         /// </summary>
-        Updated,
+        Updated, 
+
         /// <summary>
         /// Persistent objects with this state are no longer available in the storage. They have
         /// been deleted. The framework is doing an insert if they are saved the next time.

@@ -9,17 +9,17 @@ using System.ComponentModel;
 
 namespace RabbitDB.ChangeTracker
 {
-	/// <summary>
+    /// <summary>
 	/// NodeComponentTracker tracks a specific property on an object
 	/// </summary>
 	internal class NodeComponentTracker : IComponentTracker
 	{
-		private bool disposed;
-		private IComponentTracker childComponentTracker;
-		private ComponentTrackerHelper helper;
-		private object objectToTrack;
-		private TrackerInfo trackerInfo;
-		private PropertyTracker propertyTracker;
+		private bool _disposed;
+		private IComponentTracker _childComponentTracker;
+		private ComponentTrackerHelper _helper;
+
+        private TrackerInfo _trackerInfo;
+		private PropertyTracker _propertyTracker;
 
 		/// <summary>
 		/// Default Constructor
@@ -32,39 +32,39 @@ namespace RabbitDB.ChangeTracker
 			Initialize(helper, objectToTrack, trackerInfo);
 		}
 
-		/// <summary>
-		/// The component being tracker
-		/// </summary>
-		public object TrackedComponent
-		{
-			get { return objectToTrack; }
-		}
+        /// <summary>
+        /// The component being tracker
+        /// </summary>
+        public object TrackedComponent { get; private set; }
 
-		/// <summary>
+        /// <summary>
 		/// True if the component or one of it's children is dirty
 		/// </summary>
 		public bool IsDirty
 		{
 			get
 			{
-				if (childComponentTracker != null)
+				if (_childComponentTracker != null)
 				{
-					return propertyTracker.IsDirty || childComponentTracker.IsDirty;
+					return _propertyTracker.IsDirty || _childComponentTracker.IsDirty;
 				}
 
-				return propertyTracker.IsDirty;
+				return _propertyTracker.IsDirty;
 			}
+
 			private set
 			{
-				if (propertyTracker.IsDirty != value)
-				{
-					propertyTracker.IsDirty = value;
+			    if (_propertyTracker.IsDirty == value)
+			    {
+			        return;
+			    }
 
-					if (childComponentTracker == null || childComponentTracker.IsDirty == false)
-					{
-						IsDirtyChanged(this, new IsDiryChangedArgs(propertyTracker.IsDirty));
-					}
-				}
+			    _propertyTracker.IsDirty = value;
+
+			    if (_childComponentTracker == null || _childComponentTracker.IsDirty == false)
+			    {
+			        IsDirtyChanged(this, new IsDiryChangedArgs(_propertyTracker.IsDirty));
+			    }
 			}
 		}
 
@@ -73,18 +73,18 @@ namespace RabbitDB.ChangeTracker
 		/// </summary>
 		public void MarkAsClean()
 		{
-			propertyTracker.IsDirty = false;
+			_propertyTracker.IsDirty = false;
 
 			// get the current value now that it has been marked as clean
-			object value = helper.AccessProperty(objectToTrack, trackerInfo.PropertyName);
+			var value = _helper.AccessProperty(this.TrackedComponent, _trackerInfo.PropertyName);
 
 			// change the original value nw that we are clean
-			propertyTracker.SetOriginalValue(value);
+			_propertyTracker.SetOriginalValue(value);
 
 			// mark child tracker as clean
-			if (childComponentTracker != null)
+			if (_childComponentTracker != null)
 			{
-				childComponentTracker.MarkAsClean();
+				_childComponentTracker.MarkAsClean();
 			}
 		}
 
@@ -94,8 +94,8 @@ namespace RabbitDB.ChangeTracker
 		/// <returns></returns>
 		public IEnumerable<IComponentTracker> ChildTrackers()
 		{
-			if (childComponentTracker != null)
-				yield return childComponentTracker;
+			if (_childComponentTracker != null)
+				yield return _childComponentTracker;
 		}
 
 		/// <summary>
@@ -108,16 +108,18 @@ namespace RabbitDB.ChangeTracker
 		/// </summary>
 		public void Dispose()
 		{
-			if (!disposed)
-			{
-				if (childComponentTracker != null)
-				{
-					childComponentTracker.Dispose();
-					childComponentTracker = null;
-				}
+		    if (_disposed)
+		    {
+		        return;
+		    }
 
-				disposed = true;
-			}
+		    if (_childComponentTracker != null)
+		    {
+		        _childComponentTracker.Dispose();
+		        _childComponentTracker = null;
+		    }
+
+		    _disposed = true;
 		}
 
 		/// <summary>
@@ -128,27 +130,27 @@ namespace RabbitDB.ChangeTracker
 		/// <param name="trackerInfo"></param>
 		private void Initialize(ComponentTrackerHelper helper, object objectToTrack, TrackerInfo trackerInfo)
 		{
-			this.helper = helper;
-			this.objectToTrack = objectToTrack;
-			this.trackerInfo = trackerInfo;
+			_helper = helper;
+			TrackedComponent = objectToTrack;
+			_trackerInfo = trackerInfo;
 
 			// calculate if we should track the property weakly
-			bool trackWeakly = !(trackerInfo.PropertyType.IsValueType || trackerInfo.PropertyType == typeof(string));
-			object currentValue = helper.AccessProperty(objectToTrack, trackerInfo.PropertyName);
+			var trackWeakly = !(trackerInfo.PropertyType.IsValueType || trackerInfo.PropertyType == typeof(string));
+			var currentValue = helper.AccessProperty(objectToTrack, trackerInfo.PropertyName);
 
-			propertyTracker = new PropertyTracker(trackWeakly);
+			_propertyTracker = new PropertyTracker(trackWeakly);
 
-			propertyTracker.SetOriginalValue(currentValue);
+			_propertyTracker.SetOriginalValue(currentValue);
 
 			// if we have a current value and child tracker info start tracking
 			if (currentValue != null && trackerInfo.ChildTrackerInfo != null)
 			{
-				childComponentTracker = helper.CreateTracker(currentValue, trackerInfo.ChildTrackerInfo);
+				_childComponentTracker = helper.CreateTracker(currentValue, trackerInfo.ChildTrackerInfo);
 
-				childComponentTracker.IsDirtyChanged += ChildComponentTrackerOnIsDirtyChanged;
+				_childComponentTracker.IsDirtyChanged += ChildComponentTrackerOnIsDirtyChanged;
 			}
 
-			INotifyPropertyChanged propertyChangeObject = objectToTrack as INotifyPropertyChanged;
+			var propertyChangeObject = objectToTrack as INotifyPropertyChanged;
 
 			if (propertyChangeObject != null)
 			{
@@ -163,9 +165,7 @@ namespace RabbitDB.ChangeTracker
 		/// <param name="eventArgs"></param>
 		private void ChildComponentTrackerOnIsDirtyChanged(object sender, IsDiryChangedArgs eventArgs)
 		{
-			IComponentTracker componentTracker = sender as IComponentTracker;
-
-			if (!propertyTracker.IsDirty && IsDirtyChanged != null)
+		    if (!_propertyTracker.IsDirty && IsDirtyChanged != null)
 			{
 				IsDirtyChanged(this, eventArgs);
 			}
@@ -178,17 +178,17 @@ namespace RabbitDB.ChangeTracker
 		/// <param name="propertyChangedEventArgs"></param>
 		private void PropertyChangedOnTrackedObject(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
 		{
-			if (childComponentTracker != null)
+			if (_childComponentTracker != null)
 			{
-				childComponentTracker.IsDirtyChanged -= ChildComponentTrackerOnIsDirtyChanged;
+				_childComponentTracker.IsDirtyChanged -= ChildComponentTrackerOnIsDirtyChanged;
 
-				childComponentTracker.Dispose();
-				childComponentTracker = null;
+				_childComponentTracker.Dispose();
+				_childComponentTracker = null;
 			}
 
 			bool hasOriginalValue;
-			object originalValue = propertyTracker.GetOriginalValue(out hasOriginalValue);
-			object newValue = helper.AccessProperty(objectToTrack, trackerInfo.PropertyName);
+			var originalValue = _propertyTracker.GetOriginalValue(out hasOriginalValue);
+			var newValue = _helper.AccessProperty(TrackedComponent, _trackerInfo.PropertyName);
 
 			if (newValue != null)
 			{
@@ -203,23 +203,17 @@ namespace RabbitDB.ChangeTracker
 			}
 			else
 			{
-				if (hasOriginalValue)
-				{
-					IsDirty = true;
-				}
-				else
-				{
-					IsDirty = false;
-				}
+				this.IsDirty = hasOriginalValue;
 			}
 
 			// if there is a new value and we have a child tracker info we need to create a new tracker and listen to it
-			if (newValue != null && trackerInfo.ChildTrackerInfo != null)
-			{
-				childComponentTracker = helper.CreateTracker(newValue, trackerInfo.ChildTrackerInfo);
+		    if (newValue == null || _trackerInfo.ChildTrackerInfo == null)
+		    {
+		        return;
+		    }
+		    _childComponentTracker = _helper.CreateTracker(newValue, _trackerInfo.ChildTrackerInfo);
 
-				childComponentTracker.IsDirtyChanged += ChildComponentTrackerOnIsDirtyChanged;
-			}
+		    _childComponentTracker.IsDirtyChanged += this.ChildComponentTrackerOnIsDirtyChanged;
 		}
 	}
 }
