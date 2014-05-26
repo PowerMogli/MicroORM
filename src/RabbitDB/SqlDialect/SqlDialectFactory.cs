@@ -6,12 +6,12 @@
 //   The sql dialect factory.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-namespace RabbitDB.Storage
+namespace RabbitDB.SqlDialect
 {
     using System;
 
     using RabbitDB.Schema;
-    using RabbitDB.SqlDialect;
+    using RabbitDB.Storage;
 
     /// <summary>
     /// The sql dialect factory.

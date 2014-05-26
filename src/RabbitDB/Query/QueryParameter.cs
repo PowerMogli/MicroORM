@@ -55,6 +55,20 @@ namespace RabbitDB.Query
         /// </summary>
         internal DbType DbType { get; private set; }
 
+
+        internal bool IsInvalid
+        {
+            get
+            {
+                return ((DbType == DbType.AnsiString
+                    || DbType == DbType.AnsiStringFixedLength
+                    || DbType == DbType.String
+                    || DbType == DbType.StringFixedLength)
+                    && Size > 0
+                    && (Value is string && ((string)Value).Length > Size));
+            }
+        }
+
         /// <summary>
         /// Gets the name.
         /// </summary>
@@ -86,9 +100,9 @@ namespace RabbitDB.Query
         internal static QueryParameter CreateFromDbParameter(IDbDataParameter dbDataParameter)
         {
             return new QueryParameter(
-                dbDataParameter.ParameterName, 
-                dbDataParameter.DbType, 
-                dbDataParameter.Value, 
+                dbDataParameter.ParameterName,
+                dbDataParameter.DbType,
+                dbDataParameter.Value,
                 dbDataParameter.Size);
         }
 
@@ -105,7 +119,7 @@ namespace RabbitDB.Query
         /// The <see cref="QueryParameter"/>.
         /// </returns>
         internal static QueryParameter CreateFromKeyValuePairs(
-            KeyValuePair<string, object> keyValuePair, 
+            KeyValuePair<string, object> keyValuePair,
             TableInfo tableInfo)
         {
             Type argumentType = null;
@@ -121,9 +135,9 @@ namespace RabbitDB.Query
             var isColumn = tableInfo != null && tableInfo.IsColumn(keyValuePair.Key);
 
             return new QueryParameter(
-                keyValuePair.Key, 
-                isColumn ? tableInfo.ConvertToDbType(keyValuePair.Key) : TypeConverter.ToDbType(argumentType), 
-                EvaluateParameterValue(tableInfo, keyValuePair), 
+                keyValuePair.Key,
+                isColumn ? tableInfo.ConvertToDbType(keyValuePair.Key) : TypeConverter.ToDbType(argumentType),
+                EvaluateParameterValue(tableInfo, keyValuePair),
                 isColumn ? tableInfo.GetColumnSize(keyValuePair.Key) : -1);
         }
 
@@ -148,8 +162,8 @@ namespace RabbitDB.Query
             }
 
             return new QueryParameter(
-                index.ToString(CultureInfo.InvariantCulture), 
-                TypeConverter.ToDbType(argumentType), 
+                index.ToString(CultureInfo.InvariantCulture),
+                TypeConverter.ToDbType(argumentType),
                 arguments[index]);
         }
 

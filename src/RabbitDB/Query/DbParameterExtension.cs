@@ -31,16 +31,11 @@ namespace RabbitDB.Query
         /// The parameter prefix.
         /// </param>
         public static void SetupParameter(
-            IDbDataParameter parameter, 
-            QueryParameter queryParameter, 
+            IDbDataParameter parameter,
+            QueryParameter queryParameter,
             string parameterPrefix)
         {
-            if ((queryParameter.DbType == DbType.AnsiString
-                 || queryParameter.DbType == DbType.AnsiStringFixedLength
-                 || queryParameter.DbType == DbType.String
-                 || queryParameter.DbType == DbType.StringFixedLength)
-                && queryParameter.Size > 0
-                && (queryParameter.Value is string && ((string)queryParameter.Value).Length > queryParameter.Size))
+            if (queryParameter.IsInvalid)
             {
                 return;
             }
@@ -67,8 +62,8 @@ namespace RabbitDB.Query
         /// The parameter prefix.
         /// </param>
         internal static void Setup(
-            this IDbDataParameter parameter, 
-            QueryParameter queryParameter, 
+            this IDbDataParameter parameter,
+            QueryParameter queryParameter,
             string parameterPrefix)
         {
             SetupParameter(parameter, queryParameter, parameterPrefix);
@@ -90,9 +85,9 @@ namespace RabbitDB.Query
         /// The size.
         /// </param>
         private static void DealWithSpecialParameterValues(
-            IDbDataParameter parameter, 
-            object value, 
-            DbType dbType, 
+            IDbDataParameter parameter,
+            object value,
+            DbType dbType,
             int? size)
         {
             Type valueType = value.GetType();
@@ -157,9 +152,9 @@ namespace RabbitDB.Query
         /// <exception cref="ArgumentNullException">
         /// </exception>
         private static void SetupParameter(
-            IDbDataParameter parameter, 
-            string parameterPrefix, 
-            string name, 
+            IDbDataParameter parameter,
+            string parameterPrefix,
+            string name,
             object value)
         {
             if (name == null)
@@ -174,27 +169,34 @@ namespace RabbitDB.Query
 
             parameter.ParameterName = string.Concat(parameterPrefix, name);
 
-            if (value != null)
-            {
-                var valueType = value.GetType();
-                if (valueType.IsEnum)
-                {
-                    if (value is string)
-                    {
-                        parameter.Value = Enum.Parse(valueType, value.ToString());
-                    }
+            parameter.Value = GetParameterValue(value);
+        }
 
-                    parameter.Value = Enum.ToObject(valueType, value);
-                }
-                else
-                {
-                    parameter.Value = value;
-                }
-            }
-            else
+        private static object GetParameterValue(object value)
+        {
+            if (value == null)
             {
-                parameter.Value = DBNull.Value;
+                return DBNull.Value;
             }
+
+            var valueType = value.GetType();
+            if (valueType.IsEnum)
+            {
+                return GetParameterValueByEnum(valueType, value);
+            }
+
+            return value;
+
+        }
+
+        private static object GetParameterValueByEnum(Type valueType, object value)
+        {
+            if (value is string)
+            {
+                return Enum.Parse(valueType, value.ToString());
+            }
+
+            return Enum.ToObject(valueType, value);
         }
 
         #endregion

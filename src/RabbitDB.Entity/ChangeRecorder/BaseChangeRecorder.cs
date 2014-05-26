@@ -39,6 +39,13 @@ namespace RabbitDB.Entity.ChangeRecorder
             this.ValidArgumentReader = validEntityArgumentsReader;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseChangeRecorder"/> class.
+        /// </summary>
+        protected BaseChangeRecorder()
+        {
+        }
+
         #endregion
 
         #region Properties

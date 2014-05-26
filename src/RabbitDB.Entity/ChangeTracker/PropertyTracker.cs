@@ -12,13 +12,13 @@ namespace RabbitDB.ChangeTracker
     /// </summary>
     internal class PropertyTracker
     {
-        private bool hasOriginalValue;
-        private bool trackOriginalValueWeakly;
-        private object propertyValue;
+        private bool _hasOriginalValue;
+        private readonly bool _trackOriginalValueWeakly;
+        private object _propertyValue;
 
         public PropertyTracker(bool trackOriginalValueWeakly)
         {
-            this.trackOriginalValueWeakly = trackOriginalValueWeakly;
+            _trackOriginalValueWeakly = trackOriginalValueWeakly;
         }
 
         public Func<object, object> PropertyAccess { get; set; }
@@ -32,17 +32,14 @@ namespace RabbitDB.ChangeTracker
         /// <returns></returns>
         public object GetOriginalValue(out bool hasOriginalValueOut)
         {
-            hasOriginalValueOut = hasOriginalValue;
+            hasOriginalValueOut = _hasOriginalValue;
 
-            if (trackOriginalValueWeakly)
+            if (!_trackOriginalValueWeakly)
             {
-                if (hasOriginalValue)
-                {
-                    return ((WeakReference)propertyValue).Target;
-                }
+                return _propertyValue;
             }
 
-            return propertyValue;
+            return _hasOriginalValue ? ((WeakReference)_propertyValue).Target : _propertyValue;
         }
 
         /// <summary>
@@ -53,19 +50,12 @@ namespace RabbitDB.ChangeTracker
         {
             if (newValue == null)
             {
-                hasOriginalValue = false;
-                propertyValue = null;
+                _hasOriginalValue = false;
+                _propertyValue = null;
             }
             else
             {
-                if (trackOriginalValueWeakly)
-                {
-                    propertyValue = new WeakReference(newValue);
-                }
-                else
-                {
-                    propertyValue = newValue;
-                }
+                _propertyValue = _trackOriginalValueWeakly ? new WeakReference(newValue) : newValue;
             }
         }
     }

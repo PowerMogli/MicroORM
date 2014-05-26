@@ -110,7 +110,7 @@ namespace RabbitDB.SqlBuilder
         /// <returns>
         /// The <see cref="string"/>.
         /// </returns>
-        internal static string GetUpdateStatement(KeyValuePair<string, object>[] arguments)
+        internal static string CreateUpdateStatement(KeyValuePair<string, object>[] arguments)
         {
             var tableInfo = TableInfo<TEntity>.GetTableInfo;
             var updateBuilder = new UpdateSqlBuilder(DbProviderAccessor.SqlDialect, tableInfo, arguments);

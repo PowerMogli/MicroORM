@@ -134,6 +134,7 @@
     <Compile Include="SqlDialect\PostgresSqlCharacters.cs" />
     <Compile Include="SqlDialect\SqlCharacters.cs" />
     <Compile Include="SqlDialect\SqlDialect.cs" />
+    <Compile Include="SqlDialect\SqlDialectFactory.cs" />
     <Compile Include="Storage\DbEngine.cs" />
     <Compile Include="Storage\DbEntityPersister.cs" />
     <Compile Include="Storage\DbPersister.cs" />
@@ -149,9 +150,6 @@
     <Compile Include="Storage\PostgresDbProvider.cs" />
     <Compile Include="Storage\DbCommandExecutor.cs" />
     <Compile Include="Storage\SqlDbProvider.cs" />
-    <Compile Include="Storage\SqlDialectFactory.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Storage\TransactionalDbProvider.cs" />
     <Compile Include="Session\StoredProcedureSession.cs" />
     <Compile Include="Utils\EntityArgumentsReader.cs" />

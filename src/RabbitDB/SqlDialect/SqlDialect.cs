@@ -37,7 +37,7 @@ namespace RabbitDB.SqlDialect
         /// <param name="dbCommandExecutor">
         /// The db command executor.
         /// </param>
-        internal SqlDialect(SqlCharacters sqlCharacters, IDbProvider dbProvider, IDbCommandExecutor dbCommandExecutor)
+        protected SqlDialect(SqlCharacters sqlCharacters, IDbProvider dbProvider, IDbCommandExecutor dbCommandExecutor)
             : this(sqlCharacters, dbProvider)
         {
             this.DbCommandExecutor = dbCommandExecutor;
@@ -53,7 +53,7 @@ namespace RabbitDB.SqlDialect
         /// <param name="dbProvider">
         /// The db provider.
         /// </param>
-        internal SqlDialect(SqlCharacters sqlCharacters, IDbProvider dbProvider)
+        protected SqlDialect(SqlCharacters sqlCharacters, IDbProvider dbProvider)
         {
             this.DbProvider = dbProvider;
             this.DbCommandExecutor = new DbCommandExecutor(this.DbProvider, this);

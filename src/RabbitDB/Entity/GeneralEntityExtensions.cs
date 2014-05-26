@@ -40,7 +40,7 @@ namespace RabbitDB.Entity
             this TEntity entity, 
             KeyValuePair<string, object>[] valuesToUpdate)
         {
-            var updateStatement = SqlBuilder<TEntity>.GetUpdateStatement(valuesToUpdate);
+            var updateStatement = SqlBuilder<TEntity>.CreateUpdateStatement(valuesToUpdate);
             var queryParameterCollection =
                 QueryParameterCollection.Create<TEntity>(new object[] { valuesToUpdate });
 

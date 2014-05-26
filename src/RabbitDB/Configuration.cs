@@ -8,6 +8,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace RabbitDB
 {
+    using System.Runtime.CompilerServices;
+
     /// <summary>
     /// The configuration.
     /// </summary>
@@ -19,11 +21,6 @@ namespace RabbitDB
         /// The instance.
         /// </summary>
         private static volatile Configuration instance;
-
-        /// <summary>
-        /// The sync root.
-        /// </summary>
-        private static readonly object SyncRoot = new object();
 
         #endregion
 
@@ -55,22 +52,10 @@ namespace RabbitDB
         /// </summary>
         internal static Configuration Instance
         {
+            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
-                if (instance != null)
-                {
-                    return instance;
-                }
-
-                lock (SyncRoot)
-                {
-                    if (instance == null)
-                    {
-                        instance = new Configuration();
-                    }
-                }
-
-                return instance;
+                return instance ?? (instance = new Configuration());
             }
         }
 

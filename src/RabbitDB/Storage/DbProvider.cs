@@ -23,27 +23,27 @@ namespace RabbitDB.Storage
         #region Fields
 
         /// <summary>
-        /// The _db command.
+        /// The database command.
         /// </summary>
         protected IDbCommand DbCommand;
 
         /// <summary>
-        /// The _db connection.
+        /// The database connection.
         /// </summary>
         protected IDbConnection DbConnection;
 
         /// <summary>
-        /// The _db transaction.
+        /// The database transaction.
         /// </summary>
         protected IDbTransaction DbTransaction;
 
         /// <summary>
-        /// The _connection string.
+        /// The connection string.
         /// </summary>
         private readonly string _connectionString;
 
         /// <summary>
-        /// The _db factory.
+        /// The database provider factory.
         /// </summary>
         private readonly DbProviderFactory _dbFactory;
 
@@ -114,6 +114,18 @@ namespace RabbitDB.Storage
         /// </summary>
         public void Dispose()
         {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (disposing == false)
+            {
+                return;
+            }
+
             DisposeConnection();
             DisposeCommand();
             DisposeTransaction();
