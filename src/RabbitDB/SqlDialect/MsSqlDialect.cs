@@ -6,96 +6,95 @@
 //   The ms sql dialect.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+
+using RabbitDB.Contracts.Expressions;
+using RabbitDB.Contracts.Mapping;
+using RabbitDB.Contracts.Storage;
+using RabbitDB.Expressions;
+
+#endregion
+
 namespace RabbitDB.SqlDialect
 {
-    using RabbitDB.Expressions;
-    using RabbitDB.Mapping;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The ms sql dialect.
+    ///     The ms sql dialect.
     /// </summary>
     internal class MsSqlDialect : SqlDialect
     {
         #region Fields
 
         /// <summary>
-        /// The _builder helper.
+        ///     The _builder helper.
         /// </summary>
         private IDbProviderExpressionBuildHelper _builderHelper;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MsSqlDialect"/> class.
+        ///     Initializes a new instance of the <see cref="MsSqlDialect" /> class.
         /// </summary>
         /// <param name="dbProvider">
-        /// The db provider.
+        ///     The db provider.
         /// </param>
         /// <param name="dbCommandExecutor">
-        /// The db command executor.
+        ///     The db command executor.
         /// </param>
         internal MsSqlDialect(IDbProvider dbProvider, IDbCommandExecutor dbCommandExecutor)
-            : base(SqlCharacters.MsSqlCharacters, dbProvider, dbCommandExecutor)
+            : base(RabbitDB.SqlDialect.SqlCharacters.MsSqlCharacters, dbProvider, dbCommandExecutor)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MsSqlDialect"/> class.
+        ///     Initializes a new instance of the <see cref="MsSqlDialect" /> class.
         /// </summary>
         /// <param name="dbProvider">
-        /// The db provider.
+        ///     The db provider.
         /// </param>
         internal MsSqlDialect(IDbProvider dbProvider)
-            : base(SqlCharacters.MsSqlCharacters, dbProvider)
+            : base(RabbitDB.SqlDialect.SqlCharacters.MsSqlCharacters, dbProvider)
         {
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the builder helper.
+        ///     Gets the builder helper.
         /// </summary>
-        internal override IDbProviderExpressionBuildHelper BuilderHelper
-        {
-            get
-            {
-                return _builderHelper ?? (_builderHelper = new ExpressionBuildHelper(this.SqlCharacters));
-            }
-        }
+        public override IDbProviderExpressionBuildHelper BuilderHelper => _builderHelper ?? (_builderHelper = new ExpressionBuildHelper(SqlCharacters));
 
         /// <summary>
-        /// Gets the scope identity.
+        ///     Gets the scope identity.
         /// </summary>
-        internal override string ScopeIdentity
-        {
-            get
-            {
-                return "; SELECT CAST(SCOPE_IDENTITY() AS {0}) AS ID";
-            }
-        }
+        internal override string ScopeIdentity => "; SELECT CAST(SCOPE_IDENTITY() AS {0}) AS ID";
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
-        /// The resolve scope identity.
+        ///     The resolve scope identity.
         /// </summary>
         /// <param name="tableInfo">
-        /// The table info.
+        ///     The table info.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
-        internal override string ResolveScopeIdentity(TableInfo tableInfo)
+        public override string ResolveScopeIdentity(ITableInfo tableInfo)
         {
-            var result = tableInfo.GetIdentityType();
-            return result.Item1 ? string.Format(this.ScopeIdentity, result.Item2) : string.Empty;
+            Tuple<bool, string> result = tableInfo.GetIdentityType();
+
+            return result.Item1
+                ? string.Format(ScopeIdentity, result.Item2)
+                : string.Empty;
         }
 
         #endregion

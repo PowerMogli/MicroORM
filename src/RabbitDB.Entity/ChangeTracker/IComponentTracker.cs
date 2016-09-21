@@ -6,7 +6,7 @@ using System.Collections.Generic;
 // AUTHOR(S): SACHA BARBER, IAN P JOHNSON
 // WHERE TO FIND ORIGINAL: http://www.codeproject.com/Articles/651464/Expression-API-Cookbook
 
-namespace RabbitDB.ChangeTracker
+namespace RabbitDB.Entity.ChangeTracker
 {
 	/// <summary>
 	/// IComponentTracker is the interface all component trackers implements.

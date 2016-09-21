@@ -6,22 +6,27 @@
 //   The oracle db schema reader.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+
+using RabbitDB.Contracts.Schema;
+
+#endregion
+
 namespace RabbitDB.Schema
 {
-    using System;
-    using System.Collections.Generic;
-
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The oracle db schema reader.
+    ///     The oracle db schema reader.
     /// </summary>
     internal class OracleDbSchemaReader : DbSchemaReader
     {
-        #region Constants
+        #region Fields
 
         /// <summary>
-        /// The sq l_ column.
+        ///     The sq l_ column.
         /// </summary>
         private const string SqlColumn = @"select table_name TableName,
 column_name ColumnName,
@@ -33,7 +38,7 @@ data_type DataType,
  order by column_id";
 
         /// <summary>
-        /// The sq l_ primarykey.
+        ///     The sq l_ primarykey.
         /// </summary>
         private const string SqlPrimarykey = @"select column_name from USER_CONSTRAINTS uc
   inner join USER_CONS_COLUMNS ucc on uc.constraint_name = ucc.constraint_name
@@ -42,7 +47,7 @@ and uc.table_name = upper(:tableName)
 and ucc.position = 1";
 
         /// <summary>
-        /// The sq l_ table.
+        ///     The sq l_ table.
         /// </summary>
         private const string SqlTable = @"select TABLE_NAME, 'Table' TABLE_TYPE, USER TABLE_SCHEMA
 from USER_TABLES
@@ -52,47 +57,47 @@ from USER_VIEWS";
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OracleDbSchemaReader"/> class.
+        ///     Initializes a new instance of the <see cref="OracleDbSchemaReader" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
-        internal OracleDbSchemaReader(SqlDialect sqlDialect)
+        internal OracleDbSchemaReader(SqlDialect.SqlDialect sqlDialect)
             : base(sqlDialect)
         {
         }
 
         #endregion
 
-        #region Methods
+        #region Protected Methods
 
         /// <summary>
-        /// The get columns.
+        ///     The get columns.
         /// </summary>
         /// <param name="dbTable">
-        /// The db table.
+        ///     The db table.
         /// </param>
         /// <returns>
-        /// The <see cref="List"/>.
+        ///     The <see cref="List" />.
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
-        protected override List<DbColumn> GetColumns(DbTable dbTable)
+        protected override List<IDbColumn> GetColumns(DbTable dbTable)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// The get primary keys.
+        ///     The get primary keys.
         /// </summary>
         /// <param name="table">
-        /// The table.
+        ///     The table.
         /// </param>
         /// <returns>
-        /// The <see cref="List"/>.
+        ///     The <see cref="List" />.
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
@@ -102,13 +107,13 @@ from USER_VIEWS";
         }
 
         /// <summary>
-        /// The get table.
+        ///     The get table.
         /// </summary>
         /// <param name="tableName">
-        /// The table name.
+        ///     The table name.
         /// </param>
         /// <returns>
-        /// The <see cref="DbTable"/>.
+        ///     The <see cref="DbTable" />.
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>

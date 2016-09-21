@@ -6,45 +6,50 @@
 //   The entity arguments reader.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Collections.Generic;
+using System.Linq;
+
+using RabbitDB.Contracts.Mapping;
+using RabbitDB.Mapping;
+using RabbitDB.Reflection;
+
+#endregion
+
 namespace RabbitDB.Utils
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.Reflection;
-
     /// <summary>
-    /// The entity arguments reader.
+    ///     The entity arguments reader.
     /// </summary>
     internal class EntityArgumentsReader
     {
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The get entity arguments.
+        ///     The get entity arguments.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="tableInfo">
-        /// The table info.
+        ///     The table info.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="object[]"/>.
+        ///     The <see cref="object[]" />.
         /// </returns>
         internal object[] GetEntityArguments<TEntity>(TEntity entity, TableInfo tableInfo)
         {
-            var properties = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
-            var count = properties.Count();
+            KeyValuePair<string, object>[] properties = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { entity });
+            int count = properties.Length;
 
-            var arguments = new List<KeyValuePair<string, object>>();
-            for (var i = 0; i < count; i++)
+            List<KeyValuePair<string, object>> arguments = new List<KeyValuePair<string, object>>();
+            for (int i = 0; i < count; i++)
             {
-                var propertyInfo =
-                    tableInfo.Columns.FirstOrDefault(column => column.ColumnAttribute.ColumnName == properties[i].Key);
+                IPropertyInfo propertyInfo = tableInfo.Columns.FirstOrDefault(column => column.ColumnAttribute.ColumnName == properties[i].Key);
                 if (propertyInfo == null
                     || (tableInfo.Columns.Contains(propertyInfo.ColumnAttribute.ColumnName)
                         && (propertyInfo.ColumnAttribute.AutoNumber || propertyInfo.ColumnAttribute.IsPrimaryKey)))

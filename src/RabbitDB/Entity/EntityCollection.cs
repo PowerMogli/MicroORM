@@ -6,69 +6,85 @@
 //   The entity collection.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Linq.Expressions;
+
+using RabbitDB.Caching;
+using RabbitDB.Contracts;
+using RabbitDB.Contracts.Reader;
+using RabbitDB.Mapping;
+using RabbitDB.Session;
+using RabbitDB.Storage;
+
+#endregion
+
 namespace RabbitDB.Entity
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Data;
-    using System.Linq;
-    using System.Linq.Expressions;
-
-    using RabbitDB.Caching;
-    using RabbitDB.Mapping;
-    using RabbitDB.Session;
-
     /// <summary>
-    /// The entity collection.
+    ///     The entity collection.
     /// </summary>
     /// <typeparam name="TEntity">
     /// </typeparam>
-    public class EntityCollection<TEntity> : Collection<TEntity>
-        where TEntity : Entity
+    public class EntityCollection<TEntity> : IEnumerable<TEntity>
+        where TEntity : Entity.Entity
     {
         #region Fields
 
+        private readonly List<TEntity> _entityCollection;
+
         /// <summary>
-        /// The _loaded.
+        ///     The _loaded.
         /// </summary>
         private bool _loaded;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityCollection{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="EntityCollection{TEntity}" /> class.
         /// </summary>
         public EntityCollection()
-            : base(new List<TEntity>())
         {
+            _entityCollection = new List<TEntity>();
         }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region  Properties
+
+        public TEntity this[int index] => _entityCollection[index];
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
-        /// The delete all.
+        ///     The delete all.
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         public bool DeleteAll()
         {
-            if (base.Count <= 0)
+            if (_entityCollection.Count <= 0)
             {
                 return false;
             }
 
             bool persistResult = true;
-            ((List<TEntity>)base.Items).ForEach(
+            _entityCollection.ForEach(
                 entity =>
                 {
                     entity.MarkedForDeletion = true;
-                    if (entity.HasChanges())
+                    if (entity.HasChanges)
                     {
                         persistResult &= entity.PersistChanges();
                     }
@@ -78,54 +94,60 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The find by key.
+        ///     The find by key.
         /// </summary>
         /// <param name="key">
-        /// The key.
+        ///     The key.
         /// </param>
         /// <typeparam name="TKey">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="TEntity"/>.
+        ///     The <see cref="TEntity" />.
         /// </returns>
         public TEntity FindByKey<TKey>(TKey key)
         {
-            if (base.Count <= 0)
+            if (_entityCollection.Count <= 0)
             {
                 return default(TEntity);
             }
 
-            var tableInfo = TableInfo<TEntity>.GetTableInfo;
+            TableInfo tableInfo = TableInfo<TEntity>.GetTableInfo;
 
-            return base.Items.FirstOrDefault(
+            return _entityCollection.FirstOrDefault(
                 entity =>
                 {
-                    var primaryKeyValues = tableInfo.GetPrimaryKeyValues(entity);
+                    object[] primaryKeyValues = tableInfo.GetPrimaryKeyValues(entity);
+
                     return primaryKeyValues.Any(keyValue => keyValue.Equals(key));
                 });
         }
 
         /// <summary>
-        /// Removes all entities from the collection
-        /// and all collected information.
+        ///     Removes all entities from the collection
+        ///     and all collected information.
         /// </summary>
         public void Flush()
         {
-            if (base.Count <= 0)
+            if (_entityCollection.Count <= 0)
             {
                 return;
             }
 
-            foreach (var entity in this)
+            foreach (TEntity entity in this)
             {
                 EntityInfoCacheManager.RemoveFor(entity);
             }
 
-            Clear();
+            _entityCollection.Clear();
+        }
+
+        public IEnumerator<TEntity> GetEnumerator()
+        {
+            return _entityCollection.GetEnumerator();
         }
 
         /// <summary>
-        /// The load all.
+        ///     The load all.
         /// </summary>
         public void LoadAll()
         {
@@ -134,11 +156,12 @@ namespace RabbitDB.Entity
                 return;
             }
 
-            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
+            Tuple<string, DbEngine> sessionConfig = EntityExtensions.InitializeSession<TEntity>();
 
-            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
+            using (DbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                var entitySet = dbSession.GetEntitySet<TEntity>();
+                IEntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>();
+
                 FinishLoad(entitySet);
             }
 
@@ -146,10 +169,10 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The load all.
+        ///     The load all.
         /// </summary>
         /// <param name="materializer">
-        /// The materializer.
+        ///     The materializer.
         /// </param>
         public void LoadAll(Func<IDataReader, IEnumerable<TEntity>> materializer)
         {
@@ -158,12 +181,13 @@ namespace RabbitDB.Entity
                 return;
             }
 
-            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
+            Tuple<string, DbEngine> sessionConfig = EntityExtensions.InitializeSession<TEntity>();
 
-            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
+            using (DbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                var entityReader = dbSession.GetEntityReader<TEntity>();
-                var entitySet = entityReader.Load(materializer) as EntitySet<TEntity>;
+                IEntityReader<TEntity> entityReader = dbSession.GetEntityReader<TEntity>();
+
+                EntitySet<TEntity> entitySet = entityReader.Load(materializer) as EntitySet<TEntity>;
 
                 FinishLoad(entitySet);
             }
@@ -172,13 +196,13 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The load by.
+        ///     The load by.
         /// </summary>
         /// <param name="sql">
-        /// The sql.
+        ///     The sql.
         /// </param>
         /// <param name="arguments">
-        /// The arguments.
+        ///     The arguments.
         /// </param>
         public void LoadBy(string sql, params object[] arguments)
         {
@@ -187,11 +211,12 @@ namespace RabbitDB.Entity
                 return;
             }
 
-            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
+            Tuple<string, DbEngine> sessionConfig = EntityExtensions.InitializeSession<TEntity>();
 
-            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
+            using (DbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                var entitySet = dbSession.GetEntitySet<TEntity>(sql, arguments);
+                IEntitySet<TEntity> entitySet = dbSession.GetEntitySet<TEntity>(sql, arguments);
+
                 FinishLoad(entitySet);
             }
 
@@ -199,10 +224,10 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The load by.
+        ///     The load by.
         /// </summary>
         /// <param name="criteria">
-        /// The criteria.
+        ///     The criteria.
         /// </param>
         public void LoadBy(Expression<Func<TEntity, bool>> criteria)
         {
@@ -211,11 +236,12 @@ namespace RabbitDB.Entity
                 return;
             }
 
-            var sessionConfig = EntityExtensions.InitializeSession<TEntity>();
+            Tuple<string, DbEngine> sessionConfig = EntityExtensions.InitializeSession<TEntity>();
 
-            using (var dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
+            using (DbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                var entitySet = dbSession.GetEntitySet(criteria);
+                IEntitySet<TEntity> entitySet = dbSession.GetEntitySet(criteria);
+
                 FinishLoad(entitySet);
             }
 
@@ -223,23 +249,23 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The persist changes.
+        ///     The persist changes.
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         public bool PersistChanges()
         {
-            if (base.Count <= 0)
+            if (_entityCollection.Count <= 0)
             {
                 return false;
             }
 
             bool persistResult = true;
-            ((List<TEntity>)base.Items).ForEach(
+            _entityCollection.ForEach(
                 entity =>
                 {
-                    if (entity.HasChanges())
+                    if (entity.HasChanges)
                     {
                         persistResult &= entity.PersistChanges();
                     }
@@ -249,36 +275,43 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The reload.
+        ///     The reload.
         /// </summary>
         public void Reload()
         {
-            this._loaded = false;
-            this.Flush();
-            this.LoadAll();
+            _loaded = false;
+
+            Flush();
+
+            LoadAll();
         }
 
         #endregion
 
-        #region Methods
+        #region Private Methods
 
         /// <summary>
-        /// The finish load.
+        ///     The finish load.
         /// </summary>
         /// <param name="entitySet">
-        /// The entity set.
+        ///     The entity set.
         /// </param>
         private void FinishLoad(IEnumerable<TEntity> entitySet)
         {
-            foreach (var entity in entitySet)
+            foreach (TEntity entity in entitySet)
             {
                 if (DbSession.Configuration.AutoDetectChangesEnabled)
                 {
                     EntityExtensions.FinishLoad(entity);
                 }
 
-                Add(entity);
+                _entityCollection.Add(entity);
             }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         #endregion

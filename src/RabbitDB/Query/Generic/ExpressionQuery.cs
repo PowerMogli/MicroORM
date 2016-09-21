@@ -6,17 +6,23 @@
 //   The expression query.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Data;
+using System.Linq.Expressions;
+
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Expressions;
+
+#endregion
+
 namespace RabbitDB.Query.Generic
 {
-    using System;
-    using System.Data;
-    using System.Linq.Expressions;
-
-    using RabbitDB.Expressions;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The expression query.
+    ///     The expression query.
     /// </summary>
     /// <typeparam name="T">
     /// </typeparam>
@@ -27,39 +33,39 @@ namespace RabbitDB.Query.Generic
         #region Fields
 
         /// <summary>
-        /// The _condition.
+        ///     The _condition.
         /// </summary>
         private Expression<Func<T, bool>> _condition;
 
         /// <summary>
-        /// The _expression builder.
+        ///     The _expression builder.
         /// </summary>
         private SqlExpressionBuilder<T> _expressionBuilder;
 
         /// <summary>
-        /// The _selector.
+        ///     The _selector.
         /// </summary>
         private Expression<Func<T, bool>> _selector;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExpressionQuery{T,V}"/> class.
+        ///     Initializes a new instance of the <see cref="ExpressionQuery{T,V}" /> class.
         /// </summary>
         /// <param name="condition">
-        /// The condition.
+        ///     The condition.
         /// </param>
         /// <param name="expressionBuilder">
-        /// The expression Builder.
+        ///     The expression Builder.
         /// </param>
         /// <param name="selector">
-        /// The selector.
+        ///     The selector.
         /// </param>
         internal ExpressionQuery(
-            Expression<Func<T, bool>> condition, 
-            SqlExpressionBuilder<T> expressionBuilder, 
+            Expression<Func<T, bool>> condition,
+            SqlExpressionBuilder<T> expressionBuilder,
             Expression<Func<T, bool>> selector)
         {
             _condition = condition;
@@ -69,18 +75,18 @@ namespace RabbitDB.Query.Generic
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The compile.
+        ///     The compile.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
-        public IDbCommand Compile(SqlDialect sqlDialect)
+        public IDbCommand Compile(ISqlDialect sqlDialect)
         {
             return null;
         }

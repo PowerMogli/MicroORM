@@ -33,13 +33,7 @@ namespace RabbitDB.Storage
         /// <summary>
         /// Gets the provider name.
         /// </summary>
-        public override string ProviderName
-        {
-            get
-            {
-                return "System.Data.SqlClient";
-            }
-        }
+        public override string ProviderName => "System.Data.SqlClient";
 
         #endregion
     }

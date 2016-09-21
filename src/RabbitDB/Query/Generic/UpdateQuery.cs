@@ -6,19 +6,25 @@
 //   The update query.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Entity;
+using RabbitDB.Mapping;
+using RabbitDB.Utils;
+
+#endregion
+
 namespace RabbitDB.Query.Generic
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-
-    using RabbitDB.Entity;
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlDialect;
-    using RabbitDB.Utils;
-
     /// <summary>
-    /// The update query.
+    ///     The update query.
     /// </summary>
     /// <typeparam name="TEntity">
     /// </typeparam>
@@ -27,19 +33,19 @@ namespace RabbitDB.Query.Generic
         #region Fields
 
         /// <summary>
-        /// The _entity.
+        ///     The _entity.
         /// </summary>
         private readonly TEntity _entity;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UpdateQuery{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="UpdateQuery{TEntity}" /> class.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         internal UpdateQuery(TEntity entity)
         {
@@ -48,34 +54,31 @@ namespace RabbitDB.Query.Generic
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The compile.
+        ///     The compile.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public IDbCommand Compile(SqlDialect sqlDialect)
+        public IDbCommand Compile(ISqlDialect sqlDialect)
         {
-            var valuesToUpdate = new EntityArgumentsReader().GetEntityArguments(
-                _entity, 
-                TableInfo<TEntity>.GetTableInfo);
+            object[] valuesToUpdate = new EntityArgumentsReader().GetEntityArguments(_entity, TableInfo<TEntity>.GetTableInfo);
 
             if (valuesToUpdate == null || valuesToUpdate.Length <= 0)
             {
                 throw new InvalidOperationException("Entity had no properties provided!");
             }
 
-            var result =
-                _entity.PrepareForUpdate(valuesToUpdate[0] as KeyValuePair<string, object>[]);
+            Tuple<string, QueryParameterCollection> result = _entity.PrepareForUpdate(valuesToUpdate[0] as KeyValuePair<string, object>[]);
 
-            var sqlQuery = new SqlQuery(result.Item1, result.Item2);
+            SqlQuery sqlQuery = new SqlQuery(result.Item1, result.Item2);
 
             return sqlQuery.Compile(sqlDialect);
         }

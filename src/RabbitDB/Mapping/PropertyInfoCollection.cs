@@ -6,131 +6,77 @@
 //   The property info collection.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using RabbitDB.Contracts.Mapping;
+using RabbitDB.Contracts.Schema;
+using RabbitDB.Contracts.SqlDialect;
+
+#endregion
+
 namespace RabbitDB.Mapping
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using RabbitDB.Schema;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The property info collection.
+    ///     The property info collection.
     /// </summary>
-    internal sealed class PropertyInfoCollection : IEnumerable<IPropertyInfo>
+    internal sealed class PropertyInfoCollection : IPropertyInfoCollection
     {
         #region Fields
 
         /// <summary>
-        /// The _property infos.
+        ///     The _property infos.
         /// </summary>
         private readonly List<IPropertyInfo> _propertyInfos = new List<IPropertyInfo>();
 
         /// <summary>
-        /// The _property name member mapping.
+        ///     The _property name member mapping.
         /// </summary>
         private readonly Dictionary<string, IPropertyInfo> _propertyNameMemberMapping =
             new Dictionary<string, IPropertyInfo>();
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the count.
+        ///     Gets the count.
         /// </summary>
-        internal int Count
-        {
-            get
-            {
-                return _propertyInfos.Count;
-            }
-        }
-
-        #endregion
-
-        #region Indexers
+        public int Count => _propertyInfos.Count;
 
         /// <summary>
-        /// The this.
+        ///     The
         /// </summary>
         /// <param name="index">
-        /// The index.
+        ///     The index.
         /// </param>
         /// <returns>
-        /// The <see cref="IPropertyInfo"/>.
+        ///     The <see cref="IPropertyInfo" />.
         /// </returns>
-        internal IPropertyInfo this[int index]
-        {
-            get
-            {
-                return _propertyInfos[index];
-            }
-        }
+        public IPropertyInfo this[int index] => _propertyInfos[index];
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The contains.
-        /// </summary>
-        /// <param name="columnName">
-        /// The column name.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public bool Contains(string columnName)
-        {
-            return _propertyInfos.Any(propertyInfo => propertyInfo.ColumnAttribute.ColumnName == columnName);
-        }
-
-        /// <summary>
-        /// The get enumerator.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="IEnumerator"/>.
-        /// </returns>
-        public IEnumerator GetEnumerator()
-        {
-            return _propertyInfos.GetEnumerator();
-        }
-
-        #endregion
-
-        #region Explicit Interface Methods
-
-        /// <summary>
-        /// The get enumerator.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="IEnumerator"/>.
-        /// </returns>
-        IEnumerator<IPropertyInfo> IEnumerable<IPropertyInfo>.GetEnumerator()
-        {
-            return _propertyInfos.GetEnumerator();
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The add.
+        ///     The add.
         /// </summary>
         /// <param name="propertyInfo">
-        /// The property info.
+        ///     The property info.
         /// </param>
         /// <exception cref="ArgumentNullException">
         /// </exception>
-        internal void Add(IPropertyInfo propertyInfo)
+        public void Add(IPropertyInfo propertyInfo)
         {
             if (propertyInfo == null)
             {
-                throw new ArgumentNullException("propertyInfo");
+                throw new ArgumentNullException(nameof(propertyInfo));
             }
 
             if (_propertyNameMemberMapping.ContainsKey(propertyInfo.Name))
@@ -143,48 +89,72 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// The remove.
+        ///     The contains.
+        /// </summary>
+        /// <param name="columnName">
+        ///     The column name.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool Contains(string columnName)
+        {
+            return _propertyInfos.Any(propertyInfo => propertyInfo.ColumnAttribute.ColumnName == columnName);
+        }
+
+        /// <summary>
+        ///     The get enumerator.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="IEnumerator" />.
+        /// </returns>
+        public IEnumerator GetEnumerator()
+        {
+            return _propertyInfos.GetEnumerator();
+        }
+
+        /// <summary>
+        ///     The remove.
         /// </summary>
         /// <param name="name">
-        /// The name.
+        ///     The name.
         /// </param>
-        internal void Remove(string name)
+        public void Remove(string name)
         {
-            var propertyInfo = _propertyNameMemberMapping[name];
+            IPropertyInfo propertyInfo = _propertyNameMemberMapping[name];
             _propertyNameMemberMapping.Remove(name);
             _propertyInfos.Remove(propertyInfo);
         }
 
         /// <summary>
-        /// The select valid column names.
+        ///     The select valid column names.
         /// </summary>
         /// <param name="table">
-        /// The table.
+        ///     The table.
         /// </param>
         /// <param name="sqlCharacters">
-        /// The sql characters.
+        ///     The sql characters.
         /// </param>
         /// <returns>
-        /// The <see cref="IEnumerable"/>.
+        ///     The <see cref="IEnumerable" />.
         /// </returns>
-        internal IEnumerable<string> SelectValidColumnNames(DbTable table, SqlCharacters sqlCharacters)
+        public IEnumerable<string> SelectValidColumnNames(IDbTable table, ISqlCharacters sqlCharacters)
         {
             return
-                this.Where(
-                    column => table.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
+                this.Where(column => table.DbColumns.Any(dbColumn => dbColumn.Name == column.ColumnAttribute.ColumnName))
                     .Select(member => sqlCharacters.EscapeName(member.ColumnAttribute.ColumnName));
         }
 
         /// <summary>
-        /// The select valid non auto number column names.
+        ///     The select valid non auto number column names.
         /// </summary>
         /// <param name="sqlCharacters">
-        /// The sql characters.
+        ///     The sql characters.
         /// </param>
         /// <returns>
-        /// The <see cref="IEnumerable"/>.
+        ///     The <see cref="IEnumerable" />.
         /// </returns>
-        internal IEnumerable<string> SelectValidNonAutoNumberColumnNames(SqlCharacters sqlCharacters)
+        public IEnumerable<string> SelectValidNonAutoNumberColumnNames(ISqlCharacters sqlCharacters)
         {
             return
                 this.Where(column => !column.ColumnAttribute.AutoNumber)
@@ -192,14 +162,30 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// The select valid non auto number prefixed column names.
+        ///     The select valid non auto number prefixed column names.
         /// </summary>
         /// <returns>
-        /// The <see cref="IEnumerable"/>.
+        ///     The <see cref="IEnumerable" />.
         /// </returns>
-        internal IEnumerable<string> SelectValidNonAutoNumberPrefixedColumnNames()
+        public IEnumerable<string> SelectValidNonAutoNumberPrefixedColumnNames()
         {
-            return this.Where(column => !column.ColumnAttribute.AutoNumber).Select(column => "@" + column.Name);
+            return this.Where(column => !column.ColumnAttribute.AutoNumber)
+                       .Select(column => "@" + column.Name);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        ///     The get enumerator.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="IEnumerator" />.
+        /// </returns>
+        IEnumerator<IPropertyInfo> IEnumerable<IPropertyInfo>.GetEnumerator()
+        {
+            return _propertyInfos.GetEnumerator();
         }
 
         #endregion

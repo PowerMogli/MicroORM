@@ -6,6 +6,10 @@
 //   The db persister.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.Storage;
+
 namespace RabbitDB.Storage
 {
     using RabbitDB.Mapping;

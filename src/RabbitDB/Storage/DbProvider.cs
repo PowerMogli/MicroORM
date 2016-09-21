@@ -6,102 +6,109 @@
 //   The db provider.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Data;
+using System.Data.Common;
+
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Contracts.Storage;
+using RabbitDB.Query;
+
+#endregion
+
 namespace RabbitDB.Storage
 {
-    using System;
-    using System.Data;
-    using System.Data.Common;
-
-    using RabbitDB.Query;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The db provider.
+    ///     The db provider.
     /// </summary>
     internal abstract class DbProvider : IDbProvider
     {
         #region Fields
 
         /// <summary>
-        /// The database command.
-        /// </summary>
-        protected IDbCommand DbCommand;
-
-        /// <summary>
-        /// The database connection.
-        /// </summary>
-        protected IDbConnection DbConnection;
-
-        /// <summary>
-        /// The database transaction.
-        /// </summary>
-        protected IDbTransaction DbTransaction;
-
-        /// <summary>
-        /// The connection string.
+        ///     The connection string.
         /// </summary>
         private readonly string _connectionString;
 
         /// <summary>
-        /// The database provider factory.
+        ///     The database provider factory.
         /// </summary>
         private readonly DbProviderFactory _dbFactory;
 
-        #endregion
-
-        #region Constructors and Destructors
+        /// <summary>
+        ///     The database command.
+        /// </summary>
+        protected IDbCommand DbCommand;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DbProvider"/> class.
+        ///     The database connection.
+        /// </summary>
+        protected IDbConnection DbConnection;
+
+        /// <summary>
+        ///     The database transaction.
+        /// </summary>
+        protected IDbTransaction DbTransaction;
+
+        #endregion
+
+        #region Construction
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="DbProvider" /> class.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         protected DbProvider(string connectionString)
         {
             // ReSharper disable once DoNotCallOverridableMethodsInConstructor
-            if (this.ProviderName == null)
+            if (ProviderName == null)
             {
                 throw new NullReferenceException("Providername was null.");
             }
 
             // ReSharper disable once DoNotCallOverridableMethodsInConstructor
-            _dbFactory = DbProviderFactories.GetFactory(this.ProviderName);
+            _dbFactory = DbProviderFactories.GetFactory(ProviderName);
             _connectionString = connectionString;
         }
 
         #endregion
 
-        #region Public Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the provider name.
+        ///     Gets the provider name.
         /// </summary>
         public abstract string ProviderName { get; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The create command.
+        ///     The create command.
         /// </summary>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
         public IDbCommand CreateCommand()
         {
-            return this.DbConnection.CreateCommand();
+            return DbConnection.CreateCommand();
         }
 
         /// <summary>
-        /// The create connection.
+        ///     The create connection.
         /// </summary>
         public void CreateConnection()
         {
-            if (this.DbTransaction != null)
+            if (DbTransaction != null)
             {
-                this.DbConnection = this.DbTransaction.Connection;
+                DbConnection = DbTransaction.Connection;
             }
             else
             {
@@ -110,7 +117,7 @@ namespace RabbitDB.Storage
         }
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         public void Dispose()
         {
@@ -132,99 +139,101 @@ namespace RabbitDB.Storage
         }
 
         /// <summary>
-        /// The prepare command.
+        ///     The prepare command.
         /// </summary>
         /// <param name="query">
-        /// The query.
+        ///     The query.
         /// </param>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
-        public IDbCommand PrepareCommand(IQuery query, SqlDialect sqlDialect)
+        public IDbCommand PrepareCommand(IQuery query, ISqlDialect sqlDialect)
         {
             CreateConnection();
-            var dbCommand = query.Compile(sqlDialect);
-            dbCommand.Transaction = this.DbTransaction;
+
+            IDbCommand dbCommand = query.Compile(sqlDialect);
+
+            dbCommand.Transaction = DbTransaction;
 
             return dbCommand;
         }
 
         #endregion
 
-        #region Methods
+        #region Private Methods
 
         /// <summary>
-        /// The create new connection.
+        ///     The create new connection.
         /// </summary>
         private void CreateNewConnection()
         {
-            if (this.DbConnection != null && this.DbConnection.State == ConnectionState.Open)
+            if (DbConnection != null && DbConnection.State == ConnectionState.Open)
             {
                 return;
             }
 
-            this.DbConnection = _dbFactory.CreateConnection();
+            DbConnection = _dbFactory.CreateConnection();
 
             // ReSharper disable once PossibleNullReferenceException
-            this.DbConnection.ConnectionString = _connectionString;
-            this.DbConnection.Open();
+            DbConnection.ConnectionString = _connectionString;
+            DbConnection.Open();
         }
 
         /// <summary>
-        /// The dispose command.
+        ///     The dispose command.
         /// </summary>
         private void DisposeCommand()
         {
-            if (this.DbCommand == null)
+            if (DbCommand == null)
             {
                 return;
             }
 
-            this.DbCommand.Dispose();
-            this.DbCommand = null;
+            DbCommand.Dispose();
+            DbCommand = null;
         }
 
         /// <summary>
-        /// The dispose connection.
+        ///     The dispose connection.
         /// </summary>
         private void DisposeConnection()
         {
-            if (InTransactionMode() || this.DbConnection == null)
+            if (InTransactionMode() || DbConnection == null)
             {
                 return;
             }
 
-            this.DbConnection.Close();
-            this.DbConnection.Dispose();
-            this.DbConnection = null;
+            DbConnection.Close();
+            DbConnection.Dispose();
+            DbConnection = null;
         }
 
         /// <summary>
-        /// The dispose transaction.
+        ///     The dispose transaction.
         /// </summary>
         private void DisposeTransaction()
         {
-            if (InTransactionMode() || this.DbTransaction == null)
+            if (InTransactionMode() || DbTransaction == null)
             {
                 return;
             }
 
-            this.DbTransaction.Dispose();
-            this.DbTransaction = null;
+            DbTransaction.Dispose();
+            DbTransaction = null;
         }
 
         /// <summary>
-        /// The in transaction mode.
+        ///     The in transaction mode.
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         private bool InTransactionMode()
         {
-            return this.DbTransaction != null && this.DbTransaction.Connection != null;
+            return DbTransaction?.Connection != null;
         }
 
         #endregion

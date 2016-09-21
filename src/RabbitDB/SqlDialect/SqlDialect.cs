@@ -6,176 +6,128 @@
 //   The sql dialect.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Data;
+
+using RabbitDB.Contracts.Expressions;
+using RabbitDB.Contracts.Mapping;
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.Reader;
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Contracts.Storage;
+using RabbitDB.Storage;
+
+#endregion
+
 namespace RabbitDB.SqlDialect
 {
-    using System;
-    using System.Data;
-
-    using RabbitDB.Expressions;
-    using RabbitDB.Mapping;
-    using RabbitDB.Query;
-    using RabbitDB.Reader;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The sql dialect.
+    ///     The sql dialect.
     /// </summary>
-    internal abstract class SqlDialect : ICommandExecutor, INullValueResolver, IDisposable
+    internal abstract class SqlDialect : ISqlDialect,
+                                         ICommandExecutor,
+                                         INullValueResolver,
+                                         IDisposable
     {
-        // for unit tests
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlDialect"/> class.
+        ///     Initializes a new instance of the <see cref="SqlDialect" /> class.
         /// </summary>
         /// <param name="sqlCharacters">
-        /// The sql characters.
+        ///     The sql characters.
         /// </param>
         /// <param name="dbProvider">
-        /// The db provider.
+        ///     The db provider.
         /// </param>
         /// <param name="dbCommandExecutor">
-        /// The db command executor.
+        ///     The db command executor.
         /// </param>
-        protected SqlDialect(SqlCharacters sqlCharacters, IDbProvider dbProvider, IDbCommandExecutor dbCommandExecutor)
+        protected SqlDialect(ISqlCharacters sqlCharacters, IDbProvider dbProvider, IDbCommandExecutor dbCommandExecutor)
             : this(sqlCharacters, dbProvider)
         {
-            this.DbCommandExecutor = dbCommandExecutor;
-            this.DbCommandExecutor.NullValueResolver = this;
+            DbCommandExecutor = dbCommandExecutor;
+            DbCommandExecutor.NullValueResolver = this;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlDialect"/> class.
+        ///     Initializes a new instance of the <see cref="SqlDialect" /> class.
         /// </summary>
         /// <param name="sqlCharacters">
-        /// The sql characters.
+        ///     The sql characters.
         /// </param>
         /// <param name="dbProvider">
-        /// The db provider.
+        ///     The db provider.
         /// </param>
-        protected SqlDialect(SqlCharacters sqlCharacters, IDbProvider dbProvider)
+        protected SqlDialect(ISqlCharacters sqlCharacters, IDbProvider dbProvider)
         {
-            this.DbProvider = dbProvider;
-            this.DbCommandExecutor = new DbCommandExecutor(this.DbProvider, this);
-            this.SqlCharacters = sqlCharacters;
+            DbProvider = dbProvider;
+            DbCommandExecutor = new DbCommandExecutor(DbProvider, this);
+            SqlCharacters = sqlCharacters;
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the builder helper.
+        ///     Gets the builder helper.
         /// </summary>
-        internal abstract IDbProviderExpressionBuildHelper BuilderHelper { get; }
+        public abstract IDbProviderExpressionBuildHelper BuilderHelper { get; }
 
         /// <summary>
-        /// Gets the db command executor.
+        ///     Gets the db provider.
         /// </summary>
-        internal IDbCommandExecutor DbCommandExecutor { get; private set; }
+        public IDbProvider DbProvider { get; }
 
         /// <summary>
-        /// Gets the db provider.
+        ///     Gets or sets the sql characters.
         /// </summary>
-        internal IDbProvider DbProvider { get; private set; }
+        public ISqlCharacters SqlCharacters { get; set; }
 
         /// <summary>
-        /// Gets the scope identity.
+        ///     Gets the db command executor.
+        /// </summary>
+        internal IDbCommandExecutor DbCommandExecutor { get; }
+
+        /// <summary>
+        ///     Gets the scope identity.
         /// </summary>
         internal abstract string ScopeIdentity { get; }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
-        /// Gets or sets the sql characters.
+        ///     The resolve scope identity.
         /// </summary>
-        internal SqlCharacters SqlCharacters { get; set; }
+        /// <param name="tableInfo">
+        ///     The table info.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="string" />.
+        /// </returns>
+        public abstract string ResolveScopeIdentity(ITableInfo tableInfo);
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The dispose.
-        /// </summary>
-        public void Dispose()
-        {
-            this.DbProvider.Dispose();
-        }
-
-        /// <summary>
-        /// The execute command.
-        /// </summary>
-        /// <param name="query">
-        /// The query.
-        /// </param>
-        public void ExecuteCommand(IQuery query)
-        {
-            var dbCommand = this.DbProvider.PrepareCommand(query, this);
-            this.DbCommandExecutor.ExecuteCommand(dbCommand);
-        }
-
-        /// <summary>
-        /// The execute reader.
-        /// </summary>
-        /// <param name="query">
-        /// The query.
-        /// </param>
-        /// <returns>
-        /// The <see cref="IDataReader"/>.
-        /// </returns>
-        public IDataReader ExecuteReader(IQuery query)
-        {
-            var dbCommand = this.DbProvider.PrepareCommand(query, this);
-            return this.DbCommandExecutor.ExecuteReader(dbCommand);
-        }
-
-        /// <summary>
-        /// The execute reader.
-        /// </summary>
-        /// <param name="query">
-        /// The query.
-        /// </param>
-        /// <typeparam name="T">
-        /// </typeparam>
-        /// <returns>
-        /// The <see>
-        ///         <cref>EntityReader</cref>
-        ///     </see>
-        ///     .
-        /// </returns>
-        public EntityReader<T> ExecuteReader<T>(IQuery query)
-        {
-            var dbCommand = this.DbProvider.PrepareCommand(query, this);
-            return this.DbCommandExecutor.ExecuteReader<T>(dbCommand);
-        }
-
-        /// <summary>
-        /// The execute scalar.
-        /// </summary>
-        /// <param name="query">
-        /// The query.
-        /// </param>
-        /// <typeparam name="T">
-        /// </typeparam>
-        /// <returns>
-        /// The <see cref="T"/>.
-        /// </returns>
-        public T ExecuteScalar<T>(IQuery query)
-        {
-            var dbCommand = this.DbProvider.PrepareCommand(query, this);
-            return this.DbCommandExecutor.ExecuteScalar<T>(dbCommand);
-        }
-
-        /// <summary>
-        /// The resolve null value.
+        ///     The resolve null value.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <returns>
-        /// The <see cref="object"/>.
+        ///     The <see cref="object" />.
         /// </returns>
         /// <exception cref="InvalidTypeException">
         /// </exception>
@@ -186,7 +138,7 @@ namespace RabbitDB.SqlDialect
                 return null;
             }
 
-            var originalType = type.UnderlyingSystemType;
+            Type originalType = type.UnderlyingSystemType;
 
             if (originalType == typeof(short))
             {
@@ -208,9 +160,9 @@ namespace RabbitDB.SqlDialect
                 return (byte)0;
             }
 
-            if (originalType == typeof(Single))
+            if (originalType == typeof(float))
             {
-                return (Single)0;
+                return (float)0;
             }
 
             if (originalType == typeof(decimal))
@@ -246,21 +198,85 @@ namespace RabbitDB.SqlDialect
             throw new InvalidTypeException("Unsupported type encountered while converting from DBNull.");
         }
 
-        #endregion
-
-        #region Methods
+        /// <summary>
+        ///     The dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            DbProvider.Dispose();
+        }
 
         /// <summary>
-        /// The resolve scope identity.
+        ///     The execute command.
         /// </summary>
-        /// <param name="tableInfo">
-        /// The table info.
+        /// <param name="query">
+        ///     The query.
+        /// </param>
+        public void ExecuteCommand(IQuery query)
+        {
+            IDbCommand dbCommand = DbProvider.PrepareCommand(query, this);
+
+            DbCommandExecutor.ExecuteCommand(dbCommand);
+        }
+
+        /// <summary>
+        ///     The execute reader.
+        /// </summary>
+        /// <param name="query">
+        ///     The query.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="IDataReader" />.
         /// </returns>
-        internal abstract string ResolveScopeIdentity(TableInfo tableInfo);
+        public IDataReader ExecuteReader(IQuery query)
+        {
+            IDbCommand dbCommand = DbProvider.PrepareCommand(query, this);
+
+            return DbCommandExecutor.ExecuteReader(dbCommand);
+        }
+
+        /// <summary>
+        ///     The execute reader.
+        /// </summary>
+        /// <param name="query">
+        ///     The query.
+        /// </param>
+        /// <typeparam name="T">
+        /// </typeparam>
+        /// <returns>
+        ///     The
+        ///     <see>
+        ///         <cref>EntityReader</cref>
+        ///     </see>
+        ///     .
+        /// </returns>
+        public IEntityReader<T> ExecuteReader<T>(IQuery query)
+        {
+            IDbCommand dbCommand = DbProvider.PrepareCommand(query, this);
+
+            return DbCommandExecutor.ExecuteReader<T>(dbCommand);
+        }
+
+        /// <summary>
+        ///     The execute scalar.
+        /// </summary>
+        /// <param name="query">
+        ///     The query.
+        /// </param>
+        /// <typeparam name="T">
+        /// </typeparam>
+        /// <returns>
+        ///     The <see cref="T" />.
+        /// </returns>
+        public T ExecuteScalar<T>(IQuery query)
+        {
+            IDbCommand dbCommand = DbProvider.PrepareCommand(query, this);
+
+            return DbCommandExecutor.ExecuteScalar<T>(dbCommand);
+        }
 
         #endregion
+
+        // for unit tests
     }
 }

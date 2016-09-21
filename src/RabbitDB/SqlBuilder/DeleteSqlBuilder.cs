@@ -6,48 +6,49 @@
 //   The delete sql builder.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using RabbitDB.Mapping;
+
+#endregion
+
 namespace RabbitDB.SqlBuilder
 {
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The delete sql builder.
+    ///     The delete sql builder.
     /// </summary>
     class DeleteSqlBuilder : SqlBuilder
     {
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeleteSqlBuilder"/> class.
+        ///     Initializes a new instance of the <see cref="DeleteSqlBuilder" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <param name="tableInfo">
-        /// The table info.
+        ///     The table info.
         /// </param>
-        public DeleteSqlBuilder(SqlDialect sqlDialect, TableInfo tableInfo)
+        public DeleteSqlBuilder(SqlDialect.SqlDialect sqlDialect, TableInfo tableInfo)
             : base(sqlDialect, tableInfo)
         {
         }
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The create statement.
+        ///     The create statement.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         internal override string CreateStatement()
         {
-            return string.Format(
-                "DELETE FROM {0} {1}", 
-                this.SqlDialect.SqlCharacters.EscapeName(this.TableInfo.SchemedTableName), 
-                AppendPrimaryKeys());
+            return $"DELETE FROM {SqlDialect.SqlCharacters.EscapeName(TableInfo.SchemedTableName)} {AppendPrimaryKeys()}";
         }
 
         #endregion

@@ -20,7 +20,7 @@ namespace RabbitDB
         /// <summary>
         /// The instance.
         /// </summary>
-        private static volatile Configuration instance;
+        private static volatile Configuration _instance;
 
         #endregion
 
@@ -31,7 +31,7 @@ namespace RabbitDB
         /// </summary>
         private Configuration()
         {
-            this.AutoDetectChangesEnabled = true;
+            AutoDetectChangesEnabled = true;
         }
 
         #endregion
@@ -55,7 +55,7 @@ namespace RabbitDB
             [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
-                return instance ?? (instance = new Configuration());
+                return _instance ?? (_instance = new Configuration());
             }
         }
 

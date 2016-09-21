@@ -6,48 +6,54 @@
 //   The db command compiler.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Data;
+
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.SqlDialect;
+
+#endregion
+
 namespace RabbitDB.Query
 {
-    using System.Data;
-
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The db command compiler.
+    ///     The db command compiler.
     /// </summary>
     internal class DbCommandCompiler
     {
         #region Fields
 
         /// <summary>
-        /// The _command.
+        ///     The _command.
         /// </summary>
         private readonly IDbCommand _command;
 
         /// <summary>
-        /// The _query.
+        ///     The _query.
         /// </summary>
         private readonly IArgumentQuery _query;
 
         /// <summary>
-        /// The _sql dialect.
+        ///     The _sql dialect.
         /// </summary>
-        private readonly SqlDialect _sqlDialect;
+        private readonly ISqlDialect _sqlDialect;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DbCommandCompiler"/> class.
+        ///     Initializes a new instance of the <see cref="DbCommandCompiler" /> class.
         /// </summary>
         /// <param name="query">
-        /// The query.
+        ///     The query.
         /// </param>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
-        internal DbCommandCompiler(IArgumentQuery query, SqlDialect sqlDialect)
+        internal DbCommandCompiler(IArgumentQuery query, ISqlDialect sqlDialect)
         {
             _query = query;
             _sqlDialect = sqlDialect;
@@ -56,24 +62,29 @@ namespace RabbitDB.Query
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The compile.
+        ///     The compile.
         /// </summary>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
         internal IDbCommand Compile()
         {
             SetupParameter();
+
             _command.CommandText = _query.SqlStatement;
 
             return _command;
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// The setup parameter.
+        ///     The setup parameter.
         /// </summary>
         private void SetupParameter()
         {
@@ -82,9 +93,10 @@ namespace RabbitDB.Query
                 return;
             }
 
-            foreach (var argument in _query.Arguments)
+            foreach (QueryParameter argument in _query.Arguments)
             {
-                var parameter = _command.CreateParameter();
+                IDbDataParameter parameter = _command.CreateParameter();
+
                 parameter.Setup(argument, _sqlDialect.SqlCharacters.ParameterPrefix);
 
                 _command.Parameters.Add(parameter);

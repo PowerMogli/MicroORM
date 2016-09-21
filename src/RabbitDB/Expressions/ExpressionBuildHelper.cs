@@ -6,99 +6,94 @@
 //   The expression build helper.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+
+using RabbitDB.Contracts.Expressions;
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.SqlDialect;
+
+#endregion
+
 namespace RabbitDB.Expressions
 {
-    using System;
-
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The expression build helper.
+    ///     The expression build helper.
     /// </summary>
     internal class ExpressionBuildHelper : IDbProviderExpressionBuildHelper
     {
         #region Fields
 
         /// <summary>
-        /// The _sql characters.
+        ///     The _sql characters.
         /// </summary>
-        protected SqlCharacters SqlCharacters;
+        protected ISqlCharacters SqlCharacters;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExpressionBuildHelper"/> class.
+        ///     Initializes a new instance of the <see cref="ExpressionBuildHelper" /> class.
         /// </summary>
         /// <param name="sqlCharacters">
-        /// The sql characters.
+        ///     The sql characters.
         /// </param>
-        internal ExpressionBuildHelper(SqlCharacters sqlCharacters)
+        internal ExpressionBuildHelper(ISqlCharacters sqlCharacters)
         {
-            this.SqlCharacters = sqlCharacters;
+            SqlCharacters = sqlCharacters;
         }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The escape name.
+        ///     The format boolean.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
-        public string EscapeName(string value)
-        {
-            return this.SqlCharacters.EscapeName(value);
-        }
-
-        /// <summary>
-        /// The format boolean.
-        /// </summary>
-        /// <param name="value">
-        /// The value.
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         public virtual string FormatBoolean(bool value)
         {
-            return value ? "1" : "0";
+            return value
+                ? "1"
+                : "0";
         }
 
         /// <summary>
-        /// The length.
+        ///     The length.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         public virtual string Length(string column)
         {
-            return string.Format("len({0})", this.SqlCharacters.EscapeName(column));
+            return $"len({SqlCharacters.EscapeName(column)})";
         }
 
         /// <summary>
-        /// The substring.
+        ///     The substring.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <param name="pos">
-        /// The pos.
+        ///     The pos.
         /// </param>
         /// <param name="length">
-        /// The length.
+        ///     The length.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         /// <exception cref="ArgumentNullException">
         /// </exception>
@@ -106,39 +101,54 @@ namespace RabbitDB.Expressions
         {
             if (string.IsNullOrWhiteSpace(column))
             {
-                throw new ArgumentNullException("column");
+                throw new ArgumentNullException(nameof(column));
             }
 
-            var idx = pos + 1;
-            return string.Format("substring({0},{1},{2})", this.SqlCharacters.EscapeName(column), idx, length);
+            int idx = pos + 1;
+
+            return $"substring({SqlCharacters.EscapeName(column)},{idx},{length})";
         }
 
         /// <summary>
-        /// The to lower.
+        ///     The escape name.
         /// </summary>
-        /// <param name="column">
-        /// The column.
+        /// <param name="value">
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
+        /// </returns>
+        public string EscapeName(string value)
+        {
+            return SqlCharacters.EscapeName(value);
+        }
+
+        /// <summary>
+        ///     The to lower.
+        /// </summary>
+        /// <param name="column">
+        ///     The column.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="string" />.
         /// </returns>
         public string ToLower(string column)
         {
-            return string.Format("lower({0})", this.SqlCharacters.EscapeName(column));
+            return $"lower({SqlCharacters.EscapeName(column)})";
         }
 
         /// <summary>
-        /// The to upper.
+        ///     The to upper.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         public string ToUpper(string column)
         {
-            return string.Format("upper({0})", this.SqlCharacters.EscapeName(column));
+            return $"upper({SqlCharacters.EscapeName(column)})";
         }
 
         #endregion

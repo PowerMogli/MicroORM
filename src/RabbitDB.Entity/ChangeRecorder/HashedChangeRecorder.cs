@@ -6,113 +6,119 @@
 //   The hashed change recorder.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Collections.Generic;
+using System.Linq;
+
+using RabbitDB.Contracts.Materialization;
+using RabbitDB.Utils;
+
+#endregion
+
 namespace RabbitDB.Entity.ChangeRecorder
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using RabbitDB.Materialization;
-    using RabbitDB.Utils;
-
     /// <summary>
-    /// The hashed change recorder.
+    ///     The hashed change recorder.
     /// </summary>
     internal class HashedChangeRecorder : BaseChangeRecorder
     {
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HashedChangeRecorder"/> class.
+        ///     Initializes a new instance of the <see cref="HashedChangeRecorder" /> class.
         /// </summary>
         /// <param name="entityHashSetCreator">
-        /// The entity hash set creator.
+        ///     The entity hash set creator.
         /// </param>
         /// <param name="validEntityArgumentsReader">
-        /// The valid entity arguments reader.
+        ///     The valid entity arguments reader.
         /// </param>
         internal HashedChangeRecorder(
-            IEntityHashSetCreator entityHashSetCreator, 
+            IEntityHashSetCreator entityHashSetCreator,
             IValidEntityArgumentsReader validEntityArgumentsReader)
             : base(validEntityArgumentsReader)
         {
-            this.EntityHashSetCreator = entityHashSetCreator;
-            this.ValueSnapshot = new Dictionary<string, int>();
-            this.ChangesSnapshot = new Dictionary<string, int>();
+            EntityHashSetCreator = entityHashSetCreator;
+            ValueSnapshot = new Dictionary<string, int>();
+            ChangesSnapshot = new Dictionary<string, int>();
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets or sets the changes snapshot.
+        ///     Gets or sets the changes snapshot.
         /// </summary>
         private Dictionary<string, int> ChangesSnapshot { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity hash set creator.
+        ///     Gets or sets the entity hash set creator.
         /// </summary>
         private IEntityHashSetCreator EntityHashSetCreator { get; set; }
 
         /// <summary>
-        /// Gets or sets the value snapshot.
+        ///     Gets or sets the value snapshot.
         /// </summary>
         private Dictionary<string, int> ValueSnapshot { get; set; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The clear changes.
+        ///     The clear changes.
         /// </summary>
         public override void ClearChanges()
         {
-            this.ChangesSnapshot.Clear();
+            ChangesSnapshot.Clear();
         }
 
         /// <summary>
-        /// The compute snapshot.
+        ///     The compute snapshot.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         public override void ComputeSnapshot<TEntity>(TEntity entity)
         {
-            this.ValueSnapshot = EntityHashSetCreator.ComputeEntityHashSet();
+            ValueSnapshot = EntityHashSetCreator.ComputeEntityHashSet();
         }
 
         /// <summary>
-        /// The compute values to update.
+        ///     The compute values to update.
         /// </summary>
         /// <returns>
-        /// The <see cref="KeyValuePair"/>.
+        ///     The <see cref="KeyValuePair" />.
         /// </returns>
         public override KeyValuePair<string, object>[] ComputeValuesToUpdate()
         {
-            var entityHashSet = EntityHashSetCreator.ComputeEntityHashSet();
-            var entityValues = ValidArgumentReader.ReadValidEntityArguments();
+            Dictionary<string, int> entityHashSet = EntityHashSetCreator.ComputeEntityHashSet();
+            IEnumerable<KeyValuePair<string, object>> entityValues = ValidArgumentReader.ReadValidEntityArguments();
 
-            var valuesToUpdate = new Dictionary<string, object>();
-            foreach (var kvp in entityHashSet)
+            Dictionary<string, object> valuesToUpdate = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, int> kvp in entityHashSet)
             {
-                var oldHash = this.ValueSnapshot[kvp.Key];
+                int oldHash = ValueSnapshot[kvp.Key];
                 if (oldHash.Equals(kvp.Value))
                 {
                     continue;
                 }
 
-                valuesToUpdate.Add(kvp.Key, entityValues.FirstOrDefault(kvp1 => kvp1.Key == kvp.Key).Value);
-                this.ChangesSnapshot.Add(kvp.Key, kvp.Value);
+                valuesToUpdate.Add(kvp.Key, entityValues.FirstOrDefault(kvp1 => kvp1.Key == kvp.Key)
+                                                        .Value);
+                ChangesSnapshot.Add(kvp.Key, kvp.Value);
             }
 
             return valuesToUpdate.ToArray();
         }
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         public override void Dispose()
         {
@@ -120,13 +126,13 @@ namespace RabbitDB.Entity.ChangeRecorder
         }
 
         /// <summary>
-        /// The merge changes.
+        ///     The merge changes.
         /// </summary>
         public override void MergeChanges()
         {
-            foreach (var change in this.ChangesSnapshot)
+            foreach (KeyValuePair<string, int> change in ChangesSnapshot)
             {
-                this.ValueSnapshot[change.Key] = change.Value;
+                ValueSnapshot[change.Key] = change.Value;
             }
 
             ClearChanges();
@@ -134,29 +140,29 @@ namespace RabbitDB.Entity.ChangeRecorder
 
         #endregion
 
-        #region Methods
+        #region Private Methods
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         /// <param name="dispose">
-        /// The dispose.
+        ///     The dispose.
         /// </param>
         private void Dispose(bool dispose)
         {
-            if (!dispose || base.Disposed)
+            if (!dispose || Disposed)
             {
                 return;
             }
 
-            this.ValidArgumentReader = null;
-            this.EntityHashSetCreator = null;
-            this.ValueSnapshot.Clear();
-            this.ValueSnapshot = null;
-            this.ChangesSnapshot.Clear();
-            this.ChangesSnapshot = null;
+            ValidArgumentReader = null;
+            EntityHashSetCreator = null;
+            ValueSnapshot.Clear();
+            ValueSnapshot = null;
+            ChangesSnapshot.Clear();
+            ChangesSnapshot = null;
 
-            base.Disposed = true;
+            Disposed = true;
         }
 
         #endregion

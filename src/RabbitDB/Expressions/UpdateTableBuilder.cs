@@ -6,35 +6,41 @@
 //   The BuildUpdateTable interface.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Linq.Expressions;
+
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Mapping;
+using RabbitDB.SqlBuilder;
+
+#endregion
+
 namespace RabbitDB.Expressions
 {
-    using System;
-    using System.Linq.Expressions;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlBuilder;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The BuildUpdateTable interface.
+    ///     The BuildUpdateTable interface.
     /// </summary>
     /// <typeparam name="T">
     /// </typeparam>
     internal interface IBuildUpdateTable<T>
     {
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The set.
+        ///     The set.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <param name="statement">
-        /// The statement.
+        ///     The statement.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>IBuildUpdateTable</cref>
         ///     </see>
         ///     .
@@ -42,16 +48,17 @@ namespace RabbitDB.Expressions
         IBuildUpdateTable<T> Set(Expression<Func<T, object>> column, Expression<Func<T, object>> statement);
 
         /// <summary>
-        /// The set.
+        ///     The set.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>IBuildUpdateTable</cref>
         ///     </see>
         ///     .
@@ -59,21 +66,21 @@ namespace RabbitDB.Expressions
         IBuildUpdateTable<T> Set(Expression<Func<T, object>> column, object value);
 
         /// <summary>
-        /// The set.
+        ///     The set.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         void Set(string column, object value);
 
         /// <summary>
-        /// The where.
+        ///     The where.
         /// </summary>
         /// <param name="criteria">
-        /// The criteria.
+        ///     The criteria.
         /// </param>
         void Where(Expression<Func<T, bool>> criteria);
 
@@ -81,7 +88,7 @@ namespace RabbitDB.Expressions
     }
 
     /// <summary>
-    /// The update table builder.
+    ///     The update table builder.
     /// </summary>
     /// <typeparam name="T">
     /// </typeparam>
@@ -90,34 +97,34 @@ namespace RabbitDB.Expressions
         #region Fields
 
         /// <summary>
-        /// The _builder.
+        ///     The _builder.
         /// </summary>
         private readonly SqlExpressionBuilder<T> _builder;
 
         /// <summary>
-        /// The _sql dialect.
+        ///     The _sql dialect.
         /// </summary>
-        private readonly SqlDialect _sqlDialect;
+        private readonly ISqlDialect _sqlDialect;
 
         /// <summary>
-        /// The _table info.
+        ///     The _table info.
         /// </summary>
         private readonly TableInfo _tableInfo;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UpdateTableBuilder{T}"/> class.
+        ///     Initializes a new instance of the <see cref="UpdateTableBuilder{T}" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <param name="updateSqlBuilder">
-        /// The update sql builder.
+        ///     The update sql builder.
         /// </param>
-        public UpdateTableBuilder(SqlDialect sqlDialect, UpdateSqlBuilder updateSqlBuilder)
+        public UpdateTableBuilder(ISqlDialect sqlDialect, UpdateSqlBuilder updateSqlBuilder)
         {
             _builder = new SqlExpressionBuilder<T>(sqlDialect);
             _sqlDialect = sqlDialect;
@@ -127,13 +134,13 @@ namespace RabbitDB.Expressions
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The get parameters.
+        ///     The get parameters.
         /// </summary>
         /// <returns>
-        /// The <see cref="object[]"/>.
+        ///     The <see cref="object[]" />.
         /// </returns>
         public object[] GetParameters()
         {
@@ -141,10 +148,10 @@ namespace RabbitDB.Expressions
         }
 
         /// <summary>
-        /// The get sql.
+        ///     The get sql.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         public string GetSql()
         {
@@ -152,44 +159,44 @@ namespace RabbitDB.Expressions
         }
 
         /// <summary>
-        /// The set.
+        ///     The set.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <param name="statement">
-        /// The statement.
+        ///     The statement.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>IBuildUpdateTable</cref>
         ///     </see>
         ///     .
         /// </returns>
         public IBuildUpdateTable<T> Set(Expression<Func<T, object>> column, Expression<Func<T, object>> statement)
         {
-            _builder.Append(
-                string.Format(
-                    " {0}=", 
-                    _sqlDialect.SqlCharacters.EscapeName(
-                        _tableInfo.ResolveColumnName(column.Body.GetPropertyName()))));
+            _builder.Append($" {_sqlDialect.SqlCharacters.EscapeName(_tableInfo.ResolveColumnName(column.Body.GetPropertyName()))}=");
+
             _builder.Write(statement);
+
             _builder.Append(",");
 
             return this;
         }
 
         /// <summary>
-        /// The set.
+        ///     The set.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>IBuildUpdateTable</cref>
         ///     </see>
         ///     .
@@ -202,34 +209,31 @@ namespace RabbitDB.Expressions
         }
 
         /// <summary>
-        /// The set.
+        ///     The set.
         /// </summary>
         /// <param name="column">
-        /// The column.
+        ///     The column.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         public void Set(string column, object value)
         {
-            _builder.Append(
-                string.Format(
-                    " {0}=@{1},", 
-                    _sqlDialect.SqlCharacters.EscapeName(_tableInfo.ResolveColumnName(column)), 
-                    _builder.Parameters.NextIndex));
+            _builder.Append($" {_sqlDialect.SqlCharacters.EscapeName(_tableInfo.ResolveColumnName(column))}=@{_builder.Parameters.NextIndex},");
 
             _builder.Parameters.Add(value);
         }
 
         /// <summary>
-        /// The where.
+        ///     The where.
         /// </summary>
         /// <param name="criteria">
-        /// The criteria.
+        ///     The criteria.
         /// </param>
         public void Where(Expression<Func<T, bool>> criteria)
         {
             _builder.EndEnumeration();
+
             _builder.Where(criteria);
         }
 

@@ -6,64 +6,71 @@
 //   The entity query.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Data;
+
+using RabbitDB.Contracts.Entity;
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Mapping;
+using RabbitDB.Query.Generic;
+
+#endregion
+
 namespace RabbitDB.Query
 {
-    using System.Data;
-
-    using RabbitDB.Entity;
-    using RabbitDB.Mapping;
-    using RabbitDB.Query.Generic;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The entity query.
+    ///     The entity query.
     /// </summary>
     /// <typeparam name="T">
     /// </typeparam>
     internal class EntityQuery<T> : IQuery
-        where T : Entity
+        where T : IEntity
     {
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityQuery{T}"/> class.
+        ///     Initializes a new instance of the <see cref="EntityQuery{T}" /> class.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         internal EntityQuery(T entity)
         {
-            this.Entity = entity;
+            Entity = entity;
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets or sets the entity.
+        ///     Gets or sets the entity.
         /// </summary>
-        internal T Entity { get; set; }
+        private T Entity { get; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The compile.
+        ///     The compile.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
-        public IDbCommand Compile(SqlDialect sqlDialect)
+        public IDbCommand Compile(ISqlDialect sqlDialect)
         {
-            var tableInfo = TableInfo<T>.GetTableInfo;
-            var primaryKeyValues = tableInfo.GetPrimaryKeyValues(this.Entity);
+            TableInfo tableInfo = TableInfo<T>.GetTableInfo;
 
-            var sqlQuery = new SqlQuery<T>(primaryKeyValues, null);
+            object[] primaryKeyValues = tableInfo.GetPrimaryKeyValues(Entity);
+
+            SqlQuery<T> sqlQuery = new SqlQuery<T>(primaryKeyValues, null);
 
             return sqlQuery.Compile(sqlDialect);
         }

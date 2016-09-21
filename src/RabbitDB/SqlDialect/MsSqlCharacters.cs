@@ -18,24 +18,12 @@ namespace RabbitDB.SqlDialect
         /// <summary>
         /// Gets the left delimiter.
         /// </summary>
-        internal override string LeftDelimiter
-        {
-            get
-            {
-                return "[";
-            }
-        }
+        internal override string LeftDelimiter => "[";
 
         /// <summary>
         /// Gets the right delimiter.
         /// </summary>
-        internal override string RightDelimiter
-        {
-            get
-            {
-                return "]";
-            }
-        }
+        internal override string RightDelimiter => "]";
 
         #endregion
     }

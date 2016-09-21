@@ -6,141 +6,117 @@
 //   The sql characters.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Linq;
+
+using RabbitDB.Contracts.SqlDialect;
+
+#endregion
+
 namespace RabbitDB.SqlDialect
 {
-    using System;
-    using System.Linq;
-
     /// <summary>
-    /// The sql characters.
+    ///     The sql characters.
     /// </summary>
-    internal class SqlCharacters
+    internal class SqlCharacters : ISqlCharacters
     {
-        #region Static Fields
+        #region Fields
 
         /// <summary>
-        /// The _ms sql characters.
+        ///     The _ms sql characters.
         /// </summary>
-        private static MsSqlCharacters msSqlCharacters;
+        private static MsSqlCharacters _msSqlCharacters;
 
         /// <summary>
-        /// The _postgres sql characters.
+        ///     The _postgres sql characters.
         /// </summary>
-        private static PostgresSqlCharacters postgresSqlCharacters;
+        private static PostgresSqlCharacters _postgresSqlCharacters;
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the ms sql characters.
+        ///     Gets the left delimiter character.
         /// </summary>
-        internal static SqlCharacters MsSqlCharacters
-        {
-            get
-            {
-                return msSqlCharacters ?? (msSqlCharacters = new MsSqlCharacters());
-            }
-        }
+        internal virtual string LeftDelimiter => "\"";
 
         /// <summary>
-        /// Gets the postgre sql characters.
+        ///     Gets the ms sql characters.
         /// </summary>
-        internal static SqlCharacters PostgreSqlCharacters
-        {
-            get
-            {
-                return postgresSqlCharacters ?? (postgresSqlCharacters = new PostgresSqlCharacters());
-            }
-        }
+        internal static SqlCharacters MsSqlCharacters => _msSqlCharacters ?? (_msSqlCharacters = new MsSqlCharacters());
 
         /// <summary>
-        /// Gets the left delimiter character.
+        ///     Gets the SQL parameter prefix.
         /// </summary>
-        internal virtual string LeftDelimiter
-        {
-            get
-            {
-                return "\"";
-            }
-        }
+        public virtual string ParameterPrefix => "@";
 
         /// <summary>
-        /// Gets the SQL parameter prefix.
+        ///     Gets the postgre sql characters.
         /// </summary>
-        internal virtual string ParameterPrefix
-        {
-            get
-            {
-                return "@";
-            }
-        }
+        internal static SqlCharacters PostgreSqlCharacters => _postgresSqlCharacters ?? (_postgresSqlCharacters = new PostgresSqlCharacters());
 
         /// <summary>
-        /// Gets the left delimiter character.
+        ///     Gets the left delimiter character.
         /// </summary>
-        internal virtual string RightDelimiter
-        {
-            get
-            {
-                return "\"";
-            }
-        }
+        internal virtual string RightDelimiter => "\"";
 
         /// <summary>
-        /// Gets the character used to separate SQL statements.
+        ///     Gets the character used to separate SQL statements.
         /// </summary>
-        internal virtual string StatementSeparator
-        {
-            get
-            {
-                return ";";
-            }
-        }
+        internal virtual string StatementSeparator => ";";
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The escape name.
+        ///     The escape name.
         /// </summary>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         /// <exception cref="ArgumentNullException">
         /// </exception>
-        internal string EscapeName(string value)
+        public string EscapeName(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentNullException("value", "Escaped value can´t be null!");
+                throw new ArgumentNullException(nameof(value), "Escaped value can´t be null!");
             }
 
-            if (this.IsEscaped(value))
+            if (IsEscaped(value))
             {
                 return value;
             }
 
             if (!value.Contains("."))
             {
-                return this.LeftDelimiter + value + this.RightDelimiter;
+                return LeftDelimiter + value + RightDelimiter;
             }
 
-            return string.Join(".", value.Split('.').Select(d => this.LeftDelimiter + d + this.RightDelimiter));
+            return string.Join(".", value.Split('.')
+                                         .Select(d => LeftDelimiter + d + RightDelimiter));
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// Determines whether the specified SQL is escaped.
+        ///     Determines whether the specified SQL is escaped.
         /// </summary>
         /// <param name="value">
-        /// The SQL to check.
+        ///     The SQL to check.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the specified SQL is escaped; otherwise, <c>false</c>.
+        ///     <c>true</c> if the specified SQL is escaped; otherwise, <c>false</c>.
         /// </returns>
         private bool IsEscaped(string value)
         {
@@ -149,8 +125,8 @@ namespace RabbitDB.SqlDialect
                 return false;
             }
 
-            return value.StartsWith(this.LeftDelimiter, StringComparison.Ordinal)
-                   && value.EndsWith(this.RightDelimiter, StringComparison.Ordinal);
+            return value.StartsWith(LeftDelimiter, StringComparison.Ordinal)
+                   && value.EndsWith(RightDelimiter, StringComparison.Ordinal);
         }
 
         #endregion

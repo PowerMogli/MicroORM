@@ -6,85 +6,88 @@
 //   The sql query.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Data;
+
+using RabbitDB.Contracts.Query;
+using RabbitDB.Contracts.SqlDialect;
+
+#endregion
+
 namespace RabbitDB.Query
 {
-    using System.Data;
-
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The sql query.
+    ///     The sql query.
     /// </summary>
-    internal class SqlQuery : IQuery, IArgumentQuery
+    internal class SqlQuery : IQuery,
+                              IArgumentQuery
     {
         #region Fields
 
         /// <summary>
-        /// The _sql.
+        ///     The _sql.
         /// </summary>
         protected string Sql;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlQuery"/> class.
+        ///     Initializes a new instance of the <see cref="SqlQuery" /> class.
         /// </summary>
         /// <param name="sql">
-        /// The sql.
+        ///     The sql.
         /// </param>
         /// <param name="arguments">
-        /// The arguments.
+        ///     The arguments.
         /// </param>
         internal SqlQuery(string sql, QueryParameterCollection arguments = null)
         {
-            this.Sql = sql;
-            this.Arguments = arguments;
+            Sql = sql;
+            Arguments = arguments;
         }
 
         #endregion
 
-        #region Public Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets or sets the arguments.
+        ///     Gets or sets the arguments.
         /// </summary>
-        public QueryParameterCollection Arguments { get; protected set; }
+        public IQueryParameterCollection Arguments { get; protected set; }
 
         /// <summary>
-        /// Gets the sql statement.
+        ///     Gets the sql statement.
         /// </summary>
         public string SqlStatement
         {
-            get
-            {
-                return this.Sql;
-            }
+            get { return Sql; }
 
-            internal set
-            {
-                this.Sql = value;
-            }
+            internal set { Sql = value; }
         }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The compile.
+        ///     The compile.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
-        public virtual IDbCommand Compile(SqlDialect sqlDialect)
+        public virtual IDbCommand Compile(ISqlDialect sqlDialect)
         {
-            var commandCompiler = new DbCommandCompiler(this, sqlDialect);
-            var dbCommand = commandCompiler.Compile();
+            DbCommandCompiler commandCompiler = new DbCommandCompiler(this, sqlDialect);
+
+            IDbCommand dbCommand = commandCompiler.Compile();
+
             dbCommand.CommandType = CommandType.Text;
 
             return dbCommand;

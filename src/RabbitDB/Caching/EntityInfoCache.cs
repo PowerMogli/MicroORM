@@ -6,87 +6,89 @@
 //   The entity info cache.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading;
+
+using RabbitDB.Entity;
+using RabbitDB.Entity.Entity;
+
+#endregion
+
 namespace RabbitDB.Caching
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Threading;
-
-    using RabbitDB.Entity;
-
     /// <summary>
-    /// The entity info cache.
+    ///     The entity info cache.
     /// </summary>
     /// <typeparam name="TEntity">
     /// </typeparam>
     internal class EntityInfoCache<TEntity> : IDisposable
     {
-        #region Constants
-
-        /// <summary>
-        /// The round s_ fo r_ gc.
-        /// </summary>
-        private const byte RoundsForGc = 20;
-
-        #endregion
-
         #region Fields
 
         /// <summary>
-        /// The _keys.
+        ///     The round s_ fo r_ gc.
+        /// </summary>
+        private const byte RoundsForGc = 20;
+
+        /// <summary>
+        ///     The _keys.
         /// </summary>
         private readonly List<int> _keys;
 
         /// <summary>
-        /// The _lock.
+        ///     The _lock.
         /// </summary>
         private readonly object _lock = new object();
 
         /// <summary>
-        /// The _reference cache.
+        ///     The _reference cache.
         /// </summary>
         private readonly ConcurrentDictionary<int, CacheItem<TEntity>> _referenceCache;
 
         /// <summary>
-        /// The timeout.
+        ///     The timeout.
         /// </summary>
         private readonly TimeSpan _timeout = TimeSpan.FromMilliseconds(100);
 
         /// <summary>
-        /// The _wait handle.
+        ///     The _wait handle.
         /// </summary>
         private readonly AutoResetEvent _waitHandle = new AutoResetEvent(false);
 
         /// <summary>
-        /// The _clean up worker.
+        ///     The _clean up worker.
         /// </summary>
         private BackgroundWorker _cleanUpWorker;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityInfoCache{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="EntityInfoCache{TEntity}" /> class.
         /// </summary>
         internal EntityInfoCache()
         {
             _referenceCache = new ConcurrentDictionary<int, CacheItem<TEntity>>();
             _keys = new List<int>();
             _cleanUpWorker = new BackgroundWorker();
-            _cleanUpWorker.DoWork += this.StartCleanUp;
+            _cleanUpWorker.DoWork += StartCleanUp;
             _cleanUpWorker.WorkerSupportsCancellation = true;
             _cleanUpWorker.RunWorkerAsync();
         }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         public void Dispose()
         {
@@ -95,7 +97,7 @@ namespace RabbitDB.Caching
             _cleanUpWorker.Dispose();
             _cleanUpWorker = null;
 
-            foreach (var key in _keys)
+            foreach (int key in _keys)
             {
                 Remove(key);
             }
@@ -106,21 +108,21 @@ namespace RabbitDB.Caching
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The add.
+        ///     The add.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="entityInfo">
-        /// The entity info.
+        ///     The entity info.
         /// </param>
         internal void Add(TEntity entity, EntityInfo entityInfo)
         {
             CacheItem<TEntity> cacheItem;
-            var hash = entity.GetHashCode();
+            int hash = entity.GetHashCode();
 
             if (_referenceCache.TryGetValue(hash, out cacheItem) == false)
             {
@@ -128,7 +130,7 @@ namespace RabbitDB.Caching
                 _referenceCache.TryAdd(hash, cacheItem);
             }
 
-            lock (this._lock)
+            lock (_lock)
             {
                 if (_keys.Contains(hash) == false)
                 {
@@ -138,13 +140,13 @@ namespace RabbitDB.Caching
         }
 
         /// <summary>
-        /// The get.
+        ///     The get.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <returns>
-        /// The <see cref="EntityInfo"/>.
+        ///     The <see cref="EntityInfo" />.
         /// </returns>
         /// <exception cref="ArgumentNullException">
         /// </exception>
@@ -152,49 +154,49 @@ namespace RabbitDB.Caching
         {
             if (entity.Equals(null))
             {
-                throw new ArgumentNullException("entity");
+                throw new ArgumentNullException(nameof(entity));
             }
 
             CacheItem<TEntity> item;
 
-            return _referenceCache.TryGetValue(entity.GetHashCode(), out item) ? item.EntityInfo : null;
+            return _referenceCache.TryGetValue(entity.GetHashCode(), out item)
+                ? item.EntityInfo
+                : null;
         }
 
         /// <summary>
-        /// The remove.
+        ///     The remove.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         internal void Remove(TEntity entity)
         {
             CacheItem<TEntity> cacheItem;
-            var entityHash = entity.GetHashCode();
+            int entityHash = entity.GetHashCode();
             if (!_referenceCache.TryRemove(entityHash, out cacheItem))
             {
                 return;
             }
 
-            lock (this._lock)
+            lock (_lock)
             {
                 _keys.Remove(entityHash);
             }
 
-            var target = cacheItem.Target as IDisposable;
-            if (target != null)
-            {
-                target.Dispose();
-            }
+            IDisposable target = cacheItem.Target as IDisposable;
+
+            target?.Dispose();
         }
 
         /// <summary>
-        /// The update.
+        ///     The update.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="entityInfo">
-        /// The entity info.
+        ///     The entity info.
         /// </param>
         internal void Update(TEntity entity, EntityInfo entityInfo)
         {
@@ -205,8 +207,12 @@ namespace RabbitDB.Caching
             }
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// The clean up.
+        ///     The clean up.
         /// </summary>
         private void CleanUp()
         {
@@ -215,7 +221,7 @@ namespace RabbitDB.Caching
                 return;
             }
 
-            for (var i = 0; i < this._referenceCache.Count; i++)
+            for (int i = 0; i < _referenceCache.Count; i++)
             {
                 int key;
                 if (_keys.Count - 1 < i)
@@ -239,10 +245,10 @@ namespace RabbitDB.Caching
         }
 
         /// <summary>
-        /// The remove.
+        ///     The remove.
         /// </summary>
         /// <param name="key">
-        /// The key.
+        ///     The key.
         /// </param>
         private void Remove(int key)
         {
@@ -257,13 +263,13 @@ namespace RabbitDB.Caching
         }
 
         /// <summary>
-        /// The start clean up.
+        ///     The start clean up.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="args">
-        /// The args.
+        ///     The args.
         /// </param>
         private void StartCleanUp(object sender, DoWorkEventArgs args)
         {

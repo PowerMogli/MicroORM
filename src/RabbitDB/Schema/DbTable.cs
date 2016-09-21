@@ -6,6 +6,9 @@
 //   The db table.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+using RabbitDB.Contracts.Schema;
+
 namespace RabbitDB.Schema
 {
     using System;
@@ -15,14 +18,14 @@ namespace RabbitDB.Schema
     /// <summary>
     /// The db table.
     /// </summary>
-    internal class DbTable
+    internal class DbTable : IDbTable
     {
         #region Fields
 
         /// <summary>
         /// The _primary keys.
         /// </summary>
-        private List<DbColumn> _primaryKeys;
+        private List<IDbColumn> _primaryKeys;
 
         #endregion
 
@@ -43,7 +46,7 @@ namespace RabbitDB.Schema
         /// </param>
         internal DbTable(string tableName)
         {
-            this.Name = tableName;
+            Name = tableName;
         }
 
         #endregion
@@ -58,7 +61,7 @@ namespace RabbitDB.Schema
         /// <summary>
         /// Gets or sets the db columns.
         /// </summary>
-        public List<DbColumn> DbColumns { get; set; }
+        public List<IDbColumn> DbColumns { get; set; }
 
         // public List<DbTableIndex> Indices { get; set; }
         /// <summary>
@@ -69,13 +72,7 @@ namespace RabbitDB.Schema
         /// <summary>
         /// Gets a value indicating whether has primary keys.
         /// </summary>
-        public bool HasPrimaryKeys
-        {
-            get
-            {
-                return this.PrimaryKeys != null && this.PrimaryKeys.Count > 0;
-            }
-        }
+        public bool HasPrimaryKeys => PrimaryKeys != null && PrimaryKeys.Count > 0;
 
         /// <summary>
         /// Gets or sets a value indicating whether ignore.
@@ -95,12 +92,11 @@ namespace RabbitDB.Schema
         /// <summary>
         /// Gets the primary keys.
         /// </summary>
-        public List<DbColumn> PrimaryKeys
+        public List<IDbColumn> PrimaryKeys
         {
             get
             {
-                return _primaryKeys
-                       ?? (_primaryKeys = this.DbColumns.Where(column => column.IsPrimaryKey).ToList());
+                return _primaryKeys ?? (_primaryKeys = DbColumns.Where(column => column.IsPrimaryKey).ToList());
             }
         }
 
@@ -124,7 +120,7 @@ namespace RabbitDB.Schema
         #region Public Indexers
 
         /// <summary>
-        /// The this.
+        /// The 
         /// </summary>
         /// <param name="columnName">
         /// The column name.
@@ -132,13 +128,7 @@ namespace RabbitDB.Schema
         /// <returns>
         /// The <see cref="DbColumn"/>.
         /// </returns>
-        public DbColumn this[string columnName]
-        {
-            get
-            {
-                return this.GetColumn(columnName);
-            }
-        }
+        public IDbColumn this[string columnName] => GetColumn(columnName);
 
         #endregion
 
@@ -153,11 +143,10 @@ namespace RabbitDB.Schema
         /// <returns>
         /// The <see cref="DbColumn"/>.
         /// </returns>
-        public DbColumn GetColumn(string columnName)
+        public IDbColumn GetColumn(string columnName)
         {
             return
-                this.DbColumns.Single(
-                    column => string.Compare(column.Name, columnName, StringComparison.OrdinalIgnoreCase) == 0);
+                DbColumns.Single(column => string.Compare(column.Name, columnName, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
         #endregion
@@ -179,7 +168,7 @@ namespace RabbitDB.Schema
         /// </returns>
         internal bool SkipWhile(string resolvedColumnName)
         {
-            return this.DbColumns.Find(dbColumn => dbColumn.IsToSkip(resolvedColumnName)) != null;
+            return DbColumns.Find(dbColumn => dbColumn.IsToSkip(resolvedColumnName)) != null;
         }
 
         #endregion

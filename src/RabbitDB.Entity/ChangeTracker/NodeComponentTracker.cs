@@ -1,219 +1,242 @@
-﻿using System;
+﻿#region using directives
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
+using RabbitDB.ChangeTracker;
+
+#endregion
 
 // LICENCE: The Code Project Open License (CPOL) 1.02
 // LICENCE TO DOWNLOAD: http://www.codeproject.com/info/CPOL.zip
 // AUTHOR(S): SACHA BARBER, IAN P JOHNSON
 // WHERE TO FIND ORIGINAL: http://www.codeproject.com/Articles/651464/Expression-API-Cookbook
 
-namespace RabbitDB.ChangeTracker
+namespace RabbitDB.Entity.ChangeTracker
 {
     /// <summary>
-	/// NodeComponentTracker tracks a specific property on an object
-	/// </summary>
-	internal class NodeComponentTracker : IComponentTracker
-	{
-		private bool _disposed;
-		private IComponentTracker _childComponentTracker;
-		private ComponentTrackerHelper _helper;
+    ///     NodeComponentTracker tracks a specific property on an object
+    /// </summary>
+    internal class NodeComponentTracker : IComponentTracker
+    {
+        #region Fields
+
+        private IComponentTracker _childComponentTracker;
+        private bool _disposed;
+        private ComponentTrackerHelper _helper;
+        private PropertyTracker _propertyTracker;
 
         private TrackerInfo _trackerInfo;
-		private PropertyTracker _propertyTracker;
 
-		/// <summary>
-		/// Default Constructor
-		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="objectToTrack"></param>
-		/// <param name="trackerInfo"></param>
-		public NodeComponentTracker(ComponentTrackerHelper helper, object objectToTrack, TrackerInfo trackerInfo)
-		{
-			Initialize(helper, objectToTrack, trackerInfo);
-		}
+        #endregion
+
+        #region Construction
 
         /// <summary>
-        /// The component being tracker
+        ///     Default Constructor
+        /// </summary>
+        /// <param name="helper"></param>
+        /// <param name="objectToTrack"></param>
+        /// <param name="trackerInfo"></param>
+        public NodeComponentTracker(ComponentTrackerHelper helper, object objectToTrack, TrackerInfo trackerInfo)
+        {
+            Initialize(helper, objectToTrack, trackerInfo);
+        }
+
+        #endregion
+
+        #region  Properties
+
+        /// <summary>
+        ///     Event that is raised when the is dirty flag is changed
+        /// </summary>
+        public event EventHandler<IsDiryChangedArgs> IsDirtyChanged;
+
+        /// <summary>
+        ///     True if the component or one of it's children is dirty
+        /// </summary>
+        public bool IsDirty
+        {
+            get
+            {
+                if (_childComponentTracker != null)
+                {
+                    return _propertyTracker.IsDirty || _childComponentTracker.IsDirty;
+                }
+
+                return _propertyTracker.IsDirty;
+            }
+
+            private set
+            {
+                if (_propertyTracker.IsDirty == value)
+                {
+                    return;
+                }
+
+                _propertyTracker.IsDirty = value;
+
+                if (_childComponentTracker == null || _childComponentTracker.IsDirty == false)
+                {
+                    IsDirtyChanged?.Invoke(this, new IsDiryChangedArgs(_propertyTracker.IsDirty));
+                }
+            }
+        }
+
+        /// <summary>
+        ///     The component being tracker
         /// </summary>
         public object TrackedComponent { get; private set; }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
-		/// True if the component or one of it's children is dirty
-		/// </summary>
-		public bool IsDirty
-		{
-			get
-			{
-				if (_childComponentTracker != null)
-				{
-					return _propertyTracker.IsDirty || _childComponentTracker.IsDirty;
-				}
+        ///     A list of child trackers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<IComponentTracker> ChildTrackers()
+        {
+            if (_childComponentTracker != null)
+                yield return _childComponentTracker;
+        }
 
-				return _propertyTracker.IsDirty;
-			}
+        /// <summary>
+        ///     Dispose of the component tracker and it's children
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
-			private set
-			{
-			    if (_propertyTracker.IsDirty == value)
-			    {
-			        return;
-			    }
+            if (_childComponentTracker != null)
+            {
+                _childComponentTracker.Dispose();
+                _childComponentTracker = null;
+            }
 
-			    _propertyTracker.IsDirty = value;
+            _disposed = true;
+        }
 
-			    if (_childComponentTracker == null || _childComponentTracker.IsDirty == false)
-			    {
-			        IsDirtyChanged(this, new IsDiryChangedArgs(_propertyTracker.IsDirty));
-			    }
-			}
-		}
+        /// <summary>
+        ///     mark the component and all it's children as clean
+        /// </summary>
+        public void MarkAsClean()
+        {
+            _propertyTracker.IsDirty = false;
 
-		/// <summary>
-		/// mark the component and all it's children as clean
-		/// </summary>
-		public void MarkAsClean()
-		{
-			_propertyTracker.IsDirty = false;
+            // get the current value now that it has been marked as clean
+            object value = _helper.AccessProperty(TrackedComponent, _trackerInfo.PropertyName);
 
-			// get the current value now that it has been marked as clean
-			var value = _helper.AccessProperty(this.TrackedComponent, _trackerInfo.PropertyName);
+            // change the original value nw that we are clean
+            _propertyTracker.SetOriginalValue(value);
 
-			// change the original value nw that we are clean
-			_propertyTracker.SetOriginalValue(value);
+            // mark child tracker as clean
+            _childComponentTracker?.MarkAsClean();
+        }
 
-			// mark child tracker as clean
-			if (_childComponentTracker != null)
-			{
-				_childComponentTracker.MarkAsClean();
-			}
-		}
+        #endregion
 
-		/// <summary>
-		/// A list of child trackers
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<IComponentTracker> ChildTrackers()
-		{
-			if (_childComponentTracker != null)
-				yield return _childComponentTracker;
-		}
+        #region Private Methods
 
-		/// <summary>
-		/// Event that is raised when the is dirty flag is changed
-		/// </summary>
-		public event EventHandler<IsDiryChangedArgs> IsDirtyChanged;
+        /// <summary>
+        ///     Handler for child component tracker changing is dirty
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
+        private void ChildComponentTrackerOnIsDirtyChanged(object sender, IsDiryChangedArgs eventArgs)
+        {
+            if (!_propertyTracker.IsDirty)
+            {
+                IsDirtyChanged?.Invoke(this, eventArgs);
+            }
+        }
 
-		/// <summary>
-		/// Dispose of the component tracker and it's children
-		/// </summary>
-		public void Dispose()
-		{
-		    if (_disposed)
-		    {
-		        return;
-		    }
+        /// <summary>
+        ///     Initialize the new tracker
+        /// </summary>
+        /// <param name="helper"></param>
+        /// <param name="objectToTrack"></param>
+        /// <param name="trackerInfo"></param>
+        private void Initialize(ComponentTrackerHelper helper, object objectToTrack, TrackerInfo trackerInfo)
+        {
+            _helper = helper;
+            TrackedComponent = objectToTrack;
+            _trackerInfo = trackerInfo;
 
-		    if (_childComponentTracker != null)
-		    {
-		        _childComponentTracker.Dispose();
-		        _childComponentTracker = null;
-		    }
+            // calculate if we should track the property weakly
+            bool trackWeakly = !(trackerInfo.PropertyType.IsValueType || trackerInfo.PropertyType == typeof(string));
+            object currentValue = helper.AccessProperty(objectToTrack, trackerInfo.PropertyName);
 
-		    _disposed = true;
-		}
+            _propertyTracker = new PropertyTracker(trackWeakly);
 
-		/// <summary>
-		/// Initialize the new tracker
-		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="objectToTrack"></param>
-		/// <param name="trackerInfo"></param>
-		private void Initialize(ComponentTrackerHelper helper, object objectToTrack, TrackerInfo trackerInfo)
-		{
-			_helper = helper;
-			TrackedComponent = objectToTrack;
-			_trackerInfo = trackerInfo;
+            _propertyTracker.SetOriginalValue(currentValue);
 
-			// calculate if we should track the property weakly
-			var trackWeakly = !(trackerInfo.PropertyType.IsValueType || trackerInfo.PropertyType == typeof(string));
-			var currentValue = helper.AccessProperty(objectToTrack, trackerInfo.PropertyName);
+            // if we have a current value and child tracker info start tracking
+            if (currentValue != null && trackerInfo.ChildTrackerInfo != null)
+            {
+                _childComponentTracker = helper.CreateTracker(currentValue, trackerInfo.ChildTrackerInfo);
 
-			_propertyTracker = new PropertyTracker(trackWeakly);
+                _childComponentTracker.IsDirtyChanged += ChildComponentTrackerOnIsDirtyChanged;
+            }
 
-			_propertyTracker.SetOriginalValue(currentValue);
+            INotifyPropertyChanged propertyChangeObject = objectToTrack as INotifyPropertyChanged;
 
-			// if we have a current value and child tracker info start tracking
-			if (currentValue != null && trackerInfo.ChildTrackerInfo != null)
-			{
-				_childComponentTracker = helper.CreateTracker(currentValue, trackerInfo.ChildTrackerInfo);
+            if (propertyChangeObject != null)
+            {
+                propertyChangeObject.PropertyChanged += PropertyChangedOnTrackedObject;
+            }
+        }
 
-				_childComponentTracker.IsDirtyChanged += ChildComponentTrackerOnIsDirtyChanged;
-			}
+        /// <summary>
+        ///     The property change handler for the object being tracked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="propertyChangedEventArgs"></param>
+        private void PropertyChangedOnTrackedObject(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
+        {
+            if (_childComponentTracker != null)
+            {
+                _childComponentTracker.IsDirtyChanged -= ChildComponentTrackerOnIsDirtyChanged;
 
-			var propertyChangeObject = objectToTrack as INotifyPropertyChanged;
+                _childComponentTracker.Dispose();
+                _childComponentTracker = null;
+            }
 
-			if (propertyChangeObject != null)
-			{
-				propertyChangeObject.PropertyChanged += PropertyChangedOnTrackedObject;
-			}
-		}
+            bool hasOriginalValue;
+            object originalValue = _propertyTracker.GetOriginalValue(out hasOriginalValue);
+            object newValue = _helper.AccessProperty(TrackedComponent, _trackerInfo.PropertyName);
 
-		/// <summary>
-		/// Handler for child component tracker changing is dirty
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="eventArgs"></param>
-		private void ChildComponentTrackerOnIsDirtyChanged(object sender, IsDiryChangedArgs eventArgs)
-		{
-		    if (!_propertyTracker.IsDirty && IsDirtyChanged != null)
-			{
-				IsDirtyChanged(this, eventArgs);
-			}
-		}
+            if (newValue != null)
+            {
+                if (originalValue != null && newValue.Equals(originalValue))
+                {
+                    IsDirty = false;
+                }
+                else
+                {
+                    IsDirty = true;
+                }
+            }
+            else
+            {
+                IsDirty = hasOriginalValue;
+            }
 
-		/// <summary>
-		/// The property change handler for the object being tracked
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="propertyChangedEventArgs"></param>
-		private void PropertyChangedOnTrackedObject(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
-		{
-			if (_childComponentTracker != null)
-			{
-				_childComponentTracker.IsDirtyChanged -= ChildComponentTrackerOnIsDirtyChanged;
+            // if there is a new value and we have a child tracker info we need to create a new tracker and listen to it
+            if (newValue == null || _trackerInfo.ChildTrackerInfo == null)
+            {
+                return;
+            }
+            _childComponentTracker = _helper.CreateTracker(newValue, _trackerInfo.ChildTrackerInfo);
 
-				_childComponentTracker.Dispose();
-				_childComponentTracker = null;
-			}
+            _childComponentTracker.IsDirtyChanged += ChildComponentTrackerOnIsDirtyChanged;
+        }
 
-			bool hasOriginalValue;
-			var originalValue = _propertyTracker.GetOriginalValue(out hasOriginalValue);
-			var newValue = _helper.AccessProperty(TrackedComponent, _trackerInfo.PropertyName);
-
-			if (newValue != null)
-			{
-				if (originalValue != null && newValue.Equals(originalValue))
-				{
-					IsDirty = false;
-				}
-				else
-				{
-					IsDirty = true;
-				}
-			}
-			else
-			{
-				this.IsDirty = hasOriginalValue;
-			}
-
-			// if there is a new value and we have a child tracker info we need to create a new tracker and listen to it
-		    if (newValue == null || _trackerInfo.ChildTrackerInfo == null)
-		    {
-		        return;
-		    }
-		    _childComponentTracker = _helper.CreateTracker(newValue, _trackerInfo.ChildTrackerInfo);
-
-		    _childComponentTracker.IsDirtyChanged += this.ChildComponentTrackerOnIsDirtyChanged;
-		}
-	}
+        #endregion
+    }
 }

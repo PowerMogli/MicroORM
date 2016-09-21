@@ -7,59 +7,74 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+#region using directives
+
 using System.Data;
 
+using RabbitDB.Contracts;
+using RabbitDB.Contracts.Reader;
 using RabbitDB.Materialization;
+
+#endregion
 
 namespace RabbitDB.Reader
 {
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The multi entity reader.
+    ///     The multi entity reader.
     /// </summary>
-    public class MultiEntityReader
+    public class MultiEntityReader : IMultiEntityReader
     {
+        #region Fields
+
         /// <summary>
-        /// The _data reader.
+        ///     The _data reader.
         /// </summary>
         private readonly IDataReader _dataReader;
 
         /// <summary>
-        /// The _sql dialect.
+        ///     The _sql dialect.
         /// </summary>
-        private readonly SqlDialect _sqlDialect;
+        private readonly SqlDialect.SqlDialect _sqlDialect;
+
+        #endregion
+
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MultiEntityReader"/> class.
+        ///     Initializes a new instance of the <see cref="MultiEntityReader" /> class.
         /// </summary>
         /// <param name="dataReader">
-        /// The data reader.
+        ///     The data reader.
         /// </param>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
-        internal MultiEntityReader(IDataReader dataReader, SqlDialect sqlDialect)
+        internal MultiEntityReader(IDataReader dataReader, SqlDialect.SqlDialect sqlDialect)
         {
             _sqlDialect = sqlDialect;
             _dataReader = dataReader;
         }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
-        /// The read.
+        ///     The read.
         /// </summary>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>EntitySet</cref>
         ///     </see>
         ///     .
         /// </returns>
-        public EntitySet<TEntity> Read<TEntity>()
+        public IEntitySet<TEntity> Read<TEntity>()
         {
-            var entityReader = new EntityReader<TEntity>(_dataReader, _sqlDialect.DbProvider, new EntityMaterializer(_sqlDialect));
-            var entitySet = new EntitySet<TEntity>();
+            EntityReader<TEntity> entityReader = new EntityReader<TEntity>(_dataReader, _sqlDialect.DbProvider, new EntityMaterializer(_sqlDialect));
+            EntitySet<TEntity> entitySet = new EntitySet<TEntity>();
 
             while (entityReader.Read())
             {
@@ -68,5 +83,7 @@ namespace RabbitDB.Reader
 
             return entitySet;
         }
+
+        #endregion
     }
 }

@@ -6,33 +6,37 @@
 //   The change tracing factory.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+
+using RabbitDB.Entity.ChangeRecorder;
+using RabbitDB.Entity.ChangeTracker;
+using RabbitDB.Materialization;
+using RabbitDB.Utils;
+
+#endregion
+
 namespace RabbitDB.ChangeTracing
 {
-    using System;
-
-    using RabbitDB.ChangeTracker;
-    using RabbitDB.Entity;
-    using RabbitDB.Entity.ChangeRecorder;
-    using RabbitDB.Materialization;
-    using RabbitDB.Utils;
-
     /// <summary>
-    /// The change tracing factory.
+    ///     The change tracing factory.
     /// </summary>
     internal class ChangeTracingFactory
     {
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The create.
+        ///     The create.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="IChangeRecorder"/>.
+        ///     The <see cref="IChangeRecorder" />.
         /// </returns>
         /// <exception cref="ArgumentNullException">
         /// </exception>
@@ -40,10 +44,10 @@ namespace RabbitDB.ChangeTracing
         /// </exception>
         internal static IChangeRecorder Create<TEntity>(TEntity entity)
         {
-            var internalEntity = entity as Entity;
+            Entity.Entity.Entity internalEntity = entity as Entity.Entity.Entity;
             if (internalEntity == null)
             {
-                throw new ArgumentNullException("entity", "Entity can´t be null!");
+                throw new ArgumentNullException(nameof(entity), "Entity can´t be null!");
             }
 
             IChangeRecorder changeTracer;
@@ -63,40 +67,44 @@ namespace RabbitDB.ChangeTracing
             return changeTracer;
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// The craete notified tracer.
+        ///     The craete notified tracer.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="IChangeRecorder"/>.
+        ///     The <see cref="IChangeRecorder" />.
         /// </returns>
         private static IChangeRecorder CraeteNotifiedTracer<TEntity>(TEntity entity)
         {
-            var changeTracker = new Tracker();
+            Tracker changeTracker = new Tracker();
             changeTracker.TrackObject(entity);
 
             return new NotifiedChangeRecorder(changeTracker, new ValidEntityArgumentReader<TEntity>(entity));
         }
 
         /// <summary>
-        /// The create hashed tracer.
+        ///     The create hashed tracer.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="IChangeRecorder"/>.
+        ///     The <see cref="IChangeRecorder" />.
         /// </returns>
         private static IChangeRecorder CreateHashedTracer<TEntity>(TEntity entity)
         {
             return new HashedChangeRecorder(
-                new EntityHashSetCreator<TEntity>(entity), 
+                new EntityHashSetCreator<TEntity>(entity),
                 new ValidEntityArgumentReader<TEntity>(entity));
         }
 

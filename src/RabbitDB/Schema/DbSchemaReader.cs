@@ -6,148 +6,161 @@
 //   The db schema reader.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+
+using RabbitDB.Contracts.Schema;
+using RabbitDB.Mapping;
+
+#endregion
+
 namespace RabbitDB.Schema
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Linq;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The db schema reader.
+    ///     The db schema reader.
     /// </summary>
     internal abstract class DbSchemaReader : IDisposable
     {
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DbSchemaReader"/> class.
+        ///     Initializes a new instance of the <see cref="DbSchemaReader" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
-        internal DbSchemaReader(SqlDialect sqlDialect)
+        internal DbSchemaReader(SqlDialect.SqlDialect sqlDialect)
         {
-            this.SqlDialect = sqlDialect;
-            this.Tables = new DbTableCollection();
+            SqlDialect = sqlDialect;
+            Tables = new DbTableCollection();
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the sql dialect.
+        ///     Gets the sql dialect.
         /// </summary>
-        protected SqlDialect SqlDialect { get; private set; }
+        protected SqlDialect.SqlDialect SqlDialect { get; }
 
         /// <summary>
-        /// Gets the tables.
+        ///     Gets the tables.
         /// </summary>
-        protected DbTableCollection Tables { get; private set; }
+        protected DbTableCollection Tables { get; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         public void Dispose()
         {
-            this.SqlDialect.Dispose();
+            SqlDialect.Dispose();
         }
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The read schema.
+        ///     The read schema.
         /// </summary>
         /// <typeparam name="T">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="DbTable"/>.
+        ///     The <see cref="DbTable" />.
         /// </returns>
         internal DbTable ReadSchema<T>()
         {
             DbTable dbTable;
             using (this)
             {
-                var tableInfo = TableInfo<T>.GetTableInfo;
+                TableInfo tableInfo = TableInfo<T>.GetTableInfo;
                 if (tableInfo == null)
                 {
                     return null;
                 }
 
-                if ((dbTable = this.Tables[tableInfo.Name]) != null)
+                if ((dbTable = Tables[tableInfo.Name]) != null)
                 {
                     return dbTable;
                 }
 
-                dbTable = this.GetTable(tableInfo.Name);
-                dbTable.DbColumns = this.GetColumns(dbTable);
+                dbTable = GetTable(tableInfo.Name);
+                dbTable.DbColumns = GetColumns(dbTable);
                 SetPrimaryKeys(dbTable);
-                this.Tables.Add(dbTable);
+                Tables.Add(dbTable);
             }
 
             return dbTable;
         }
 
-        /// <summary>
-        /// The get columns.
-        /// </summary>
-        /// <param name="dbTable">
-        /// The db table.
-        /// </param>
-        /// <returns>
-        /// The <see cref="List"/>.
-        /// </returns>
-        protected abstract List<DbColumn> GetColumns(DbTable dbTable);
+        #endregion
+
+        #region Protected Methods
 
         /// <summary>
-        /// The get primary keys.
+        ///     The get columns.
         /// </summary>
-        /// <param name="table">
-        /// The table.
+        /// <param name="dbTable">
+        ///     The db table.
         /// </param>
         /// <returns>
-        /// The <see cref="List"/>.
+        ///     The <see cref="List" />.
+        /// </returns>
+        protected abstract List<IDbColumn> GetColumns(DbTable dbTable);
+
+        /// <summary>
+        ///     The get primary keys.
+        /// </summary>
+        /// <param name="table">
+        ///     The table.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="List" />.
         /// </returns>
         protected abstract List<string> GetPrimaryKeys(string table);
 
         /// <summary>
-        /// The get table.
+        ///     The get table.
         /// </summary>
         /// <param name="tableName">
-        /// The table name.
+        ///     The table name.
         /// </param>
         /// <returns>
-        /// The <see cref="DbTable"/>.
+        ///     The <see cref="DbTable" />.
         /// </returns>
         protected abstract DbTable GetTable(string tableName);
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// The set primary keys.
+        ///     The set primary keys.
         /// </summary>
         /// <param name="dbTable">
-        /// The db table.
+        ///     The db table.
         /// </param>
         /// <exception cref="MissingPrimaryKeyException">
         /// </exception>
         private void SetPrimaryKeys(DbTable dbTable)
         {
-            var primaryKeys = this.GetPrimaryKeys(dbTable.Name);
+            List<string> primaryKeys = GetPrimaryKeys(dbTable.Name);
 
-            foreach (var primaryKey in primaryKeys)
+            foreach (string primaryKey in primaryKeys)
             {
-                var primaryKeyColumn =
-                    dbTable.DbColumns.SingleOrDefault(
-                        dbColumn => dbColumn.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
+                IDbColumn primaryKeyColumn = dbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name.ToLower()
+                                                                                                  .Trim() == primaryKey.ToLower()
+                                                                                                                       .Trim());
                 if (primaryKeyColumn == null)
                 {
                     throw new MissingPrimaryKeyException("Not all primaryKeys were provided.");

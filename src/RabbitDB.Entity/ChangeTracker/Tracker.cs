@@ -13,16 +13,18 @@
  * AUTHOR(S): SACHA BARBER, IAN P JOHNSON
  * WHERE TO FIND ORIGINAL: http://www.codeproject.com/Articles/651464/Expression-API-Cookbook
  ************************************************************************************************************/
-namespace RabbitDB.ChangeTracker
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+
+using RabbitDB.ChangeTracker;
+
+namespace RabbitDB.Entity.ChangeTracker
+{
     /// <summary>
     /// The tracker class will track changes on specified objects as well as tracking if an object is dirty
     /// </summary>
@@ -95,7 +97,7 @@ namespace RabbitDB.ChangeTracker
                 return;
             }
 
-            foreach (var componentTracker in _componentTrackers)
+            foreach (IComponentTracker componentTracker in _componentTrackers)
             {
                 componentTracker.Dispose();
             }
@@ -111,7 +113,7 @@ namespace RabbitDB.ChangeTracker
         /// </summary>
         public void MarkAsClean()
         {
-            foreach (var componentTracker in _componentTrackers)
+            foreach (IComponentTracker componentTracker in _componentTrackers)
             {
                 componentTracker.MarkAsClean();
             }
@@ -142,7 +144,7 @@ namespace RabbitDB.ChangeTracker
         /// </param>
         public void TrackObject<T, TProp>(T objectToTrack, Expression<Func<T, TProp>> trackingExpression)
         {
-            var componentTracker = GetComponentTracker(objectToTrack, trackingExpression);
+            IComponentTracker componentTracker = GetComponentTracker(objectToTrack, trackingExpression);
 
             _componentTrackers.Add(componentTracker);
             componentTracker.IsDirtyChanged += ComponentTrackerOnIsDirtyChanged;
@@ -163,10 +165,7 @@ namespace RabbitDB.ChangeTracker
         /// </param>
         private void ComponentTrackerOnIsDirtyChanged(object sender, IsDiryChangedArgs eventArgs)
         {
-            if (IsDirtyChanged != null)
-            {
-                IsDirtyChanged(this, eventArgs);
-            }
+            IsDirtyChanged?.Invoke(this, eventArgs);
         }
 
         /// <summary>
@@ -192,7 +191,7 @@ namespace RabbitDB.ChangeTracker
             // if there is a property expression get the tracker information and create a new component tracker
             if (trackingExpression != null)
             {
-                var trackerInfo = GetTrackerInfo(trackingExpression.Body);
+                TrackerInfo trackerInfo = GetTrackerInfo(trackingExpression.Body);
 
                 if (trackerInfo != null)
                 {
@@ -227,11 +226,11 @@ namespace RabbitDB.ChangeTracker
         /// </returns>
         private TrackerInfo GetTrackerInfo(Expression expression, TrackerInfo currentInfo = null)
         {
-            var memberExpression = expression as MemberExpression;
+            MemberExpression memberExpression = expression as MemberExpression;
 
             return memberExpression != null
-                       ? this.GetTrackerInfoForMemberExpression(memberExpression, currentInfo)
-                       : this.GetTrackerInfoForMethodCallExpression(expression as MethodCallExpression, currentInfo);
+                       ? GetTrackerInfoForMemberExpression(memberExpression, currentInfo)
+                       : GetTrackerInfoForMethodCallExpression(expression as MethodCallExpression, currentInfo);
         }
 
         /// <summary>
@@ -252,7 +251,7 @@ namespace RabbitDB.ChangeTracker
             MemberExpression memberExpression, 
             TrackerInfo currentInfo = null)
         {
-            var propertyInfo = memberExpression.Member as PropertyInfo;
+            PropertyInfo propertyInfo = memberExpression.Member as PropertyInfo;
 
             // we only want to deal with property expressions.
             if (propertyInfo == null)
@@ -261,7 +260,7 @@ namespace RabbitDB.ChangeTracker
             }
 
             // create a tracker info object to represent the property
-            var trackInfo = new TrackerInfo
+            TrackerInfo trackInfo = new TrackerInfo
                                 {
                                     PropertyName = memberExpression.Member.Name, 
                                     PropertyType = propertyInfo.PropertyType, 
@@ -326,14 +325,14 @@ namespace RabbitDB.ChangeTracker
             }
 
             // create a tracker info for monitoring the list
-            var listTracker = new TrackerInfo
+            TrackerInfo listTracker = new TrackerInfo
                                   {
                                       ChildTrackerInfo = currentInfo, 
                                       TrackerType = ComponentTrackerType.List
                                   };
 
             // recurse back on the first arguement of the expression the IEnumerable
-            var trackerInfo = this.GetTrackerInfo(methodCallExpression.Arguments[0], listTracker);
+            TrackerInfo trackerInfo = GetTrackerInfo(methodCallExpression.Arguments[0], listTracker);
 
             // if the method is called with a filter method we need to handle it
             if (methodCallExpression.Arguments.Count != 2)
@@ -342,11 +341,11 @@ namespace RabbitDB.ChangeTracker
             }
 
             // get the arguement then get it's type
-            var arg1 = methodCallExpression.Arguments[1];
-            var filterExpressionType = arg1.Type;
+            Expression arg1 = methodCallExpression.Arguments[1];
+            Type filterExpressionType = arg1.Type;
 
             // find the CreateListComponentFilter method on the tracker
-            var openMethod = this.GetType()
+            MethodInfo openMethod = GetType()
                 .GetMethod("CreateListComponentFilter", BindingFlags.Instance | BindingFlags.NonPublic);
 
             // create a closed method info using the first generic type in the expression (i.e. T in Func(T,bool) )
@@ -355,7 +354,7 @@ namespace RabbitDB.ChangeTracker
 #endif
 
 #if NET4
-            var closeMethod = openMethod.MakeGenericMethod(filterExpressionType.GetGenericArguments()[0]);
+            MethodInfo closeMethod = openMethod.MakeGenericMethod(filterExpressionType.GetGenericArguments()[0]);
 #endif
 
             // invoke the closed method creating the list filter

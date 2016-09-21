@@ -13,43 +13,50 @@
  * AUTHOR(S): SACHA BARBER, IAN P JOHNSON
  * WHERE TO FIND ORIGINAL: http://www.codeproject.com/Articles/651464/Expression-API-Cookbook 
  ***********************************************************************************************************************/
-namespace RabbitDB.ChangeTracker
-{
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Reflection;
 
+#region using directives
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+
+using RabbitDB.ChangeTracker;
+
+#endregion
+
+namespace RabbitDB.Entity.ChangeTracker
+{
     /// <summary>
-    /// Leaf tracker will track every property on an object
+    ///     Leaf tracker will track every property on an object
     /// </summary>
     internal class LeafComponentTracker : IComponentTracker
     {
         #region Fields
 
         /// <summary>
-        /// The _disposed.
+        ///     The _disposed.
         /// </summary>
         private bool _disposed;
 
         /// <summary>
-        /// The _is dirty.
+        ///     The _is dirty.
         /// </summary>
         private bool _isDirty;
 
         /// <summary>
-        /// The _property trackers.
+        ///     The _property trackers.
         /// </summary>
         private Dictionary<string, PropertyTracker> _propertyTrackers;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LeafComponentTracker"/> class. 
-        /// Default constructor
+        ///     Initializes a new instance of the <see cref="LeafComponentTracker" /> class.
+        ///     Default constructor
         /// </summary>
         /// <param name="helper">
         /// </param>
@@ -59,31 +66,24 @@ namespace RabbitDB.ChangeTracker
         /// </param>
         public LeafComponentTracker(ComponentTrackerHelper helper, object objectToTrack, TrackerInfo trackerInfo)
         {
-            Initialize(helper, objectToTrack, trackerInfo);
+            Initialize(helper, objectToTrack);
         }
 
         #endregion
 
-        #region Public Events
+        #region  Properties
 
         /// <summary>
-        /// Event that is raised when the is dirty flag is changed
+        ///     Event that is raised when the is dirty flag is changed
         /// </summary>
         public event EventHandler<IsDiryChangedArgs> IsDirtyChanged;
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        /// True if the component or one of it's children is dirty
+        ///     True if the component or one of it's children is dirty
         /// </summary>
         public bool IsDirty
         {
-            get
-            {
-                return _isDirty;
-            }
+            get { return _isDirty; }
 
             set
             {
@@ -96,19 +96,19 @@ namespace RabbitDB.ChangeTracker
         }
 
         /// <summary>
-        /// The component being tracker
+        ///     The component being tracker
         /// </summary>
         public object TrackedComponent { get; private set; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// A list of child trackers
+        ///     A list of child trackers
         /// </summary>
         /// <returns>
-        /// The <see cref="IEnumerable"/>.
+        ///     The <see cref="IEnumerable{IComponentTracker}" />.
         /// </returns>
         public IEnumerable<IComponentTracker> ChildTrackers()
         {
@@ -116,7 +116,7 @@ namespace RabbitDB.ChangeTracker
         }
 
         /// <summary>
-        /// Dispose of the tracker
+        ///     Dispose of the tracker
         /// </summary>
         public void Dispose()
         {
@@ -125,9 +125,10 @@ namespace RabbitDB.ChangeTracker
                 return;
             }
 
-            if (this.TrackedComponent is INotifyPropertyChanged)
+            INotifyPropertyChanged changed = TrackedComponent as INotifyPropertyChanged;
+            if (changed != null)
             {
-                ((INotifyPropertyChanged)this.TrackedComponent).PropertyChanged -= this.OnPropertyChanged;
+                changed.PropertyChanged -= OnPropertyChanged;
             }
 
             _propertyTrackers.Clear();
@@ -135,16 +136,16 @@ namespace RabbitDB.ChangeTracker
         }
 
         /// <summary>
-        /// mark the component and all it's children as clean
+        ///     mark the component and all it's children as clean
         /// </summary>
         public void MarkAsClean()
         {
             _isDirty = false;
 
             // loop through all properties and reset the original values
-            foreach (var oValuePair in _propertyTrackers.Values)
+            foreach (PropertyTracker oValuePair in _propertyTrackers.Values)
             {
-                var newValue = oValuePair.PropertyAccess(this.TrackedComponent);
+                object newValue = oValuePair.PropertyAccess(TrackedComponent);
 
                 oValuePair.SetOriginalValue(newValue);
 
@@ -154,33 +155,31 @@ namespace RabbitDB.ChangeTracker
 
         #endregion
 
-        #region Methods
+        #region Private Methods
 
         /// <summary>
-        /// Initialize the object, setting up property trackers for all relavent properties
+        ///     Initialize the object, setting up property trackers for all relavent properties
         /// </summary>
         /// <param name="helper">
         /// </param>
         /// <param name="objectToTrack">
         /// </param>
-        /// <param name="trackerInfo">
-        /// </param>
-        private void Initialize(ComponentTrackerHelper helper, object objectToTrack, TrackerInfo trackerInfo)
+        private void Initialize(ComponentTrackerHelper helper, object objectToTrack)
         {
             _propertyTrackers = new Dictionary<string, PropertyTracker>();
 
-            this.TrackedComponent = objectToTrack;
+            TrackedComponent = objectToTrack;
 
             // listen to property change events
-            var track = objectToTrack as INotifyPropertyChanged;
+            INotifyPropertyChanged track = objectToTrack as INotifyPropertyChanged;
             if (track != null)
             {
                 track.PropertyChanged += OnPropertyChanged;
             }
 
             // loop through all public properties
-            foreach (
-                var propertyInfo in objectToTrack.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (PropertyInfo propertyInfo in objectToTrack.GetType()
+                                                               .GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 // only monitor properties that are write able
                 if (!propertyInfo.CanWrite)
@@ -188,18 +187,18 @@ namespace RabbitDB.ChangeTracker
                     continue;
                 }
 
-                var trackWeakly =
+                bool trackWeakly =
                     !(propertyInfo.PropertyType.IsValueType || propertyInfo.PropertyType == typeof(string));
 
                 // create a new property tracking object and a property accessor delegate
-                var propertyTracker = new PropertyTracker(trackWeakly)
-                                          {
-                                              PropertyAccess =
-                                                  helper.GetPropertyAccessor(objectToTrack, propertyInfo.Name)
-                                          };
+                PropertyTracker propertyTracker = new PropertyTracker(trackWeakly)
+                {
+                    PropertyAccess =
+                        helper.GetPropertyAccessor(objectToTrack, propertyInfo.Name)
+                };
 
                 // use the new property access delegate to retrieve the property from the object
-                var origValue = propertyTracker.PropertyAccess(objectToTrack);
+                object origValue = propertyTracker.PropertyAccess(objectToTrack);
 
                 // store the original value 
                 propertyTracker.SetOriginalValue(origValue);
@@ -210,7 +209,7 @@ namespace RabbitDB.ChangeTracker
         }
 
         /// <summary>
-        /// This is the property changed handler for the object being tracker
+        ///     This is the property changed handler for the object being tracker
         /// </summary>
         /// <param name="sender">
         /// </param>
@@ -226,10 +225,10 @@ namespace RabbitDB.ChangeTracker
                 return;
             }
 
-            var dirtyChanged = false;
+            bool dirtyChanged = false;
             bool hasOriginalValue;
-            var originalValue = propertyTrackingInfo.GetOriginalValue(out hasOriginalValue);
-            var newValue = propertyTrackingInfo.PropertyAccess(sender);
+            object originalValue = propertyTrackingInfo.GetOriginalValue(out hasOriginalValue);
+            object newValue = propertyTrackingInfo.PropertyAccess(sender);
 
             if (newValue != null)
             {
@@ -240,8 +239,8 @@ namespace RabbitDB.ChangeTracker
 
                     dirtyChanged = true;
                 }
-                    
-                    // else if the property is clean we need to dirty it up
+
+                // else if the property is clean we need to dirty it up
                 else if (!propertyTrackingInfo.IsDirty)
                 {
                     propertyTrackingInfo.IsDirty = true;
@@ -274,15 +273,10 @@ namespace RabbitDB.ChangeTracker
             // only check for dirty properties if the property dirty flag changed
             if (dirtyChanged)
             {
-                this.IsDirty = _propertyTrackers.Values.Any(x => x.IsDirty);
+                IsDirty = _propertyTrackers.Values.Any(x => x.IsDirty);
             }
 
-            if (this.IsDirtyChanged != null)
-            {
-                this.IsDirtyChanged(
-                    this, 
-                    new IsDiryChangedArgs(_isDirty, originalValue, newValue, propertyChangedEventArgs.PropertyName));
-            }
+            IsDirtyChanged?.Invoke(this, new IsDiryChangedArgs(_isDirty, originalValue, newValue, propertyChangedEventArgs.PropertyName));
         }
 
         #endregion

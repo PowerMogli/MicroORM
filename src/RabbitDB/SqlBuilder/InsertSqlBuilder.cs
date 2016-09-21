@@ -6,62 +6,59 @@
 //   The insert sql builder.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Text;
+
+using RabbitDB.Mapping;
+
+#endregion
+
 namespace RabbitDB.SqlBuilder
 {
-    using System.Text;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The insert sql builder.
+    ///     The insert sql builder.
     /// </summary>
-    class InsertSqlBuilder : SqlBuilder
+    internal class InsertSqlBuilder : SqlBuilder
     {
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InsertSqlBuilder"/> class.
+        ///     Initializes a new instance of the <see cref="InsertSqlBuilder" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <param name="tableInfo">
-        /// The table info.
+        ///     The table info.
         /// </param>
-        public InsertSqlBuilder(SqlDialect sqlDialect, TableInfo tableInfo)
+        public InsertSqlBuilder(SqlDialect.SqlDialect sqlDialect, TableInfo tableInfo)
             : base(sqlDialect, tableInfo)
         {
         }
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The create statement.
+        ///     The create statement.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         internal override string CreateStatement()
         {
-            var insertStatement = new StringBuilder();
-            insertStatement.AppendFormat(
-                "INSERT INTO {0} ", 
-                this.SqlDialect.SqlCharacters.EscapeName(this.TableInfo.SchemedTableName));
+            StringBuilder insertStatement = new StringBuilder();
 
-            insertStatement.AppendFormat(
-                "({0})", 
-                string.Join(
-                    ", ", 
-                    this.TableInfo.Columns.SelectValidNonAutoNumberColumnNames(this.SqlDialect.SqlCharacters)));
+            insertStatement.Append($"INSERT INTO {SqlDialect.SqlCharacters.EscapeName(TableInfo.SchemedTableName)} ");
 
-            insertStatement.AppendFormat(
-                " VALUES({0})", 
-                string.Join(", ", this.TableInfo.Columns.SelectValidNonAutoNumberPrefixedColumnNames()));
+            insertStatement.Append($"({string.Join(", ", TableInfo.Columns.SelectValidNonAutoNumberColumnNames(SqlDialect.SqlCharacters))})");
 
-            return string.Concat(insertStatement.ToString(), this.SqlDialect.ResolveScopeIdentity(this.TableInfo));
+            insertStatement.Append($" VALUES({string.Join(", ", TableInfo.Columns.SelectValidNonAutoNumberPrefixedColumnNames())})");
+
+            return string.Concat(insertStatement.ToString(), SqlDialect.ResolveScopeIdentity(TableInfo));
         }
 
         #endregion

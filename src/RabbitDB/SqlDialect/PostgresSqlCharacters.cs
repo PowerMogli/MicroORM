@@ -18,13 +18,7 @@ namespace RabbitDB.SqlDialect
         /// <summary>
         /// Gets the parameter prefix.
         /// </summary>
-        internal override string ParameterPrefix
-        {
-            get
-            {
-                return ":";
-            }
-        }
+        public override string ParameterPrefix => ":";
 
         #endregion
     }

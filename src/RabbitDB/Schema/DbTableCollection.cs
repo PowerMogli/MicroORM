@@ -6,52 +6,51 @@
 //   The db table collection.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+
+#endregion
+
 namespace RabbitDB.Schema
 {
-    using System;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-
     /// <summary>
-    /// The db table collection.
+    ///     The db table collection.
     /// </summary>
     internal class DbTableCollection : Collection<DbTable>
     {
-        #region Indexers
+        #region  Properties
 
         /// <summary>
-        /// The this.
+        ///     The
         /// </summary>
         /// <param name="tableName">
-        /// The table name.
+        ///     The table name.
         /// </param>
         /// <returns>
-        /// The <see cref="DbTable"/>.
+        ///     The <see cref="DbTable" />.
         /// </returns>
-        internal DbTable this[string tableName]
-        {
-            get
-            {
-                return this.GetTable(tableName);
-            }
-        }
+        internal DbTable this[string tableName] => GetTable(tableName);
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The get table.
+        ///     The get table.
         /// </summary>
         /// <param name="tableName">
-        /// The table name.
+        ///     The table name.
         /// </param>
         /// <returns>
-        /// The <see cref="DbTable"/>.
+        ///     The <see cref="DbTable" />.
         /// </returns>
         internal DbTable GetTable(string tableName)
         {
-            return this.SingleOrDefault(dbTable => String.Compare(dbTable.Name, tableName, StringComparison.OrdinalIgnoreCase) == 0);
+            return this.SingleOrDefault(dbTable => string.Compare(dbTable.Name, tableName, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
         #endregion

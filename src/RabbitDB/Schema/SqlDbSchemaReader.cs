@@ -6,25 +6,31 @@
 //   The sql db schema reader.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+
+using RabbitDB.Contracts.Schema;
+using RabbitDB.Mapping;
+using RabbitDB.Query;
+using RabbitDB.Utils;
+
+#endregion
+
 namespace RabbitDB.Schema
 {
-    using System;
-    using System.Collections.Generic;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.Query;
-    using RabbitDB.SqlDialect;
-    using RabbitDB.Utils;
-
     /// <summary>
-    /// The sql db schema reader.
+    ///     The sql db schema reader.
     /// </summary>
     internal class SqlDbSchemaReader : DbSchemaReader
     {
-        #region Constants
+        #region Fields
 
         /// <summary>
-        /// The sq l_ column.
+        ///     The sq l_ column.
         /// </summary>
         private const string SqlColumn = @"SELECT
             COLUMN_NAME AS ColumnName,
@@ -41,7 +47,7 @@ namespace RabbitDB.Schema
         ORDER BY OrdinalPosition ASC";
 
         /// <summary>
-        /// The sq l_ primarykey.
+        ///     The sq l_ primarykey.
         /// </summary>
         private const string SqlPrimarykey = @"SELECT c.name AS ColumnName
                 FROM sys.indexes AS i
@@ -51,7 +57,7 @@ namespace RabbitDB.Schema
                 WHERE (i.is_primary_key = 1) AND (o.name = @tableName)";
 
         /// <summary>
-        /// The sq l_ table.
+        ///     The sq l_ table.
         /// </summary>
         private const string SqlTable = @"SELECT *
         FROM INFORMATION_SCHEMA.TABLES
@@ -60,49 +66,56 @@ namespace RabbitDB.Schema
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlDbSchemaReader"/> class.
+        ///     Initializes a new instance of the <see cref="SqlDbSchemaReader" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
-        internal SqlDbSchemaReader(SqlDialect sqlDialect)
+        internal SqlDbSchemaReader(SqlDialect.SqlDialect sqlDialect)
             : base(sqlDialect)
         {
         }
 
         #endregion
 
-        #region Methods
+        #region Protected Methods
 
         /// <summary>
-        /// The get columns.
+        ///     The get columns.
         /// </summary>
         /// <param name="dbTable">
-        /// The db table.
+        ///     The db table.
         /// </param>
         /// <returns>
-        /// The <see cref="List"/>.
+        ///     The <see cref="List" />.
         /// </returns>
-        protected override List<DbColumn> GetColumns(DbTable dbTable)
+        protected override List<IDbColumn> GetColumns(DbTable dbTable)
         {
-            var columns = new List<DbColumn>();
-            using (var dataReader = base.SqlDialect.ExecuteReader(
-                new SqlQuery(
-                    SqlColumn, 
-                    QueryParameterCollection.Create(
-                        new object[] { new { tableName = dbTable.Name, schemaName = dbTable.Schema } }))))
+            List<IDbColumn> columns = new List<IDbColumn>();
+
+            using (IDataReader dataReader = SqlDialect.ExecuteReader(new SqlQuery(
+                SqlColumn,
+                QueryParameterCollection.Create(
+                    new object[]
+                    {
+                        new
+                        {
+                            tableName = dbTable.Name,
+                            schemaName = dbTable.Schema
+                        }
+                    }))))
             {
                 while (dataReader.Read())
                 {
                     try
                     {
-                        var dbColumn = new DbColumn
-                                           {
-                                               Name = SqlTools.GetDbValue<string>(dataReader["ColumnName"])
-                                           };
+                        DbColumn dbColumn = new DbColumn
+                        {
+                            Name = SqlTools.GetDbValue<string>(dataReader["ColumnName"])
+                        };
                         dbColumn.PropertyName = DbSchemaCleaner.CleanUp(dbColumn.Name);
                         try
                         {
@@ -139,24 +152,28 @@ namespace RabbitDB.Schema
         }
 
         /// <summary>
-        /// The get primary keys.
+        ///     The get primary keys.
         /// </summary>
         /// <param name="table">
-        /// The table.
+        ///     The table.
         /// </param>
         /// <returns>
-        /// The <see cref="List"/>.
+        ///     The <see cref="List" />.
         /// </returns>
         protected override List<string> GetPrimaryKeys(string table)
         {
-            var primaryKeys = new List<string>();
+            List<string> primaryKeys = new List<string>();
 
-            using (
-                var dataReader =
-                    base.SqlDialect.ExecuteReader(
-                        new SqlQuery(
-                            SqlPrimarykey, 
-                            QueryParameterCollection.Create(new object[] { new { tableName = table } }))))
+            using (IDataReader dataReader = SqlDialect.ExecuteReader(
+                new SqlQuery(
+                    SqlPrimarykey,
+                    QueryParameterCollection.Create(new object[]
+                    {
+                        new
+                        {
+                            tableName = table
+                        }
+                    }))))
             {
                 while (dataReader.Read())
                 {
@@ -168,36 +185,43 @@ namespace RabbitDB.Schema
         }
 
         /// <summary>
-        /// The get table.
+        ///     The get table.
         /// </summary>
         /// <param name="tableName">
-        /// The table name.
+        ///     The table name.
         /// </param>
         /// <returns>
-        /// The <see cref="DbTable"/>.
+        ///     The <see cref="DbTable" />.
         /// </returns>
         protected override DbTable GetTable(string tableName)
         {
-            using (
-                var dataReader =
-                    base.SqlDialect.ExecuteReader(
-                        new SqlQuery(
-                            SqlTable, 
-                            QueryParameterCollection.Create(new object[] { new { tableName = tableName } }))))
+            using (IDataReader dataReader = SqlDialect.ExecuteReader(
+                new SqlQuery(
+                    SqlTable,
+                    QueryParameterCollection.Create(new object[]
+                    {
+                        new
+                        {
+                            tableName = tableName
+                        }
+                    }))))
             {
                 if (!dataReader.Read())
                 {
                     return new DbTable(tableName);
                 }
 
-                var dbTable = new DbTable();
-                dbTable.Name = SqlTools.GetDbValue<string>(dataReader["TABLE_NAME"]);
-                dbTable.Schema = SqlTools.GetDbValue<string>(dataReader["TABLE_SCHEMA"]);
-                dbTable.IsView = string.Compare(
-                    SqlTools.GetDbValue<string>(dataReader["TABLE_TYPE"]), 
-                    "View", 
-                    StringComparison.OrdinalIgnoreCase)
-                                 == 0;
+                DbTable dbTable = new DbTable
+                {
+                    Name = SqlTools.GetDbValue<string>(dataReader["TABLE_NAME"]),
+                    Schema = SqlTools.GetDbValue<string>(dataReader["TABLE_SCHEMA"]),
+                    IsView = string.Compare(
+                        SqlTools.GetDbValue<string>(dataReader["TABLE_TYPE"]),
+                        "View",
+                        StringComparison.OrdinalIgnoreCase)
+                             == 0
+                };
+
                 dbTable.CleanName = DbSchemaCleaner.CleanUp(dbTable.Name);
 
                 return dbTable;

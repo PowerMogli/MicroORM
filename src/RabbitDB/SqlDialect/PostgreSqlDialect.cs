@@ -6,110 +6,103 @@
 //   The postgre sql dialect.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Linq;
+
+using RabbitDB.Contracts.Expressions;
+using RabbitDB.Contracts.Mapping;
+using RabbitDB.Contracts.Storage;
+using RabbitDB.Expressions;
+
+#endregion
+
 namespace RabbitDB.SqlDialect
 {
-    using System;
-    using System.Linq;
-
-    using RabbitDB.Expressions;
-    using RabbitDB.Mapping;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The postgre sql dialect.
+    ///     The postgre sql dialect.
     /// </summary>
     internal class PostgreSqlDialect : SqlDialect
     {
-        // for Unit tests
         #region Fields
 
         /// <summary>
-        /// The _builder helper.
+        ///     The _builder helper.
         /// </summary>
         private IDbProviderExpressionBuildHelper _builderHelper;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PostgreSqlDialect"/> class.
+        ///     Initializes a new instance of the <see cref="PostgreSqlDialect" /> class.
         /// </summary>
         /// <param name="dbProvider">
-        /// The db provider.
+        ///     The db provider.
         /// </param>
         /// <param name="dbCommandExecutor">
-        /// The db command executor.
+        ///     The db command executor.
         /// </param>
         internal PostgreSqlDialect(IDbProvider dbProvider, IDbCommandExecutor dbCommandExecutor)
-            : base(SqlCharacters.PostgreSqlCharacters, dbProvider, dbCommandExecutor)
+            : base(RabbitDB.SqlDialect.SqlCharacters.PostgreSqlCharacters, dbProvider, dbCommandExecutor)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PostgreSqlDialect"/> class.
+        ///     Initializes a new instance of the <see cref="PostgreSqlDialect" /> class.
         /// </summary>
         /// <param name="dbProvider">
-        /// The db provider.
+        ///     The db provider.
         /// </param>
         internal PostgreSqlDialect(IDbProvider dbProvider)
-            : base(SqlCharacters.PostgreSqlCharacters, dbProvider)
+            : base(RabbitDB.SqlDialect.SqlCharacters.PostgreSqlCharacters, dbProvider)
         {
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the builder helper.
+        ///     Gets the builder helper.
         /// </summary>
-        internal override IDbProviderExpressionBuildHelper BuilderHelper
-        {
-            get
-            {
-                return _builderHelper
-                       ?? (_builderHelper = new PostgresExpressionBuilderHelper(this.SqlCharacters));
-            }
-        }
+        public override IDbProviderExpressionBuildHelper BuilderHelper => _builderHelper ?? (_builderHelper = new PostgresExpressionBuilderHelper(SqlCharacters));
 
         /// <summary>
-        /// Gets the scope identity.
+        ///     Gets the scope identity.
         /// </summary>
-        internal override string ScopeIdentity
-        {
-            get
-            {
-                return " returning {0}";
-            }
-        }
+        internal override string ScopeIdentity => " returning {0}";
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
-        /// The resolve scope identity.
+        ///     The resolve scope identity.
         /// </summary>
         /// <param name="tableInfo">
-        /// The table info.
+        ///     The table info.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
-        internal override string ResolveScopeIdentity(TableInfo tableInfo)
+        public override string ResolveScopeIdentity(ITableInfo tableInfo)
         {
-            var propertyInfo = tableInfo.Columns.FirstOrDefault(column => column.ColumnAttribute.AutoNumber);
+            IPropertyInfo propertyInfo = tableInfo.Columns.FirstOrDefault(column => column.ColumnAttribute.AutoNumber);
+
             if (propertyInfo != null)
             {
-                return string.Format(
-                    this.ScopeIdentity, 
-                    base.SqlCharacters.EscapeName(propertyInfo.ColumnAttribute.ColumnName));
+                return string.Format(ScopeIdentity, SqlCharacters.EscapeName(propertyInfo.ColumnAttribute.ColumnName));
             }
 
             throw new InvalidOperationException("No column with autonumber functionality found.");
         }
 
         #endregion
+
+        // for Unit tests
     }
 }

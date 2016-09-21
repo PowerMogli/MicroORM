@@ -6,71 +6,72 @@
 //   The property meta info.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Data;
+using System.Reflection;
+
+using RabbitDB.Contracts.Attributes;
+using RabbitDB.Reflection;
+
+#endregion
+
 namespace RabbitDB.Mapping
 {
-    using System;
-    using System.Data;
-    using System.Reflection;
-
-    using RabbitDB.Attributes;
-    using RabbitDB.Reflection;
-
     /// <summary>
-    /// The property meta info.
+    ///     The property meta info.
     /// </summary>
     internal sealed class PropertyMetaInfo : MetaInfo
     {
         #region Fields
 
         /// <summary>
-        /// The _property info.
+        ///     The _property info.
         /// </summary>
         private readonly PropertyInfo _propertyInfo;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyMetaInfo"/> class.
+        ///     Initializes a new instance of the <see cref="PropertyMetaInfo" /> class.
         /// </summary>
         /// <param name="propertyInfo">
-        /// The property info.
+        ///     The property info.
         /// </param>
         /// <param name="propertyType">
-        /// The property type.
+        ///     The property type.
         /// </param>
         /// <param name="dbType">
-        /// The db type.
+        ///     The db type.
         /// </param>
         /// <param name="columnAttribute">
-        /// The column attribute.
+        ///     The column attribute.
         /// </param>
         /// <exception cref="ArgumentNullException">
         /// </exception>
         /// <exception cref="TableInfoException">
         /// </exception>
         public PropertyMetaInfo(
-            PropertyInfo propertyInfo, 
-            Type propertyType, 
-            DbType dbType, 
+            PropertyInfo propertyInfo,
+            Type propertyType,
+            DbType dbType,
             ColumnAttribute columnAttribute)
             : base(propertyType, dbType, columnAttribute)
         {
             if (propertyInfo == null)
             {
-                throw new ArgumentNullException("propertyInfo");
+                throw new ArgumentNullException(nameof(propertyInfo));
             }
 
             if (!propertyInfo.CanWrite || !propertyInfo.CanRead)
             {
                 if (propertyInfo.ReflectedType != null)
                 {
-                    throw new TableInfoException(
-                        string.Format(
-                            "Cannot create mapping for {0}.{1} because it's not possible to write and read.", 
-                            propertyInfo.ReflectedType.FullName, 
-                            propertyInfo.Name));
+                    throw new TableInfoException($"Cannot create mapping for {propertyInfo.ReflectedType.FullName}.{propertyInfo.Name} because it's not possible to write and read.");
                 }
             }
 
@@ -79,42 +80,30 @@ namespace RabbitDB.Mapping
 
         #endregion
 
-        #region Public Properties
+        #region  Properties
 
         /// <summary>
-        /// Returns true if the MemberInfo is write-able.
+        ///     Returns true if the MemberInfo is write-able.
         /// </summary>
-        public override bool CanWrite
-        {
-            get
-            {
-                return _propertyInfo.CanWrite;
-            }
-        }
+        public override bool CanWrite => _propertyInfo.CanWrite;
 
         /// <summary>
-        /// Returns the name of the element of the entity object type that is mapped to the field in the storage.
+        ///     Returns the name of the element of the entity object type that is mapped to the field in the storage.
         /// </summary>
-        public override string Name
-        {
-            get
-            {
-                return _propertyInfo.Name;
-            }
-        }
+        public override string Name => _propertyInfo.Name;
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The get value.
+        ///     The get value.
         /// </summary>
         /// <param name="obj">
-        /// The obj.
+        ///     The obj.
         /// </param>
         /// <returns>
-        /// The <see cref="object"/>.
+        ///     The <see cref="object" />.
         /// </returns>
         public override object GetValue(object obj)
         {
@@ -122,30 +111,31 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// The set value.
+        ///     The set value.
         /// </summary>
         /// <param name="obj">
-        /// The obj.
+        ///     The obj.
         /// </param>
         /// <param name="value">
-        /// The value.
+        ///     The value.
         /// </param>
         public override void SetValue(object obj, object value)
         {
-            if (this.IsNullable && this.PropertyType.BaseType == typeof(Enum))
+            if (IsNullable && PropertyType.BaseType == typeof(Enum))
             {
-                var type = typeof(Nullable<>).MakeGenericType(this.PropertyType);
+                Type type = typeof(Nullable<>).MakeGenericType(PropertyType);
+
                 value = value == null
-                            ? Activator.CreateInstance(type)
-                            : Activator.CreateInstance(type, Enum.ToObject(this.PropertyType, value));
+                    ? Activator.CreateInstance(type)
+                    : Activator.CreateInstance(type, Enum.ToObject(PropertyType, value));
             }
 
             _propertyInfo.SetValue(
-                obj, 
-                value, 
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, 
-                null, 
-                null, 
+                obj,
+                value,
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+                null,
+                null,
                 null);
 
             // _propertyInfo.SetValueFast(obj, value);

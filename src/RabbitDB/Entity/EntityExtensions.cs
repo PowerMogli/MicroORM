@@ -6,39 +6,47 @@
 //   The entity extensions.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Data;
+
+using RabbitDB.Caching;
+using RabbitDB.Contracts.Entity;
+using RabbitDB.Contracts.Reader;
+using RabbitDB.Contracts.Session;
+using RabbitDB.Query;
+using RabbitDB.Session;
+using RabbitDB.Storage;
+
+#endregion
+
 namespace RabbitDB.Entity
 {
-    using System;
-    using System.Data;
-
-    using RabbitDB.Caching;
-    using RabbitDB.Query;
-    using RabbitDB.Session;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The entity extensions.
+    ///     The entity extensions.
     /// </summary>
     public static class EntityExtensions
     {
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The load.
+        ///     The load.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
-        public static void Load<TEntity>(this TEntity entity) where TEntity : Entity, new()
+        public static void Load<TEntity>(this TEntity entity) where TEntity : Entity.Entity, new()
         {
-            if (entity.IsLoaded())
+            if (entity.IsLoaded)
             {
                 return;
             }
 
-            var sessionConfig = InitializeSession<TEntity>();
+            Tuple<string, DbEngine> sessionConfig = InitializeSession<TEntity>();
 
             using (IDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
@@ -49,29 +57,30 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The load.
+        ///     The load.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="customMapper">
-        /// The custom mapper.
+        ///     The custom mapper.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         public static void Load<TEntity>(this TEntity entity, Action<TEntity, IDataReader> customMapper)
-            where TEntity : Entity, new()
+            where TEntity : Entity.Entity, new()
         {
-            if (entity.IsLoaded())
+            if (entity.IsLoaded)
             {
                 return;
             }
 
-            var sessionConfig = InitializeSession<TEntity>();
+            Tuple<string, DbEngine> sessionConfig = InitializeSession<TEntity>();
 
             using (IBaseDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
-                var entityReader = dbSession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
+                IEntityReader<TEntity> entityReader = dbSession.GetEntityReader<TEntity>(new EntityQuery<TEntity>(entity));
+
                 entityReader.Load(entity, customMapper);
 
                 FinishLoad(entity);
@@ -79,32 +88,32 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The mark for deletion.
+        ///     The mark for deletion.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
-        public static void MarkForDeletion<TEntity>(this TEntity entity) where TEntity : Entity
+        public static void MarkForDeletion<TEntity>(this TEntity entity) where TEntity : Entity.Entity
         {
             entity.MarkedForDeletion = true;
         }
 
         /// <summary>
-        /// The persist changes.
+        ///     The persist changes.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         /// <exception cref="InvalidOperationException">
         /// </exception>
-        public static bool PersistChanges<TEntity>(this TEntity entity) where TEntity : Entity
+        public static bool PersistChanges<TEntity>(this TEntity entity) where TEntity : Entity.Entity
         {
             if (DbSession.Configuration.AutoDetectChangesEnabled == false)
             {
@@ -112,13 +121,13 @@ namespace RabbitDB.Entity
                     "This operation is not allowed because change tracking has been disabled.");
             }
 
-            var sessionConfig = InitializeSession<TEntity>();
+            Tuple<string, DbEngine> sessionConfig = InitializeSession<TEntity>();
 
             using (IDbSession dbSession = new DbSession(sessionConfig.Item1, sessionConfig.Item2))
             {
                 try
                 {
-                    using (var transaction = dbSession.BeginTransaction(IsolationLevel.ReadUncommitted))
+                    using (IDbTransaction transaction = dbSession.BeginTransaction(IsolationLevel.ReadUncommitted))
                     {
                         if (dbSession.PersistChanges(entity) == false)
                         {
@@ -140,17 +149,17 @@ namespace RabbitDB.Entity
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The finish load.
+        ///     The finish load.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
-        internal static void FinishLoad<TEntity>(TEntity entity) where TEntity : Entity
+        internal static void FinishLoad<TEntity>(TEntity entity) where TEntity : Entity.Entity
         {
             if (entity.EntityInfo == null)
             {
@@ -167,17 +176,18 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The initialize session.
+        ///     The initialize session.
         /// </summary>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="Tuple"/>.
+        ///     The <see cref="Tuple" />.
         /// </returns>
         internal static Tuple<string, DbEngine> InitializeSession<TEntity>()
         {
-            var connectionString = Registrar<string>.GetFor(typeof(TEntity));
-            var dbEngine = Registrar<DbEngine>.GetFor(typeof(TEntity));
+            string connectionString = Registrar<string>.GetFor(typeof(TEntity));
+
+            DbEngine dbEngine = Registrar<DbEngine>.GetFor(typeof(TEntity));
 
             return new Tuple<string, DbEngine>(connectionString, dbEngine);
         }

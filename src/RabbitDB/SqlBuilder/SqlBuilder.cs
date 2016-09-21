@@ -6,88 +6,95 @@
 //   The sql builder.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Mapping;
+
+#endregion
+
 namespace RabbitDB.SqlBuilder
 {
-    using System.Linq;
-    using System.Text;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The sql builder.
+    ///     The sql builder.
     /// </summary>
     internal abstract class SqlBuilder
     {
         #region Fields
 
         /// <summary>
-        /// The _sql dialect.
+        ///     The _sql dialect.
         /// </summary>
-        protected SqlDialect SqlDialect;
+        protected ISqlDialect SqlDialect;
 
         /// <summary>
-        /// The _table info.
+        ///     The _table info.
         /// </summary>
         protected TableInfo TableInfo;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlBuilder"/> class.
+        ///     Initializes a new instance of the <see cref="SqlBuilder" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <param name="tableInfo">
-        /// The table info.
+        ///     The table info.
         /// </param>
-        internal SqlBuilder(SqlDialect sqlDialect, TableInfo tableInfo)
+        internal SqlBuilder(ISqlDialect sqlDialect, TableInfo tableInfo)
         {
-            this.TableInfo = tableInfo;
-            this.SqlDialect = sqlDialect;
+            TableInfo = tableInfo;
+            SqlDialect = sqlDialect;
         }
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The create statement.
+        ///     The create statement.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         internal abstract string CreateStatement();
 
+        #endregion
+
+        #region Protected Methods
+
         /// <summary>
-        /// The append primary keys.
+        ///     The append primary keys.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         protected string AppendPrimaryKeys()
         {
-            var primaryKeys = this.TableInfo.PrimaryKeyColumns.Select(column => column.ColumnAttribute.ColumnName);
-            var count = primaryKeys.Count();
+            IEnumerable<string> primaryKeys = TableInfo.PrimaryKeyColumns.Select(column => column.ColumnAttribute.ColumnName);
+            int count = primaryKeys.Count();
 
-            var whereClause = new StringBuilder(" WHERE ");
-            var i = 0;
-            var seperator = " AND ";
-            foreach (var primaryKey in primaryKeys)
+            StringBuilder whereClause = new StringBuilder(" WHERE ");
+            int i = 0;
+            string seperator = " AND ";
+
+            foreach (string primaryKey in primaryKeys)
             {
                 if (i >= count - 1)
                 {
                     seperator = string.Empty;
                 }
 
-                whereClause.AppendFormat(
-                    "{0}=@{1}{2}", 
-                    this.SqlDialect.SqlCharacters.EscapeName(primaryKey), 
-                    i++, 
-                    seperator);
+                whereClause.Append($"{SqlDialect.SqlCharacters.EscapeName(primaryKey)}=@{i++}{seperator}");
             }
 
             return whereClause.ToString();

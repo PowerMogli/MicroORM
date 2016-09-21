@@ -6,164 +6,141 @@
 //   The entity.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-namespace RabbitDB.Entity
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+
+using RabbitDB.Contracts.Entity;
+using RabbitDB.Entity.ChangeRecorder;
+
+#endregion
+
+namespace RabbitDB.Entity.Entity
 {
-    using System;
-    using System.Collections.Generic;
-
-    using RabbitDB.Entity.ChangeRecorder;
-
     /// <summary>
-    /// The entity.
+    ///     The entity.
     /// </summary>
-    public abstract class Entity : IDisposable
+    public abstract class Entity : IEntity
     {
-        #region Public Events
+        #region  Properties
 
         /// <summary>
-        /// The entity deleted.
+        ///     The entity deleted.
         /// </summary>
         public event EventHandler EntityDeleted = delegate { };
 
         /// <summary>
-        /// The entity inserted.
+        ///     The entity inserted.
         /// </summary>
         public event EventHandler EntityInserted = delegate { };
 
         /// <summary>
-        /// The entity updated.
+        ///     The entity updated.
         /// </summary>
         public event EventHandler EntityUpdated = delegate { };
 
-        #endregion
-
-        #region Properties
-
         /// <summary>
-        /// Gets the change tracer option.
+        ///     Gets or sets the entity info.
         /// </summary>
-        internal virtual ChangeRecorderOption ChangeTracerOption
-        {
-            get
-            {
-                return ChangeRecorderOption.Hashed;
-            }
-        }
+        public IEntityInfo EntityInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity info.
+        ///     The is for deletion.
         /// </summary>
-        internal EntityInfo EntityInfo { get; set; }
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool IsForDeletion => MarkedForDeletion && EntityInfo.EntityState != EntityState.Deleted;
 
         /// <summary>
-        /// Gets or sets a value indicating whether marked for deletion.
+        ///     The is for insert.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool IsForInsert => EntityInfo.EntityState == EntityState.Deleted || EntityInfo.EntityState == EntityState.None;
+
+        /// <summary>
+        ///     The is for update.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool IsForUpdate => EntityInfo.EntityState != EntityState.Deleted;
+
+        /// <summary>
+        ///     Gets the change tracer option.
+        /// </summary>
+        internal virtual ChangeRecorderOption ChangeTracerOption => ChangeRecorderOption.Hashed;
+
+        /// <summary>
+        ///     The has changes.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        internal bool HasChanges => MarkedForDeletion || EntityInfo.HasChanges();
+
+        /// <summary>
+        ///     The is loaded.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        internal bool IsLoaded => EntityInfo != null && EntityInfo.EntityState == EntityState.Loaded;
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether marked for deletion.
         /// </summary>
         internal bool MarkedForDeletion { get; set; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The dispose.
+        ///     The compute values to update.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="KeyValuePair" />.
+        /// </returns>
+        public KeyValuePair<string, object>[] ComputeValuesToUpdate()
+        {
+            return EntityInfo.ComputeValuesToUpdate();
+        }
+
+        /// <summary>
+        ///     The dispose.
         /// </summary>
         public void Dispose()
         {
-            this.EntityInfo.Dispose();
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The compute values to update.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="KeyValuePair"/>.
-        /// </returns>
-        internal KeyValuePair<string, object>[] ComputeValuesToUpdate()
-        {
-            return this.EntityInfo.ComputeValuesToUpdate();
+            EntityInfo.Dispose();
         }
 
         /// <summary>
-        /// The has changes.
+        ///     The raise entity deleted.
         /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        internal bool HasChanges()
+        public void RaiseEntityDeleted()
         {
-            return MarkedForDeletion || this.EntityInfo.HasChanges();
+            EntityDeleted(this, EventArgs.Empty);
         }
 
         /// <summary>
-        /// The is for deletion.
+        ///     The raise entity inserted.
         /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        internal bool IsForDeletion()
+        public void RaiseEntityInserted()
         {
-            return this.MarkedForDeletion && this.EntityInfo.EntityState != EntityState.Deleted;
+            EntityInserted(this, EventArgs.Empty);
         }
 
         /// <summary>
-        /// The is for insert.
+        ///     The raise entity updated.
         /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        internal bool IsForInsert()
+        public void RaiseEntityUpdated()
         {
-            return this.EntityInfo.EntityState == EntityState.Deleted || this.EntityInfo.EntityState == EntityState.None;
-        }
-
-        /// <summary>
-        /// The is for update.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        internal bool IsForUpdate()
-        {
-            return this.EntityInfo.EntityState != EntityState.Deleted;
-        }
-
-        /// <summary>
-        /// The is loaded.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        internal bool IsLoaded()
-        {
-            return this.EntityInfo != null && this.EntityInfo.EntityState == EntityState.Loaded;
-        }
-
-        /// <summary>
-        /// The raise entity deleted.
-        /// </summary>
-        internal void RaiseEntityDeleted()
-        {
-            this.EntityDeleted(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// The raise entity inserted.
-        /// </summary>
-        internal void RaiseEntityInserted()
-        {
-            this.EntityInserted(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// The raise entity updated.
-        /// </summary>
-        internal void RaiseEntityUpdated()
-        {
-            this.EntityUpdated(this, EventArgs.Empty);
+            EntityUpdated(this, EventArgs.Empty);
         }
 
         #endregion

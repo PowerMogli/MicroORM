@@ -6,30 +6,39 @@
 //   The stored procedure session.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Linq;
+
+using RabbitDB.Contracts;
+using RabbitDB.Contracts.Query.StoredProcedure;
+using RabbitDB.Contracts.Session;
+using RabbitDB.Query;
+using RabbitDB.Query.StoredProcedure;
+using RabbitDB.Storage;
+
+#endregion
+
 namespace RabbitDB.Session
 {
-    using System;
-    using System.Linq;
-
-    using RabbitDB.Query;
-    using RabbitDB.Query.StoredProcedure;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The stored procedure session.
+    ///     The stored procedure session.
     /// </summary>
-    public class StoredProcedureSession : BaseDbSession, IStoredProcedureSession
+    public class StoredProcedureSession : BaseDbSession,
+                                          IStoredProcedureSession
     {
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StoredProcedureSession"/> class.
+        ///     Initializes a new instance of the <see cref="StoredProcedureSession" /> class.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         /// <param name="dbEngine">
-        /// The db engine.
+        ///     The db engine.
         /// </param>
         public StoredProcedureSession(string connectionString, DbEngine dbEngine)
             : base(connectionString, dbEngine)
@@ -37,10 +46,10 @@ namespace RabbitDB.Session
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StoredProcedureSession"/> class.
+        ///     Initializes a new instance of the <see cref="StoredProcedureSession" /> class.
         /// </summary>
         /// <param name="assemblyType">
-        /// The assembly type.
+        ///     The assembly type.
         /// </param>
         public StoredProcedureSession(Type assemblyType)
             : base(assemblyType)
@@ -48,10 +57,10 @@ namespace RabbitDB.Session
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StoredProcedureSession"/> class.
+        ///     Initializes a new instance of the <see cref="StoredProcedureSession" /> class.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         public StoredProcedureSession(string connectionString)
             : this(connectionString, DbEngine.SqlServer)
@@ -60,80 +69,78 @@ namespace RabbitDB.Session
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         public new void Dispose()
         {
         }
 
         /// <summary>
-        /// The execute stored procedure.
+        ///     The execute stored procedure.
         /// </summary>
         /// <param name="procedureObject">
-        /// The procedure object.
+        ///     The procedure object.
         /// </param>
-        public void ExecuteStoredProcedure(StoredProcedure procedureObject)
+        public void ExecuteStoredProcedure(IStoredProcedure procedureObject)
         {
-            this.SqlDialect.ExecuteCommand(new StoredProcedureQuery(procedureObject));
+            SqlDialect.ExecuteCommand(new StoredProcedureQuery(procedureObject));
         }
 
         /// <summary>
-        /// The execute stored procedure.
+        ///     The execute stored procedure.
         /// </summary>
         /// <param name="procedureObject">
-        /// The procedure object.
+        ///     The procedure object.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="TEntity"/>.
+        ///     The <see cref="TEntity" />.
         /// </returns>
-        public TEntity ExecuteStoredProcedure<TEntity>(StoredProcedure procedureObject)
+        public TEntity ExecuteStoredProcedure<TEntity>(IStoredProcedure procedureObject)
         {
-            var objectSet =
-                ((IBaseDbSession)this).GetEntitySet<TEntity>(new StoredProcedureQuery(procedureObject));
+            IEntitySet<TEntity> objectSet = ((IBaseDbSession)this).GetEntitySet<TEntity>(new StoredProcedureQuery(procedureObject));
+
             return objectSet.SingleOrDefault();
         }
 
         /// <summary>
-        /// The execute stored procedure.
+        ///     The execute stored procedure.
         /// </summary>
         /// <param name="storedProcedureName">
-        /// The stored procedure name.
+        ///     The stored procedure name.
         /// </param>
         /// <param name="arguments">
-        /// The arguments.
+        ///     The arguments.
         /// </param>
         public void ExecuteStoredProcedure(string storedProcedureName, params object[] arguments)
         {
-            this.SqlDialect.ExecuteCommand(
-                new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create(arguments)));
+            SqlDialect.ExecuteCommand(new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create(arguments)));
         }
 
         /// <summary>
-        /// The execute stored procedure.
+        ///     The execute stored procedure.
         /// </summary>
         /// <param name="storedProcedureName">
-        /// The stored procedure name.
+        ///     The stored procedure name.
         /// </param>
         /// <param name="arguments">
-        /// The arguments.
+        ///     The arguments.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="TEntity"/>.
+        ///     The <see cref="TEntity" />.
         /// </returns>
         public TEntity ExecuteStoredProcedure<TEntity>(string storedProcedureName, params object[] arguments)
         {
-            var query = new StoredProcedureQuery(
-                storedProcedureName, 
-                QueryParameterCollection.Create<TEntity>(arguments));
+            StoredProcedureQuery query = new StoredProcedureQuery(storedProcedureName, QueryParameterCollection.Create<TEntity>(arguments));
 
-            var objectSet = ((IBaseDbSession)this).GetEntitySet<TEntity>(query);
+            IEntitySet<TEntity> objectSet = ((IBaseDbSession)this).GetEntitySet<TEntity>(query);
+
             return objectSet.SingleOrDefault();
         }
 

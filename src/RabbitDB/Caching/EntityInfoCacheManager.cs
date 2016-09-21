@@ -6,6 +6,9 @@
 //   The entity info cache manager.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+using RabbitDB.Entity.Entity;
+
 namespace RabbitDB.Caching
 {
     using System;
@@ -66,7 +69,7 @@ namespace RabbitDB.Caching
                 SetEntityInfo(entity, entityInfo);
             }
 
-            UpdateEntityInfoLastCallTime(entityInfo);
+            entityInfo.UpdateLastCallTime();
 
             return entityInfo;
         }
@@ -133,21 +136,7 @@ namespace RabbitDB.Caching
                 }
             }
         }
-
-        /// <summary>
-        /// The update entity info last call time.
-        /// </summary>
-        /// <param name="entityInfo">
-        /// The entity info.
-        /// </param>
-        private static void UpdateEntityInfoLastCallTime(EntityInfo entityInfo)
-        {
-            if (entityInfo != null)
-            {
-                entityInfo.LastCallTime = DateTime.Now;
-            }
-        }
-
+        
         #endregion
     }
 }

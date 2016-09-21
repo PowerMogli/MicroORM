@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="TableInfo.cs" company="">
 //   
 // </copyright>
@@ -6,108 +6,109 @@
 //   The table info.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+
+using RabbitDB.Contracts.Attributes;
+using RabbitDB.Contracts.Mapping;
+using RabbitDB.Schema;
+
+#endregion
+
 namespace RabbitDB.Mapping
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Linq;
-
-    using RabbitDB.Attributes;
-    using RabbitDB.Schema;
-
     /// <summary>
-    /// The table info.
+    ///     The table info.
     /// </summary>
-    internal class TableInfo
+    internal class TableInfo : ITableInfo
     {
         #region Fields
 
         /// <summary>
-        /// The _db table.
+        ///     The _db table.
         /// </summary>
         private DbTable _dbTable;
 
         /// <summary>
-        /// The _number of primary keys.
+        ///     The _number of primary keys.
         /// </summary>
         private int _numberOfPrimaryKeys = -1;
 
         /// <summary>
-        /// The _primary key columns.
+        ///     The _primary key columns.
         /// </summary>
         private IEnumerable<IPropertyInfo> _primaryKeyColumns;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TableInfo"/> class.
+        ///     Initializes a new instance of the <see cref="TableInfo" /> class.
         /// </summary>
         /// <param name="type">
-        /// The type.
+        ///     The type.
         /// </param>
         /// <param name="tableAttribute">
-        /// The table attribute.
+        ///     The table attribute.
         /// </param>
         internal TableInfo(Type type, TableAttribute tableAttribute)
         {
-            this.EntityType = type;
-            this.TableAttribute = tableAttribute;
-            this.Columns = new PropertyInfoCollection();
+            EntityType = type;
+
+            TableAttribute = tableAttribute;
+
+            Columns = new PropertyInfoCollection();
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the columns.
+        ///     Gets the columns.
         /// </summary>
-        internal PropertyInfoCollection Columns { get; private set; }
+        public IPropertyInfoCollection Columns { get; }
 
         /// <summary>
-        /// Gets or sets the db table.
+        ///     Gets or sets the db table.
         /// </summary>
         internal DbTable DbTable
         {
-            get
-            {
-                return _dbTable;
-            }
+            get { return _dbTable; }
 
             set
             {
-                if (value == null || this.DbTable != null)
+                if (value == null || DbTable != null)
                 {
                     return;
                 }
 
                 _dbTable = value;
+
                 CleanUpUnusedColumns();
+
                 ReconfigureByTableColumns();
             }
         }
 
         /// <summary>
-        /// Gets the entity type.
+        ///     Gets the entity type.
         /// </summary>
         internal Type EntityType { get; private set; }
 
         /// <summary>
-        /// Gets the name.
+        ///     Gets the name.
         /// </summary>
-        internal string Name
-        {
-            get
-            {
-                return this.TableAttribute.EntityName;
-            }
-        }
+        internal string Name => TableAttribute.EntityName;
 
         /// <summary>
-        /// Gets the number of primary keys.
+        ///     Gets the number of primary keys.
         /// </summary>
         internal int NumberOfPrimaryKeys
         {
@@ -118,116 +119,67 @@ namespace RabbitDB.Mapping
                     return _numberOfPrimaryKeys;
                 }
 
-                return _numberOfPrimaryKeys = this.Columns.Count(columns => columns.ColumnAttribute.IsPrimaryKey);
+                return _numberOfPrimaryKeys = Columns.Count(columns => columns.ColumnAttribute.IsPrimaryKey);
             }
         }
 
         /// <summary>
-        /// Gets the primary key columns.
+        ///     Gets the primary key columns.
         /// </summary>
         internal IEnumerable<IPropertyInfo> PrimaryKeyColumns
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(this.TableAttribute.AlternativePKs))
+                if (string.IsNullOrWhiteSpace(TableAttribute.AlternativePKs))
                 {
-                    return _primaryKeyColumns
-                           ?? (_primaryKeyColumns =
-                               this.Columns.Where(column => column.ColumnAttribute.IsPrimaryKey));
+                    return _primaryKeyColumns ?? (_primaryKeyColumns = Columns.Where(column => column.ColumnAttribute.IsPrimaryKey));
                 }
 
-                var attrPrimaryKeys = this.TableAttribute.AlternativePKs.Split(',');
-                _primaryKeyColumns =
-                    this.Columns.Where(
-                        column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
+                string[] attrPrimaryKeys = TableAttribute.AlternativePKs.Split(',');
+
+                _primaryKeyColumns = Columns.Where(column => attrPrimaryKeys.Any(attrPrimaryKey => attrPrimaryKey == column.Name));
+
                 return _primaryKeyColumns;
             }
         }
 
         /// <summary>
-        /// Gets the schemed table name.
+        ///     Gets the schemed table name.
         /// </summary>
-        internal string SchemedTableName
-        {
-            get
-            {
-                return string.Format("{0}.{1}", this.DbTable.Schema, this.Name);
-            }
-        }
+        internal string SchemedTableName => $"{DbTable.Schema}.{Name}";
 
         /// <summary>
-        /// Gets the with nolock.
+        ///     Gets the with nolock.
         /// </summary>
-        internal string WithNolock
-        {
-            get
-            {
-                return this.TableAttribute.ReadWithNolock ? " WITH (NOLOCK) " : string.Empty;
-            }
-        }
+        internal string WithNolock => TableAttribute.ReadWithNolock
+            ? " WITH (NOLOCK) "
+            : string.Empty;
 
         /// <summary>
-        /// Gets or sets the table attribute.
+        ///     Gets or sets the table attribute.
         /// </summary>
-        private TableAttribute TableAttribute { get; set; }
+        private TableAttribute TableAttribute { get; }
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
-        /// The convert to db type.
-        /// </summary>
-        /// <param name="name">
-        /// The name.
-        /// </param>
-        /// <returns>
-        /// The <see cref="DbType"/>.
-        /// </returns>
-        /// <exception cref="NullReferenceException">
-        /// </exception>
-        internal DbType ConvertToDbType(string name)
-        {
-            var propMetaInfo = this.Columns.FirstOrDefault(column => column.Name == name);
-            if (propMetaInfo != null)
-            {
-                return propMetaInfo.DbType ?? TypeConverter.ToDbType(propMetaInfo.PropertyType);
-            }
-
-            throw new NullReferenceException(string.Format("Die Property '{0}' konnte nicht gefunden werden!", name));
-        }
-
-        /// <summary>
-        /// The get column size.
-        /// </summary>
-        /// <param name="name">
-        /// The name.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
-        internal int GetColumnSize(string name)
-        {
-            var propertyInfo = this.Columns.FirstOrDefault(column => column.Name == name);
-
-            return propertyInfo != null && propertyInfo.Size > 0 ? propertyInfo.Size : -1;
-        }
-
-        /// <summary>
-        /// The get identity type.
+        ///     The get identity type.
         /// </summary>
         /// <returns>
-        /// The <see cref="Tuple"/>.
+        ///     The <see cref="Tuple" />.
         /// </returns>
-        internal Tuple<bool, string> GetIdentityType()
+        public Tuple<bool, string> GetIdentityType()
+
         {
-            var propertyInfo = this.Columns.FirstOrDefault(column => column.ColumnAttribute.AutoNumber);
+            IPropertyInfo propertyInfo = Columns.FirstOrDefault(column => column.ColumnAttribute.AutoNumber);
             if (propertyInfo == null)
             {
                 return new Tuple<bool, string>(false, string.Empty);
             }
 
-            var castTo = string.Empty;
+            string castTo = string.Empty;
             if (propertyInfo.PropertyType == typeof(int))
             {
                 castTo = "INT";
@@ -256,33 +208,74 @@ namespace RabbitDB.Mapping
             return new Tuple<bool, string>(true, castTo);
         }
 
+        #endregion
+
+        #region Internal Methods
+
         /// <summary>
-        /// The get primary key values.
+        ///     The convert to db type.
+        /// </summary>
+        /// <param name="name">
+        ///     The name.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="DbType" />.
+        /// </returns>
+        /// <exception cref="NullReferenceException">
+        /// </exception>
+        internal DbType ConvertToDbType(string name)
+        {
+            IPropertyInfo propMetaInfo = Columns.FirstOrDefault(column => column.Name == name);
+            if (propMetaInfo != null)
+            {
+                return propMetaInfo.DbType ?? TypeConverter.ToDbType(propMetaInfo.PropertyType);
+            }
+
+            throw new NullReferenceException($"Die Property '{name}' konnte nicht gefunden werden!");
+        }
+
+        /// <summary>
+        ///     The get column size.
+        /// </summary>
+        /// <param name="name">
+        ///     The name.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="int" />.
+        /// </returns>
+        internal int GetColumnSize(string name)
+        {
+            IPropertyInfo propertyInfo = Columns.FirstOrDefault(column => column.Name == name);
+
+            return propertyInfo != null && propertyInfo.Size > 0
+                ? propertyInfo.Size
+                : -1;
+        }
+
+        /// <summary>
+        ///     The get primary key values.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="object[]"/>.
+        ///     The <see cref="object[]" />.
         /// </returns>
         /// <exception cref="PrimaryKeyException">
         /// </exception>
         internal object[] GetPrimaryKeyValues<TEntity>(TEntity entity)
         {
-            var index = 0;
-            var primaryKeys = new object[this.PrimaryKeyColumns.Count()];
+            int index = 0;
+            object[] primaryKeys = new object[PrimaryKeyColumns.Count()];
 
-            foreach (var propertyInfo in this.PrimaryKeyColumns)
+            foreach (IPropertyInfo propertyInfo in PrimaryKeyColumns)
             {
                 object primaryKey;
                 if ((primaryKey = propertyInfo.GetValue(entity)) == null)
                 {
-                    throw new PrimaryKeyException(
-                        string.Format(
-                            "The requested pirmaryKey '{0}' was not found! Please set those Property to a valid value!", 
-                            propertyInfo.Name));
+                    throw new PrimaryKeyException($"The requested pirmaryKey '{propertyInfo.Name}' was not found! Please set those Property to a valid value!");
                 }
 
                 primaryKeys[index++] = primaryKey;
@@ -297,52 +290,50 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// The is column.
+        ///     The is column.
         /// </summary>
         /// <param name="name">
-        /// The name.
+        ///     The name.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         internal bool IsColumn(string name)
         {
-            return this.Columns.Any(column => column.Name == name);
+            return Columns.Any(column => column.Name == name);
         }
 
         /// <summary>
-        /// The resolve column name.
+        ///     The resolve column name.
         /// </summary>
         /// <param name="name">
-        /// The name.
+        ///     The name.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         /// <exception cref="ArgumentException">
         /// </exception>
         internal string ResolveColumnName(string name)
         {
-            var propertyInfo = this.Columns.FirstOrDefault(column => column.Name == name);
+            IPropertyInfo propertyInfo = Columns.FirstOrDefault(column => column.Name == name);
 
             if (propertyInfo == null)
             {
-                throw new ArgumentException(
-                    string.Format("The column with the name - '{0}' - doesn´t exist.", name), 
-                    "name");
+                throw new ArgumentException($"The column with the name - '{name}' - doesn´t exist.", nameof(name));
             }
 
             return propertyInfo.ColumnAttribute.ColumnName;
         }
 
         /// <summary>
-        /// The set auto number.
+        ///     The set auto number.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <param name="insertId">
-        /// The insert id.
+        ///     The insert id.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
@@ -353,43 +344,46 @@ namespace RabbitDB.Mapping
                 return;
             }
 
-            var propertyInfos = this.Columns.Where(column => column.ColumnAttribute.AutoNumber);
-            foreach (var propertyInfo in propertyInfos)
+            IEnumerable<IPropertyInfo> propertyInfos = Columns.Where(column => column.ColumnAttribute.AutoNumber);
+            foreach (IPropertyInfo propertyInfo in propertyInfos)
             {
                 propertyInfo.SetValue(entity, insertId);
             }
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// The clean up unused columns.
+        ///     The clean up unused columns.
         /// </summary>
         private void CleanUpUnusedColumns()
         {
-            var columnNames = new List<string>();
-            for (var index = 0; index < this.Columns.Count; index++)
+            List<string> columnNames = new List<string>();
+
+            foreach (IPropertyInfo propertyInfo in Columns)
             {
-                if (
-                    this.DbTable.DbColumns.SingleOrDefault(
-                        dbColumn => dbColumn.Name == this.Columns[index].ColumnAttribute.ColumnName) != null)
+                if (DbTable.DbColumns.SingleOrDefault(dbColumn => dbColumn.Name == propertyInfo.ColumnAttribute.ColumnName) != null)
                 {
                     continue;
                 }
 
-                columnNames.Add(this.Columns[index].Name);
+                columnNames.Add(propertyInfo.Name);
             }
 
-            columnNames.ForEach(name => this.Columns.Remove(name));
+            columnNames.ForEach(name => Columns.Remove(name));
         }
 
         /// <summary>
-        /// The reconfigure by table columns.
+        ///     The reconfigure by table columns.
         /// </summary>
         private void ReconfigureByTableColumns()
         {
-            foreach (var dbColumn in this.DbTable.DbColumns)
+            foreach (DbColumn dbColumn in DbTable.DbColumns)
             {
-                var propertyInfo =
-                    this.Columns.FirstOrDefault(column => column.ColumnAttribute.ColumnName == dbColumn.Name);
+                IPropertyInfo propertyInfo = Columns.FirstOrDefault(column => column.ColumnAttribute.ColumnName == dbColumn.Name);
+
                 if (propertyInfo == null)
                 {
                     continue;

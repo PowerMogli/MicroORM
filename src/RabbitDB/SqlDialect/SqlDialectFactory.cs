@@ -6,31 +6,36 @@
 //   The sql dialect factory.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+
+using RabbitDB.Schema;
+using RabbitDB.Storage;
+
+#endregion
+
 namespace RabbitDB.SqlDialect
 {
-    using System;
-
-    using RabbitDB.Schema;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The sql dialect factory.
+    ///     The sql dialect factory.
     /// </summary>
     internal static class SqlDialectFactory
     {
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The create.
+        ///     The create.
         /// </summary>
         /// <param name="dbEngine">
-        /// The db engine.
+        ///     The db engine.
         /// </param>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         /// <returns>
-        /// The <see cref="SqlDialect"/>.
+        ///     The <see cref="SqlDialect" />.
         /// </returns>
         /// <exception cref="ArgumentOutOfRangeException">
         /// </exception>
@@ -42,7 +47,7 @@ namespace RabbitDB.SqlDialect
             {
                 case DbEngine.SqlServer:
                     sqlDialect = new MsSqlDialect(new SqlDbProvider(connectionString));
-                    DbSchemaAllocator.SchemaReader = new MySqlDbSchemaReader(sqlDialect);
+                    DbSchemaAllocator.SchemaReader = new SqlDbSchemaReader(sqlDialect);
                     break;
                 case DbEngine.SqlServerCe:
                     break;
@@ -57,7 +62,7 @@ namespace RabbitDB.SqlDialect
                 case DbEngine.SqLite:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("dbEngine");
+                    throw new ArgumentOutOfRangeException(nameof(dbEngine));
             }
 
             return sqlDialect;

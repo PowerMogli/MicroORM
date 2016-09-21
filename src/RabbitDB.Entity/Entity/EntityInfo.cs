@@ -7,40 +7,45 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace RabbitDB.Entity
+#region using directives
+
+using System;
+using System.Collections.Generic;
+
+using RabbitDB.Contracts.Entity;
+using RabbitDB.Entity.ChangeRecorder;
+
+#endregion
+
+namespace RabbitDB.Entity.Entity
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using RabbitDB.Entity.ChangeRecorder;
-
     /// <summary>
-    /// The entity info.
+    ///     The entity info.
     /// </summary>
-    internal class EntityInfo : IChangeRecorder
+    internal class EntityInfo : IEntityInfo,
+                                IChangeRecorder
     {
         #region Fields
 
         /// <summary>
-        /// The _change tracer.
+        ///     The _change tracer.
         /// </summary>
         private readonly IChangeRecorder _changeTracer;
 
         /// <summary>
-        /// The _disposed.
+        ///     The _disposed.
         /// </summary>
         private bool _disposed;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityInfo"/> class.
+        ///     Initializes a new instance of the <see cref="EntityInfo" /> class.
         /// </summary>
         /// <param name="changeTracer">
-        /// The change tracer.
+        ///     The change tracer.
         /// </param>
         internal EntityInfo(IChangeRecorder changeTracer)
             : this()
@@ -49,45 +54,39 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="EntityInfo"/> class from being created.
+        ///     Prevents a default instance of the <see cref="EntityInfo" /> class from being created.
         /// </summary>
         private EntityInfo()
         {
-            this.EntityState = EntityState.None;
-            this.LastCallTime = DateTime.Now;
+            EntityState = EntityState.None;
+            LastCallTime = DateTime.Now;
         }
 
         #endregion
 
-        #region Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets a value indicating whether can be removed.
+        ///     Gets or sets the entity state.
         /// </summary>
-        internal bool CanBeRemoved
-        {
-            get
-            {
-                return DateTime.Now.Subtract(this.LastCallTime) > TimeSpan.FromMinutes(2);
-            }
-        }
+        public EntityState EntityState { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity state.
+        ///     Gets a value indicating whether can be removed.
         /// </summary>
-        internal EntityState EntityState { get; set; }
+        internal bool CanBeRemoved => DateTime.Now.Subtract(LastCallTime) > TimeSpan.FromMinutes(2);
 
         /// <summary>
-        /// Gets or sets the last call time.
+        ///     Gets or sets the last call time.
         /// </summary>
         internal DateTime LastCallTime { get; set; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The clear changes.
+        ///     The clear changes.
         /// </summary>
         public void ClearChanges()
         {
@@ -95,10 +94,10 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The compute snapshot.
+        ///     The compute snapshot.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
@@ -108,10 +107,11 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The compute values to update.
+        ///     The compute values to update.
         /// </summary>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>KeyValuePair</cref>
         ///     </see>
         ///     .
@@ -122,7 +122,7 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         public void Dispose()
         {
@@ -130,7 +130,22 @@ namespace RabbitDB.Entity
         }
 
         /// <summary>
-        /// The merge changes.
+        ///     The has changes.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool HasChanges()
+        {
+            KeyValuePair<string, object>[] valuesToUpdate = ComputeValuesToUpdate();
+
+            return valuesToUpdate.Length > 0
+                   || EntityState == EntityState.Deleted
+                   || EntityState == EntityState.None;
+        }
+
+        /// <summary>
+        ///     The merge changes.
         /// </summary>
         public void MergeChanges()
         {
@@ -139,28 +154,25 @@ namespace RabbitDB.Entity
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The has changes.
+        ///     The update entity info last call time.
         /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        internal bool HasChanges()
+        internal void UpdateLastCallTime()
         {
-            var valuesToUpdate = ComputeValuesToUpdate();
-
-            return valuesToUpdate.Count() > 0
-                   || this.EntityState == EntityState.Deleted
-                   || this.EntityState == EntityState.None;
+            LastCallTime = DateTime.Now;
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         /// <param name="dispose">
-        /// The dispose.
+        ///     The dispose.
         /// </param>
         private void Dispose(bool dispose)
         {

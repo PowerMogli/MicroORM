@@ -6,6 +6,9 @@
 //   The transactional db provider.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+using RabbitDB.Contracts.Storage;
+
 namespace RabbitDB.Storage
 {
     using System.Data;
@@ -52,18 +55,18 @@ namespace RabbitDB.Storage
         /// </returns>
         public IDbTransaction BeginTransaction(IsolationLevel isolationLevel)
         {
-            if (this.DbTransaction != null)
+            if (DbTransaction != null)
             {
-                return this.DbTransaction;
+                return DbTransaction;
             }
 
-            if (this.DbConnection != null)
+            if (DbConnection != null)
             {
-                return this.DbTransaction = this.DbConnection.BeginTransaction(isolationLevel);
+                return DbTransaction = DbConnection.BeginTransaction(isolationLevel);
             }
 
             CreateConnection();
-            return this.DbTransaction = this.DbConnection.BeginTransaction(isolationLevel);
+            return DbTransaction = DbConnection?.BeginTransaction(isolationLevel);
         }
 
         /// <summary>
@@ -74,20 +77,20 @@ namespace RabbitDB.Storage
         /// </returns>
         public IDbTransaction BeginTransaction()
         {
-            if (base.DbTransaction != null)
+            if (DbTransaction != null)
             {
-                return base.DbTransaction;
+                return DbTransaction;
             }
 
-            if (base.DbConnection != null)
+            if (DbConnection != null)
             {
-                return base.DbTransaction = base.DbConnection.BeginTransaction();
+                return DbTransaction = DbConnection.BeginTransaction();
             }
 
             CreateConnection();
 
             // ReSharper disable once PossibleNullReferenceException
-            return base.DbTransaction = base.DbConnection.BeginTransaction();
+            return DbTransaction = DbConnection.BeginTransaction();
         }
 
         #endregion

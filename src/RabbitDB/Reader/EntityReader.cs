@@ -6,70 +6,77 @@
 //   The entity reader.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+using System.Data;
+
+using RabbitDB.Contracts.Materialization;
+using RabbitDB.Contracts.Reader;
+using RabbitDB.Contracts.Storage;
+using RabbitDB.Mapping;
+using RabbitDB.Materialization;
+
+#endregion
+
 namespace RabbitDB.Reader
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.Materialization;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The entity reader.
+    ///     The entity reader.
     /// </summary>
     /// <typeparam name="TEntity">
     /// </typeparam>
-    public sealed class EntityReader<TEntity> : IDisposable
+    public sealed class EntityReader<TEntity> : IEntityReader<TEntity>
     {
         #region Fields
 
         /// <summary>
-        /// The _data reader.
+        ///     The _data reader.
         /// </summary>
         private readonly IDataReader _dataReader;
 
         /// <summary>
-        /// The _data reader schema.
+        ///     The _data reader schema.
         /// </summary>
         private readonly IDataSchemaCreator _dataReaderSchema;
 
         /// <summary>
-        /// The _db provider.
+        ///     The _db provider.
         /// </summary>
         private readonly IDbProvider _dbProvider;
 
         /// <summary>
-        /// The _materializer.
+        ///     The _materializer.
         /// </summary>
         private readonly IEntityMaterializer _materializer;
 
         /// <summary>
-        /// The _table info.
+        ///     The _table info.
         /// </summary>
         private readonly TableInfo _tableInfo;
 
         /// <summary>
-        /// The _disposed.
+        ///     The _disposed.
         /// </summary>
         private bool _disposed;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityReader{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="EntityReader{TEntity}" /> class.
         /// </summary>
         /// <param name="dataReader">
-        /// The data reader.
+        ///     The data reader.
         /// </param>
         /// <param name="dbProvider">
-        /// The db provider.
+        ///     The db provider.
         /// </param>
         /// <param name="materializer">
-        /// The materializer.
+        ///     The materializer.
         /// </param>
         internal EntityReader(IDataReader dataReader, IDbProvider dbProvider, IEntityMaterializer materializer)
         {
@@ -82,19 +89,72 @@ namespace RabbitDB.Reader
 
         #endregion
 
-        #region Public Properties
+        #region  Properties
 
         /// <summary>
-        /// Returns the current materialized entity object.
+        ///     Returns the current materialized entity object.
         /// </summary>
         public TEntity Current { get; private set; }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// Moves the reader to the next position in data stream.
+        ///     The load.
+        /// </summary>
+        /// <param name="entity">
+        ///     The entity.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool Load(TEntity entity)
+        {
+            if (_dataReader.Read() == false)
+            {
+                return false;
+            }
+
+            Current = _materializer.Materialize(entity, _dataReaderSchema, _dataReader);
+
+            return true;
+        }
+
+        /// <summary>
+        ///     The load.
+        /// </summary>
+        /// <param name="entity">
+        ///     The entity.
+        /// </param>
+        /// <param name="materializer">
+        ///     The materializer.
+        /// </param>
+        public void Load(TEntity entity, Action<TEntity, IDataReader> materializer)
+        {
+            materializer(entity, _dataReader);
+        }
+
+        /// <summary>
+        ///     The load.
+        /// </summary>
+        /// <param name="materializer">
+        ///     The materializer.
+        /// </param>
+        /// <returns>
+        ///     The
+        ///     <see>
+        ///         <cref>IEnumerable</cref>
+        ///     </see>
+        ///     .
+        /// </returns>
+        public IEnumerable<TEntity> Load(Func<IDataReader, IEnumerable<TEntity>> materializer)
+        {
+            return _materializer.Materialize(materializer, _dataReader);
+        }
+
+        /// <summary>
+        ///     Moves the reader to the next position in data stream.
         /// </summary>
         /// <returns>True if there have been any elements in the reader.</returns>
         public bool Read()
@@ -104,25 +164,13 @@ namespace RabbitDB.Reader
 
         #endregion
 
-        #region Explicit Interface Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The dispose.
-        /// </summary>
-        void IDisposable.Dispose()
-        {
-            Dispose();
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The create data schema creator.
+        ///     The create data schema creator.
         /// </summary>
         /// <returns>
-        /// The <see cref="IDataSchemaCreator"/>.
+        ///     The <see cref="IDataSchemaCreator" />.
         /// </returns>
         internal IDataSchemaCreator CreateDataSchemaCreator()
         {
@@ -130,7 +178,7 @@ namespace RabbitDB.Reader
         }
 
         /// <summary>
-        /// The dispose.
+        ///     The dispose.
         /// </summary>
         internal void Dispose()
         {
@@ -149,91 +197,51 @@ namespace RabbitDB.Reader
         }
 
         /// <summary>
-        /// The load.
-        /// </summary>
-        /// <param name="entity">
-        /// The entity.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        internal bool Load(TEntity entity)
-        {
-            if (_dataReader.Read() == false)
-            {
-                return false;
-            }
-
-            this.Current = _materializer.Materialize(entity, _dataReaderSchema, _dataReader);
-
-            return true;
-        }
-
-        /// <summary>
-        /// The load.
-        /// </summary>
-        /// <param name="entity">
-        /// The entity.
-        /// </param>
-        /// <param name="materializer">
-        /// The materializer.
-        /// </param>
-        internal void Load(TEntity entity, Action<TEntity, IDataReader> materializer)
-        {
-            materializer(entity, _dataReader);
-        }
-
-        /// <summary>
-        /// The load.
-        /// </summary>
-        /// <param name="materializer">
-        /// The materializer.
-        /// </param>
-        /// <returns>
-        /// The <see>
-        ///         <cref>IEnumerable</cref>
-        ///     </see>
-        ///     .
-        /// </returns>
-        internal IEnumerable<TEntity> Load(Func<IDataReader, IEnumerable<TEntity>> materializer)
-        {
-            return _materializer.Materialize(materializer, _dataReader);
-        }
-
-        /// <summary>
-        /// The read internal.
+        ///     The read internal.
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         internal bool ReadInternal()
         {
-            this.Current = _materializer.Materialize<TEntity>(_dataReaderSchema, _dataReader);
+            Current = _materializer.Materialize<TEntity>(_dataReaderSchema, _dataReader);
 
             return true;
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
-        /// The get list of primitiv values.
+        ///     The dispose.
+        /// </summary>
+        void IDisposable.Dispose()
+        {
+            Dispose();
+        }
+
+        /// <summary>
+        ///     The get list of primitiv values.
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         private bool GetListOfPrimitivValues()
         {
-            this.Current = (TEntity)_dataReader.GetValue(0);
+            Current = (TEntity)_dataReader.GetValue(0);
 
             return true;
         }
 
         /// <summary>
-        /// The read.
+        ///     The read.
         /// </summary>
         /// <param name="step">
-        /// The step.
+        ///     The step.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         /// <exception cref="ArgumentException">
         /// </exception>
@@ -241,10 +249,10 @@ namespace RabbitDB.Reader
         {
             if (step < 0)
             {
-                throw new ArgumentException("Step is lower then 1. This is not allowed!", "step");
+                throw new ArgumentException("Step is lower then 1. This is not allowed!", nameof(step));
             }
 
-            for (var i = 0; i < step; i++)
+            for (int i = 0; i < step; i++)
             {
                 if (_dataReader.Read())
                 {
@@ -252,12 +260,13 @@ namespace RabbitDB.Reader
                 }
 
                 Dispose();
+
                 return false;
             }
 
             return _tableInfo != null
-                       ? ReadInternal()
-                       : GetListOfPrimitivValues();
+                ? ReadInternal()
+                : GetListOfPrimitivValues();
         }
 
         #endregion

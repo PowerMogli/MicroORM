@@ -6,22 +6,27 @@
 //   The my sql db schema reader.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Collections.Generic;
+
+using RabbitDB.Contracts.Schema;
+
+#endregion
+
 namespace RabbitDB.Schema
 {
-    using System;
-    using System.Collections.Generic;
-
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The my sql db schema reader.
+    ///     The my sql db schema reader.
     /// </summary>
     internal class MySqlDbSchemaReader : DbSchemaReader
     {
-        #region Constants
+        #region Fields
 
         /// <summary>
-        /// The sq l_ table.
+        ///     The sq l_ table.
         /// </summary>
         private const string SqlTable = @"SELECT *
 			FROM information_schema.tables
@@ -29,50 +34,52 @@ namespace RabbitDB.Schema
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MySqlDbSchemaReader"/> class.
+        ///     Initializes a new instance of the <see cref="MySqlDbSchemaReader" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
-        internal MySqlDbSchemaReader(SqlDialect sqlDialect)
+        internal MySqlDbSchemaReader(SqlDialect.SqlDialect sqlDialect)
             : base(sqlDialect)
         {
         }
 
         #endregion
 
-        #region Methods
+        #region Protected Methods
 
         /// <summary>
-        /// The get columns.
+        ///     The get columns.
         /// </summary>
         /// <param name="dbTable">
-        /// The db table.
+        ///     The db table.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>List</cref>
         ///     </see>
         ///     .
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>
-        protected override List<DbColumn> GetColumns(DbTable dbTable)
+        protected override List<IDbColumn> GetColumns(DbTable dbTable)
         {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// The get primary keys.
+        ///     The get primary keys.
         /// </summary>
         /// <param name="table">
-        /// The table.
+        ///     The table.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>List</cref>
         ///     </see>
         ///     .
@@ -85,13 +92,13 @@ namespace RabbitDB.Schema
         }
 
         /// <summary>
-        /// The get table.
+        ///     The get table.
         /// </summary>
         /// <param name="tableName">
-        /// The table name.
+        ///     The table name.
         /// </param>
         /// <returns>
-        /// The <see cref="DbTable"/>.
+        ///     The <see cref="DbTable" />.
         /// </returns>
         /// <exception cref="NotImplementedException">
         /// </exception>

@@ -6,15 +6,21 @@
 //   The entity hash set creator.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Collections.Generic;
+using System.Linq;
+
+using RabbitDB.Contracts.Materialization;
+using RabbitDB.Reflection;
+
+#endregion
+
 namespace RabbitDB.Materialization
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using RabbitDB.Reflection;
-
     /// <summary>
-    /// The entity hash set creator.
+    ///     The entity hash set creator.
     /// </summary>
     /// <typeparam name="TEntity">
     /// </typeparam>
@@ -23,41 +29,42 @@ namespace RabbitDB.Materialization
         #region Fields
 
         /// <summary>
-        /// The _entity.
+        ///     The _entity.
         /// </summary>
         private readonly TEntity _entity;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityHashSetCreator{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="EntityHashSetCreator{TEntity}" /> class.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         internal EntityHashSetCreator(TEntity entity)
         {
-            this._entity = entity;
+            _entity = entity;
         }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The compute entity hash set.
+        ///     The compute entity hash set.
         /// </summary>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>Dictionary</cref>
         ///     </see>
         ///     .
         /// </returns>
         public Dictionary<string, int> ComputeEntityHashSet()
         {
-            var keyValuePairs = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { this._entity });
+            KeyValuePair<string, object>[] keyValuePairs = ParameterTypeDescriptor.ToKeyValuePairs(new object[] { _entity });
 
             // if (keyValuePairs.Length >= 30)
             // return ComputeParallelEntityHashSet(keyValuePairs);
@@ -66,16 +73,17 @@ namespace RabbitDB.Materialization
 
         #endregion
 
-        #region Methods
+        #region Private Methods
 
         /// <summary>
-        /// The compute entity hash set.
+        ///     The compute entity hash set.
         /// </summary>
         /// <param name="keyValuePairs">
-        /// The key value pairs.
+        ///     The key value pairs.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>Dictionary</cref>
         ///     </see>
         ///     .
@@ -83,16 +91,18 @@ namespace RabbitDB.Materialization
         private static Dictionary<string, int> ComputeEntityHashSet(
             IEnumerable<KeyValuePair<string, object>> keyValuePairs)
         {
-            return keyValuePairs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value != null ? kvp.Value.GetHashCode() : -1);
+            return keyValuePairs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value != null
+                ? kvp.Value.GetHashCode()
+                : -1);
         }
 
         #endregion
 
-        // internal static Dictionary<string, int> ComputeEntityHashSetInParallel(KeyValuePair<string, object>[] keyValuePairs)
-        // {
-        // var processedKeyValuePairs = new KeyValuePair<string, int>[keyValuePairs.Length];
-
         // Parallel.ForEach(keyValuePairs, (kvp, loopState, elementIndex) =>
+        // var processedKeyValuePairs = new KeyValuePair<string, int>[keyValuePairs.Length];
+        // {
+
+        // internal static Dictionary<string, int> ComputeEntityHashSetInParallel(KeyValuePair<string, object>[] keyValuePairs)
         // {
         // processedKeyValuePairs[elementIndex] = new KeyValuePair<string, int>(kvp.Key, kvp.Value != null ? kvp.Value.GetHashCode() : -1);
         // });

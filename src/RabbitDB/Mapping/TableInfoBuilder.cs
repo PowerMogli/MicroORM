@@ -6,41 +6,46 @@
 //   The table info builder.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Data;
+using System.Reflection;
+
+using RabbitDB.Contracts.Attributes;
+using RabbitDB.Entity.Entity;
+
+#endregion
+
 namespace RabbitDB.Mapping
 {
-    using System;
-    using System.Data;
-    using System.Reflection;
-
-    using RabbitDB.Attributes;
-    using RabbitDB.Entity;
-
     /// <summary>
-    /// The table info builder.
+    ///     The table info builder.
     /// </summary>
     internal class TableInfoBuilder
     {
         #region Fields
 
         /// <summary>
-        /// The _entity type.
+        ///     The _entity type.
         /// </summary>
         private readonly Type _entityType;
 
         /// <summary>
-        /// The _table info.
+        ///     The _table info.
         /// </summary>
         private TableInfo _tableInfo;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TableInfoBuilder"/> class.
+        ///     Initializes a new instance of the <see cref="TableInfoBuilder" /> class.
         /// </summary>
         /// <param name="entityType">
-        /// The entity type.
+        ///     The entity type.
         /// </param>
         /// <exception cref="ArgumentNullException">
         /// </exception>
@@ -50,13 +55,12 @@ namespace RabbitDB.Mapping
         {
             if (entityType == null)
             {
-                throw new ArgumentNullException("entityType");
+                throw new ArgumentNullException(nameof(entityType));
             }
 
             if (entityType.IsInterface)
             {
-                throw new TableInfoException(
-                    string.Format("Cannot create mapping for interface '{0}'!", entityType.FullName));
+                throw new TableInfoException($"Cannot create mapping for interface '{entityType.FullName}'!");
             }
 
             _entityType = entityType;
@@ -64,22 +68,53 @@ namespace RabbitDB.Mapping
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The build.
+        ///     The build.
         /// </summary>
         /// <returns>
-        /// The <see cref="TableInfo"/>.
+        ///     The <see cref="TableInfo" />.
         /// </returns>
         internal TableInfo Build()
         {
-            var attribute = GetPersistentAttribute();
+            TableAttribute attribute = GetPersistentAttribute();
+
             _tableInfo = new TableInfo(_entityType, attribute);
-            CreateMemberMappingsFor<ColumnAttribute>(_entityType, this.AddPropertyMetaInfo);
+
+            CreateMemberMappingsFor<ColumnAttribute>(_entityType, AddPropertyMetaInfo);
 
             // CreateMemberMappingsFor<PrimaryKeyAttribute>(entityType, AddPrimaryKeyInfo);
             return _tableInfo;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        ///     The add property meta info.
+        /// </summary>
+        /// <param name="propertyInfo">
+        ///     The property info.
+        /// </param>
+        /// <param name="entityType">
+        ///     The entity type.
+        /// </param>
+        /// <param name="attribute">
+        ///     The attribute.
+        /// </param>
+        private void AddPropertyMetaInfo(PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
+        {
+            attribute = CreateAttribute<ColumnAttribute>(attribute, propertyInfo.Name);
+            Type propertyType = GetPropertyType(entityType, propertyInfo);
+
+            if (propertyType.IsEnum)
+            {
+                attribute.DbType = DbType.Int32;
+            }
+
+            _tableInfo.Columns.Add(new PropertyMetaInfo(propertyInfo, propertyType, attribute.NullDbType ?? TypeConverter.ToDbType(propertyType), attribute));
         }
 
         // private static void AddPrimaryKeyInfo(TableInfo tableInfo, PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
@@ -94,18 +129,18 @@ namespace RabbitDB.Mapping
         // }
 
         /// <summary>
-        /// The create attribute.
+        ///     The create attribute.
         /// </summary>
         /// <param name="attribute">
-        /// The attribute.
+        ///     The attribute.
         /// </param>
         /// <param name="name">
-        /// The name.
+        ///     The name.
         /// </param>
         /// <typeparam name="TAttribute">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="ColumnAttribute"/>.
+        ///     The <see cref="ColumnAttribute" />.
         /// </returns>
         private static ColumnAttribute CreateAttribute<TAttribute>(ColumnAttribute attribute, string name)
         {
@@ -123,19 +158,48 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// The get attribute.
+        ///     The create member mappings for.
+        /// </summary>
+        /// <param name="entityType">
+        ///     The entity type.
+        /// </param>
+        /// <param name="action">
+        ///     The action.
+        /// </param>
+        /// <typeparam name="TAttribute">
+        /// </typeparam>
+        private static void CreateMemberMappingsFor<TAttribute>(Type entityType, Action<PropertyInfo, Type, ColumnAttribute> action) where TAttribute : ColumnAttribute
+        {
+            if (IsInvalidEntityType(entityType))
+            {
+                return;
+            }
+
+            foreach (PropertyInfo propertyInfo in entityType.GetProperties())
+            {
+                TAttribute attribute = GetAttribute<TAttribute>(propertyInfo);
+
+                action(propertyInfo, entityType, attribute);
+            }
+
+            CreateMemberMappingsFor<TAttribute>(entityType.BaseType, action);
+        }
+
+        /// <summary>
+        ///     The get attribute.
         /// </summary>
         /// <param name="propertyInfo">
-        /// The property info.
+        ///     The property info.
         /// </param>
         /// <typeparam name="TAttribute">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="TAttribute"/>.
+        ///     The <see cref="TAttribute" />.
         /// </returns>
         private static TAttribute GetAttribute<TAttribute>(MemberInfo propertyInfo) where TAttribute : Attribute
         {
-            var attributes = Attribute.GetCustomAttributes(propertyInfo, typeof(TAttribute));
+            Attribute[] attributes = Attribute.GetCustomAttributes(propertyInfo, typeof(TAttribute));
+
             if (attributes.Length == 0)
             {
                 return null;
@@ -145,123 +209,14 @@ namespace RabbitDB.Mapping
         }
 
         /// <summary>
-        /// The get property type.
-        /// </summary>
-        /// <param name="entityType">
-        /// The entity type.
-        /// </param>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <returns>
-        /// The <see cref="Type"/>.
-        /// </returns>
-        private static Type GetPropertyType(Type entityType, PropertyInfo propertyInfo)
-        {
-            if (!propertyInfo.PropertyType.IsInterface)
-            {
-                return propertyInfo.PropertyType;
-            }
-
-            var instance = Activator.CreateInstance(
-                entityType, 
-                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, 
-                null, 
-                null, 
-                null);
-
-            var instanceValue = propertyInfo.GetValue(instance, null);
-
-            return instanceValue != null ? instanceValue.GetType() : propertyInfo.PropertyType;
-        }
-
-        /// <summary>
-        /// The is invalid entity type.
-        /// </summary>
-        /// <param name="entityType">
-        /// The entity type.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        private static bool IsInvalidEntityType(Type entityType)
-        {
-            return entityType == null
-                   || entityType == typeof(NotifiedEntity)
-                   || entityType == typeof(Entity)
-                   || entityType == typeof(object);
-        }
-
-        /// <summary>
-        /// The add property meta info.
-        /// </summary>
-        /// <param name="propertyInfo">
-        /// The property info.
-        /// </param>
-        /// <param name="entityType">
-        /// The entity type.
-        /// </param>
-        /// <param name="attribute">
-        /// The attribute.
-        /// </param>
-        private void AddPropertyMetaInfo(PropertyInfo propertyInfo, Type entityType, ColumnAttribute attribute)
-        {
-            attribute = CreateAttribute<ColumnAttribute>(attribute, propertyInfo.Name);
-            var propertyType = GetPropertyType(entityType, propertyInfo);
-
-            if (propertyType.IsEnum)
-            {
-                attribute.DbType = DbType.Int32;
-            }
-
-            _tableInfo.Columns.Add(
-                new PropertyMetaInfo(
-                    propertyInfo, 
-                    propertyType, 
-                    attribute.NullDbType ?? TypeConverter.ToDbType(propertyType), 
-                    attribute));
-        }
-
-        /// <summary>
-        /// The create member mappings for.
-        /// </summary>
-        /// <param name="entityType">
-        /// The entity type.
-        /// </param>
-        /// <param name="action">
-        /// The action.
-        /// </param>
-        /// <typeparam name="TAttribute">
-        /// </typeparam>
-        private void CreateMemberMappingsFor<TAttribute>(
-            Type entityType, 
-            Action<PropertyInfo, Type, ColumnAttribute> action) where TAttribute : ColumnAttribute
-        {
-            if (IsInvalidEntityType(entityType))
-            {
-                return;
-            }
-
-            foreach (var propertyInfo in entityType.GetProperties())
-            {
-                var attribute = GetAttribute<TAttribute>(propertyInfo);
-
-                action(propertyInfo, entityType, attribute);
-            }
-
-            CreateMemberMappingsFor<TAttribute>(entityType.BaseType, action);
-        }
-
-        /// <summary>
-        /// The get persistent attribute.
+        ///     The get persistent attribute.
         /// </summary>
         /// <returns>
-        /// The <see cref="TableAttribute"/>.
+        ///     The <see cref="TableAttribute" />.
         /// </returns>
         private TableAttribute GetPersistentAttribute()
         {
-            var attribute =
-                (TableAttribute)Attribute.GetCustomAttribute(_entityType, typeof(TableAttribute), true);
+            TableAttribute attribute = (TableAttribute)Attribute.GetCustomAttribute(_entityType, typeof(TableAttribute), true);
 
             if (attribute == null)
             {
@@ -274,6 +229,54 @@ namespace RabbitDB.Mapping
             }
 
             return attribute;
+        }
+
+        /// <summary>
+        ///     The get property type.
+        /// </summary>
+        /// <param name="entityType">
+        ///     The entity type.
+        /// </param>
+        /// <param name="propertyInfo">
+        ///     The property info.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="Type" />.
+        /// </returns>
+        private static Type GetPropertyType(Type entityType, PropertyInfo propertyInfo)
+        {
+            if (!propertyInfo.PropertyType.IsInterface)
+            {
+                return propertyInfo.PropertyType;
+            }
+
+            object instance = Activator.CreateInstance(
+                entityType,
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
+                null,
+                null,
+                null);
+
+            object instanceValue = propertyInfo.GetValue(instance, null);
+
+            return instanceValue?.GetType() ?? propertyInfo.PropertyType;
+        }
+
+        /// <summary>
+        ///     The is invalid entity type.
+        /// </summary>
+        /// <param name="entityType">
+        ///     The entity type.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        private static bool IsInvalidEntityType(Type entityType)
+        {
+            return entityType == null
+                   || entityType == typeof(NotifiedEntity)
+                   || entityType == typeof(Entity.Entity.Entity)
+                   || entityType == typeof(object);
         }
 
         #endregion

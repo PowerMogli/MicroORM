@@ -6,74 +6,74 @@
 //   The select sql builder.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Text;
+
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Mapping;
+
+#endregion
+
 namespace RabbitDB.SqlBuilder
 {
-    using System.Text;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The select sql builder.
+    ///     The select sql builder.
     /// </summary>
     internal class SelectSqlBuilder : SqlBuilder
     {
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectSqlBuilder"/> class.
+        ///     Initializes a new instance of the <see cref="SelectSqlBuilder" /> class.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <param name="tableInfo">
-        /// The table info.
+        ///     The table info.
         /// </param>
-        public SelectSqlBuilder(SqlDialect sqlDialect, TableInfo tableInfo)
+        public SelectSqlBuilder(ISqlDialect sqlDialect, TableInfo tableInfo)
             : base(sqlDialect, tableInfo)
         {
         }
 
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
-        /// The create statement.
+        ///     The create statement.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         internal override string CreateStatement()
         {
-            var selectStatement = new StringBuilder();
+            StringBuilder selectStatement = new StringBuilder();
             selectStatement.Append(GetBaseSelect());
 
             selectStatement.Append(AppendPrimaryKeys());
+
             return selectStatement.ToString();
         }
 
         /// <summary>
-        /// The get base select.
+        ///     The get base select.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         internal string GetBaseSelect()
         {
-            var selectStatement = new StringBuilder();
+            StringBuilder selectStatement = new StringBuilder();
+
             selectStatement.Append("SELECT ");
 
-            selectStatement.AppendFormat(
-                "{0}", 
-                string.Join(
-                    ", ", 
-                    this.TableInfo.Columns.SelectValidColumnNames(this.TableInfo.DbTable, this.SqlDialect.SqlCharacters)));
+            selectStatement.Append($"{string.Join(", ", TableInfo.Columns.SelectValidColumnNames(TableInfo.DbTable, SqlDialect.SqlCharacters))}");
 
-            selectStatement.AppendFormat(
-                " FROM {0}{1}", 
-                this.SqlDialect.SqlCharacters.EscapeName(this.TableInfo.SchemedTableName), 
-                this.TableInfo.WithNolock);
+            selectStatement.Append($" FROM {SqlDialect.SqlCharacters.EscapeName(TableInfo.SchemedTableName)}{TableInfo.WithNolock}");
 
             return selectStatement.ToString();
         }

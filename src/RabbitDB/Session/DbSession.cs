@@ -6,39 +6,47 @@
 //   The db session.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System;
+using System.Linq.Expressions;
+
+using RabbitDB.Contracts.Reader;
+using RabbitDB.Contracts.Session;
+using RabbitDB.Query;
+using RabbitDB.Query.Generic;
+using RabbitDB.Storage;
+
+#endregion
+
 namespace RabbitDB.Session
 {
-    using System;
-    using System.Linq.Expressions;
-
-    using RabbitDB.Query;
-    using RabbitDB.Query.Generic;
-    using RabbitDB.Storage;
-
     /// <summary>
-    /// The db session.
+    ///     The db session.
     /// </summary>
-    public class DbSession : ReadOnlySession, IDbSession
+    public sealed class DbSession : ReadOnlySession,
+                                    IDbSession
     {
         #region Fields
 
         /// <summary>
-        /// The _db entity persister.
+        ///     The _db entity persister.
         /// </summary>
         private DbEntityPersister _dbEntityPersister;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DbSession"/> class.
+        ///     Initializes a new instance of the <see cref="DbSession" /> class.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         /// <param name="dbEngine">
-        /// The db engine.
+        ///     The db engine.
         /// </param>
         public DbSession(string connectionString, DbEngine dbEngine)
             : base(connectionString, dbEngine)
@@ -46,10 +54,10 @@ namespace RabbitDB.Session
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DbSession"/> class.
+        ///     Initializes a new instance of the <see cref="DbSession" /> class.
         /// </summary>
         /// <param name="assemblyType">
-        /// The assembly type.
+        ///     The assembly type.
         /// </param>
         public DbSession(Type assemblyType)
             : base(assemblyType)
@@ -57,10 +65,10 @@ namespace RabbitDB.Session
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DbSession"/> class.
+        ///     Initializes a new instance of the <see cref="DbSession" /> class.
         /// </summary>
         /// <param name="connectionString">
-        /// The connection string.
+        ///     The connection string.
         /// </param>
         public DbSession(string connectionString)
             : this(connectionString, DbEngine.SqlServer)
@@ -68,37 +76,27 @@ namespace RabbitDB.Session
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="DbSession"/> class. 
+        ///     Finalizes an instance of the <see cref="DbSession" /> class.
         /// </summary>
         ~DbSession()
         {
-            if (this.Disposed == false)
+            if (Disposed == false)
             {
-                this.Dispose();
+                Dispose();
             }
         }
 
         #endregion
 
-        #region Public Properties
+        #region  Properties
 
         /// <summary>
-        /// Gets the configuration.
+        ///     Gets the configuration.
         /// </summary>
-        public static Configuration Configuration
-        {
-            get
-            {
-                return Configuration.Instance;
-            }
-        }
-
-        #endregion
-
-        #region Properties
+        public static Configuration Configuration => Configuration.Instance;
 
         /// <summary>
-        /// Gets the db entity persister.
+        ///     Gets the db entity persister.
         /// </summary>
         /// <exception cref="InvalidOperationException">
         /// </exception>
@@ -106,97 +104,97 @@ namespace RabbitDB.Session
         {
             get
             {
-                if (this.SqlDialect == null)
+                if (SqlDialect == null)
                 {
                     throw new InvalidOperationException("SqlDialect is not initialized");
                 }
 
-                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(this.DbPersister));
+                return _dbEntityPersister ?? (_dbEntityPersister = new DbEntityPersister(DbPersister));
             }
         }
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The delete.
+        ///     The delete.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         public void Delete<TEntity>(TEntity entity)
         {
-            this.DbPersister.Delete(entity);
+            DbPersister.Delete(entity);
         }
 
         /// <summary>
-        /// The execute command.
+        ///     The execute command.
         /// </summary>
         /// <param name="sql">
-        /// The sql.
+        ///     The sql.
         /// </param>
         /// <param name="arguments">
-        /// The arguments.
+        ///     The arguments.
         /// </param>
         public void ExecuteCommand(string sql, params object[] arguments)
         {
-            this.SqlDialect.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
+            SqlDialect.ExecuteCommand(new SqlQuery(sql, QueryParameterCollection.Create(arguments)));
         }
 
         /// <summary>
-        /// The insert.
+        ///     The insert.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         public void Insert<TEntity>(TEntity entity)
         {
-            this.DbPersister.Insert(entity);
+            DbPersister.Insert(entity);
         }
 
         /// <summary>
-        /// The update.
+        ///     The update.
         /// </summary>
         /// <param name="criteria">
-        /// The criteria.
+        ///     The criteria.
         /// </param>
         /// <param name="setArguments">
-        /// The set arguments.
+        ///     The set arguments.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         public void Update<TEntity>(Expression<Func<TEntity, bool>> criteria, params object[] setArguments)
         {
-            this.DbPersister.Update<TEntity>(new UpdateExpressionQuery<TEntity>(criteria, setArguments));
+            DbPersister.Update<TEntity>(new UpdateExpressionQuery<TEntity>(criteria, setArguments));
         }
 
         /// <summary>
-        /// The update.
+        ///     The update.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         public void Update<TEntity>(TEntity entity)
         {
-            this.DbPersister.Update<TEntity>(new UpdateQuery<TEntity>(entity));
+            DbPersister.Update<TEntity>(new UpdateQuery<TEntity>(entity));
         }
 
         #endregion
 
-        #region Explicit Interface Methods
+        #region Private Methods
 
         /// <summary>
-        /// The load.
+        ///     The load.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
@@ -204,8 +202,7 @@ namespace RabbitDB.Session
         /// </exception>
         void IDbSession.Load<TEntity>(TEntity entity)
         {
-            var objectReader =
-                this.SqlDialect.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
+            IEntityReader<TEntity> objectReader = SqlDialect.ExecuteReader<TEntity>(new EntityQuery<TEntity>(entity));
 
             if (objectReader.Load(entity) == false)
             {
@@ -214,19 +211,19 @@ namespace RabbitDB.Session
         }
 
         /// <summary>
-        /// The persist changes.
+        ///     The persist changes.
         /// </summary>
         /// <param name="entity">
-        /// The entity.
+        ///     The entity.
         /// </param>
         /// <typeparam name="TEntity">
         /// </typeparam>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         bool IDbSession.PersistChanges<TEntity>(TEntity entity)
         {
-            return this.DbEntityPersister.PersistChanges(entity);
+            return DbEntityPersister.PersistChanges(entity);
         }
 
         #endregion

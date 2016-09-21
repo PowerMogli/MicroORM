@@ -6,16 +6,21 @@
 //   The sql query.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+
+#region using directives
+
+using System.Data;
+
+using RabbitDB.Contracts.SqlDialect;
+using RabbitDB.Mapping;
+using RabbitDB.SqlBuilder;
+
+#endregion
+
 namespace RabbitDB.Query.Generic
 {
-    using System.Data;
-
-    using RabbitDB.Mapping;
-    using RabbitDB.SqlBuilder;
-    using RabbitDB.SqlDialect;
-
     /// <summary>
-    /// The sql query.
+    ///     The sql query.
     /// </summary>
     /// <typeparam name="TEntity">
     /// </typeparam>
@@ -24,35 +29,35 @@ namespace RabbitDB.Query.Generic
         #region Fields
 
         /// <summary>
-        /// The _additional predicate.
+        ///     The _additional predicate.
         /// </summary>
         private readonly string _additionalPredicate;
 
         /// <summary>
-        /// The _primary keys.
+        ///     The _primary keys.
         /// </summary>
         private readonly object[] _primaryKeys;
 
         /// <summary>
-        /// The _table info.
+        ///     The _table info.
         /// </summary>
         private readonly TableInfo _tableInfo;
 
         #endregion
 
-        #region Constructors and Destructors
+        #region Construction
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlQuery{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="SqlQuery{TEntity}" /> class.
         /// </summary>
         /// <param name="primaryKeys">
-        /// The primary keys.
+        ///     The primary keys.
         /// </param>
         /// <param name="additionalPredicate">
-        /// The additional predicate.
+        ///     The additional predicate.
         /// </param>
         /// <param name="arguments">
-        /// The arguments.
+        ///     The arguments.
         /// </param>
         internal SqlQuery(object[] primaryKeys, string additionalPredicate, QueryParameterCollection arguments = null)
             : base(string.Empty, arguments)
@@ -63,13 +68,13 @@ namespace RabbitDB.Query.Generic
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlQuery{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="SqlQuery{TEntity}" /> class.
         /// </summary>
         /// <param name="sqlStatement">
-        /// The sql statement.
+        ///     The sql statement.
         /// </param>
         /// <param name="arguments">
-        /// The arguments.
+        ///     The arguments.
         /// </param>
         internal SqlQuery(string sqlStatement, QueryParameterCollection arguments = null)
             : base(sqlStatement, arguments)
@@ -79,18 +84,18 @@ namespace RabbitDB.Query.Generic
 
         #endregion
 
-        #region Public Methods and Operators
+        #region Public Methods
 
         /// <summary>
-        /// The compile.
+        ///     The compile.
         /// </summary>
         /// <param name="sqlDialect">
-        /// The sql dialect.
+        ///     The sql dialect.
         /// </param>
         /// <returns>
-        /// The <see cref="IDbCommand"/>.
+        ///     The <see cref="IDbCommand" />.
         /// </returns>
-        public override IDbCommand Compile(SqlDialect sqlDialect)
+        public override IDbCommand Compile(ISqlDialect sqlDialect)
         {
             if (_primaryKeys != null)
             {
@@ -104,10 +109,10 @@ namespace RabbitDB.Query.Generic
 
         #endregion
 
-        #region Methods
+        #region Private Methods
 
         /// <summary>
-        /// The prepare arguments.
+        ///     The prepare arguments.
         /// </summary>
         /// <exception cref="PrimaryKeyException">
         /// </exception>
@@ -124,26 +129,26 @@ namespace RabbitDB.Query.Generic
                     "The number of provided primaryKeys does not match the requested number of primaryKeys!");
             }
 
-            if (base.Arguments == null)
+            if (Arguments == null)
             {
-                base.Arguments = new QueryParameterCollection();
+                Arguments = new QueryParameterCollection();
             }
 
-            base.Arguments.AddRange(_primaryKeys);
+            Arguments.AddRange(_primaryKeys);
         }
 
         /// <summary>
-        /// The prepare sql statement.
+        ///     The prepare sql statement.
         /// </summary>
         private void PrepareSqlStatement()
         {
-            base.Sql = SqlBuilder<TEntity>.SelectStatement;
+            Sql = SqlBuilder<TEntity>.SelectStatement;
             if (string.IsNullOrEmpty(_additionalPredicate))
             {
                 return;
             }
 
-            base.Sql = string.Format("{0} and {1}", base.Sql, _additionalPredicate);
+            Sql = $"{Sql} and {_additionalPredicate}";
         }
 
         #endregion
